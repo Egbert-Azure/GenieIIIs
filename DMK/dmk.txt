@@ -1,0 +1,51 @@
+Verzeichnis von DMK Disks
+
+cpm22x-g3.dmk                           Genie 3  CP/M22x  Kaempf  
+egcpm04.dmk                             Genie 3s CP/M 
+egcpm10.dmk                             Genie 3s CP/M
+egcpm36.dmk                             Genie 3s CP/M
+egcpm38.dmk                             Genie 3s CP/M
+escpm010.dmk                            Genie 3s CP/M
+escpm010a.dmk                           Genie 3s CP/M
+flocpm01.dmk                            Genie 1  CP/M 2 Schmidtke 
+flocpm02.dmk                            Genie 1  CP/M 2 Schmidtke
+flocpm33.dmk                            Genie 1  CP/M 2 Schmidtke
+flogd02.dmk                             Genie 1  G-DOS
+flond62.dmk                             Genie 1  NEWDOS
+g2s-cpm22x.dmk                          Genie 2s CP/M 2.2  Kaempf
+g2s-cpmp22x-src_d80dsdd.dmk             Genie 2s CP/M 2.2  Kaempf
+g2s-gs-cpm.dmk                          Genie 2s CP/M 2.2  Gerald Schroeder
+g3-cpm30.dmk                            Genie 3  CP/M 3    Holte
+g3-gp001.dmk                            Genie 3  CP/M 3    Holte
+g3-gplus.dmk                            Genie 3  CP/M 3    Holte
+g3gd21-1.dmk                            Genie 3  G-DOS 2.1        
+g3gd21-chr.dmk                          Genie 3  G-DOS 2.1
+g3gd24-1.dmk                            Genie 3  G-DOS 2.4
+g3hv3-00.dmk                            Genie 3  CP/M 3    Holte
+g3hv3-01.dmk                            Genie 3  CP/M 3    Holte
+g3lowe01.dmk                            Genie 3  CP/M 2    Lowe
+g3lowe04.dmk                            Genie 3  CP/M 2    Lowe        
+g3lowe05.dmk                            Genie 3  CP/M 2    Lowe
+g3nd-g01.dmk                            Genie 3  NEWDOS
+G3S-GDOS24.DMK                          Genie 3s G-DOS 2.4
+g3s-h-f1.dmk                            Genie 3s CP/M      Holte     
+g3s-holte_jens.dmk                      Genie 3s CP/M      Holte
+g3s_f09.dmk                             Genie 3s CP/M              
+g3s_f11.dmk                             Genie 3s CP/M
+g3s_f16.dmk                             Genie 3s CP/M        
+g3s_f21.dmk                             Genie 3s CP/M
+g3s_gdos24.dmk                          Genie 3s G-DOS 2.4
+g3_lowe_fritz.dmk                       Genie 3  CP/M Lowe (patch)
+GDOS24-CHAR.DMK                         Genie 2s,3,3s G-DOS 2.4 masterdisk 
+gdos24.dmk                              Genie 2s,3,3s G-DOS 2.4 masterdisk
+gdos24_master.dmk                       Genie 2s,3,3s G-DOS 2.4 masterdisk
+gdos24_master_char.dmk                  Genie 2s,3,3s G-DOS 2.4 masterdisk
+genietext3.dmk                          GDOS  Genietext
+hdos23c.dmk                             Genie 1 HDOS 
+hv22d-01.dmk                            Genie 3 CP/M 2      Holte
+hv22d-01a.dmk                           Genie 3 CP/M 2      Holte
+hv22d-02.dmk                            Genie 3 CP/M 2      Holte        
+hv22d-03.dmk                            Genie 3 CP/M 2      Holte
+hv22d-03a.dmk                           Genie 3 CP/M 2      Holte
+speedm.dmk                              Speedmaster CP/M 2 Kaempf  
+speedm01.dmk                            Speedmaster CP/M 2 Kaempf        

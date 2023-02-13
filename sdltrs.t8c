@@ -9,7 +9,7 @@ clock1=1.77
 clock3=2.03
 clock4=4.06
 disk0=g3s-holte_jens.dmk
-disk1=egcpm04.dmk
+disk1=escpm002.dmk
 disk2=
 disk3=
 disk4=
@@ -52,7 +52,7 @@ romfile=g3s_hd-omti_bootrom_2764.bin
 romfile3=model3.rom
 romfile4p=model4p.rom
 samplerate=44100
-scale=1
+scale=2
 scalequality=1
 scanlines
 scanshade=127
@@ -79,4 +79,4 @@ wafer4=
 wafer5=
 wafer6=
 wafer7=
-window=536805376,536805376,516,396
+

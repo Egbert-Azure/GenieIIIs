@@ -1,0 +1,108 @@
+
+Egbert:
+
+egcpm01 Holte CP/M3 aber kein A: prompt
+egcpm02 DISK Error
+egcpm03 Holte CP/M3 Special INITW system +10,4 MBytes Winchester Disk
+egcpm04 Holte CP/M
+egcpm05 kein Boot
+egcpm06 Holte CP/M3 aber kein A: prompt
+egcpm07 Holte CP/M3 aber kein A: prompt
+egcpm08 kein Boot
+egcpm09 kein Boot
+egcpm10 Kaempf CP/M3 möchte Z3Plus auf A: wurde von mir für Genie III 
+              Systemgenerierung verbastelt
+
+escpm010 Original Image - startet Z3plus
+sdltrs -rom ~/images/g3s/g3s_orgadata_2732.bin  -disk0 ~/images/g3s/escpm010.dmk
+
+egcpm11 kein Boot
+egcpm12 Holte CP/M3 aber kein A: prompt
+egcpm13 Holte CP/M3 aber kein A: prompt
+egcpm14 kein Boot
+egcpm15 kein Boot
+egcpm16 kein Boot
+egcpm17 kein Boot
+egcpm18 kein Boot
+egcpm19 kein Boot
+egcpm20 kein Boot
+egcpm21 kein Boot
+egcpm22 kein Boot
+egcpm23 kein Boot
+egcpm24 kein Boot
+egcpm25 kein Boot
+egcpm26 kein Boot
+
+Fritz
+#
+sdltrs -rom ~/images/g3s/g3s_orgadata_2732.bin -disk0 ~/images/g3s/g3s_f01.dmk
+
+g3s_f01 Holte CP/M3 Chwolka 1992
+g3s_f02 kein Boot
+g3s_f03 Holte CP/M3 mit INITW Autostart
+g3s_f04 Holte CP/M3 Original
+g3s_f05 kein Boot
+g3s_f06 kein Boot
+g3s_f07 Holte CP/M3 Chwolka 1992 mit Source
+g3s_f08 Holte CP/M3 Chwolka 1992 mit Source
+g3s_f09 Kämpf CP/M3 Boot
+g3s_f10 kein Boot Z3PLUS 1.02
+g3s_f11 kaempf CP/M+ BDOS Error beim Boot
+g3s_f12 kein Boot
+g3s_f13 kein Boot
+g3s_f14 kein Boot
+g3s_f15 kein Boot
+g3s_f16 Kaempf CP/M 2 mit PDRIVE
+g3s_f17 kein Boot
+g3s_f18 kein Boot
+g3s_f19 kein Boot
+g3s_f20 kein Boot
+g3s_f21 Kaempf CP/M2 mit Winchester Format
+
+
+
+
+
+EGCPM01.DMK - Holte
+EGCPM02.DMK - DISK ERROR (Holte?)
+EGCPM03.DMK - Holte
+EGCPM04.DMK - Holte
+EGCPM05.DMK - ???
+EGCPM06.DMK - Holte
+EGCPM07.DMK - Holte
+EGCPM08.DMK - Kämpf: D80 DSDD
+EGCPM09.DMK - Holte
+EGCPM10.DMK - Kämpf: S80 DSDD
+EGCPM11.DMK - Holte
+EGCPM12.DMK - Holte
+EGCPM13.DMK - Holte
+EGCPM14.DMK - Holte
+EGCPM15.DMK - Holte
+EGCPM16.DMK - Holte
+EGCPM17.DMK - Holte
+EGCPM18.DMK - Holte
+EGCPM19.DMK - Holte
+EGCPM20.DMK - Holte
+EGCPM21.DMK - Holte
+EGCPM22.DMK - Holte
+EGCPM23.DMK - Holte
+EGCPM24.DMK - Holte
+EGCPM25.DMK - Holte
+EGCPM26.DMK - Holte
+EGCPM27.DMK - Holte
+EGCPM28.DMK - Holte
+EGCPM29.DMK - Holte
+EGCPM30.DMK - Holte
+EGCPM31.DMK - ???
+EGCPM32.DMK - Holte
+EGCPM33.DMK - ???
+EGCPM34.DMK - Holte
+EGCPM35.DMK - Kämpf: S80 DSDD
+EGCPM36.DMK - Kämpf: CP/M-Plus mit "CONFIG.SYS nicht gefunden"
+EGCPM38.DMK - Kämpf: CP/M-Plus mit "CONFIG.SYS nicht gefunden"
+
+
+
+
+
+

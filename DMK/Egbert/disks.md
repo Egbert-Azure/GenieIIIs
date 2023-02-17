@@ -1,0 +1,40 @@
+## Holte virtual disks for Emulator:
+
+- egcpm01.dmk - lesbar; content: CP/M 3.0 plus. Bootdiskette Holte CP/M mit Seagate ST225 und OMTI Controller
+- egcpm02.dmk - damaged/nicht lesbar; content: Systemerstellung Disk/HD-Boot
+- egcpm03.dmk - lesbar; content: CP/M 3.0; Systemerstellung; Originalzustand, fuer original Tandon TM252 harddisk
+- egcpm04.dmk - lesbar; content: Systemdisk; Originalzustand
+- egcpm05.dmk - damaged/nich lesbar; content: src files Holte CP/M 3.0 plus with Tandon TM252 harddisk
+- egcpm06.dmk - lesbar; content: Testprogramme zur Erstellung HD
+- egcpm07.dmk - Boot Disk mit ZPM3; on Github details about ZPM3 > wwarthen/CPU280: CPU280 System Software (github.com)
+- egcpm08.dmk - damaged/nich lesbar; content: C src code disk; Format Kaempf; 80DS/DD
+- egcpm09.dmk - lesbar; content: verschiedene Files von Volker Dose und Egbert; u.a. HRG Grafik Tests und makefile fuer ZPM3
+- egcpm10.dmk - damaged/nich lesbar; content: ?
+- egcpm11.dmk - lesbar; content: u.a. Pascal src fuer das HD park program; boot src von Volker Dose
+- egcpm12.dmk - lesbar; content: src code fuer 2 partitionen mit ST252 20MB
+- egcpm13.dmk - lesbar; content: src code noch nicht korrigiert/angepasst fuer 1 partition mit ST252 20MB und mit ramdisk
+- egcpm14.dmk - lesbar; content: INITW src fuer verschiedene Festplatten
+- egcpm15.dmk - lesbar; content: UUCP stuff > stands for Unix-to-Unix Copy; allowing remote execution of commands and transfer of files, emails
+- egcpm16.dmk - lesbar; content: angepasstes Wordstar
+- egcpm17.dmk - lesbar; content: unzip, unarj, unarc
+- egcpm18.dmk - lesbar;content: "Diskettenweitwurf" mit vpdose u.a. Window Pascal routines Holte und Anpassung von Egbert (ja, es gab Zeiten da wurden Disketten hin und her geschickt :) )
+- egcpm19.dmk - lesbar;content: "Diskettenweitwurf" mit vpdose u.a. Window Pascal routines Holte und Anpassung von Egbert
+- egcpm20.dmk - lesbar;content: dBase files
+- egcpm21.dmk - lesbar;content: "Diskettenweitwurf" mit vpdose u.a. Wordstar und Anpassung
+- egcpm21.dmk - lesbar;content: "Diskettenweitwurf" Volker & Egbert LBR files
+- egcpm22.dmk - lesbar;content: "Diskettenweitwurf" Volker & Egbert LBR files
+- egcpm23.dmk - lesbar;content: "Diskettenweitwurf" Volker & Egbert LBR files
+- egcpm24.dmk - lesbar;content: Z80 Assembler
+- egcpm25.dmk - lesbar;content: Basic Versionen und Basic Compiler
+- egcpm26.dmk - lesbar;content: "Diskettenweitwurf" Volker & Egbert
+- egcpm27.dmk - lesbar;content: Holte CP/M 3.0 Disketten Version
+- egcpm28.dmk - lesbar;content: "Diskettenweitwurf" Volker & Egbert
+- egcpm29.dmk - lesbar;content: "Diskettenweitwurf" Volker & Egbert & Fritz
+- egcpm30.dmk - lesbar;content: DFUE stuff
+- egcpm31.dmk - damaged/nich lesbar; Holte CP/M System src fuer 20 MB HD
+- egcpm32.dmk - lesbar;content: Wordstar und Brief fritzeflink (Fritz, solltest Du loeschen, da steht ne Kontonummer drin)
+- egcpm33.dmk - damaged/nich lesbar; Systemerstellung ZPM3
+- egcpm34.dmk - lesbar;content: Systemerstellung Testdisk
+- egcpm35.dmk - damaged/nich lesbar vom Holte CP/M aus; CP/M 2.2 Kaempf fuer Genie IIIs
+- egcpm36.dmk - damaged/nich lesbar vom Holte CP/M aus; CP/M 3.0 Kaempf fuer Genie IIIs
+- egcpm38.dmk - damaged/nich lesbar vom Holte CP/M aus; CP/M 3.0 Kaempf fuer Genie IIIs

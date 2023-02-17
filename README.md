@@ -8,7 +8,6 @@ Our project aims to bring the Genie IIIs experience to a modern platform, allowi
 
 With our project, we hope to inspire other enthusiasts to join us in exploring the fascinating world of legacy computer systems and to celebrate the remarkable technological advancements of the past. Join us on this journey of rediscovery and relive the golden era of computing!
 
-**_NOTE:_** Refering to the <https://github.com/Egbert-Azure/sdltrs> emulator from Jens Guenther
-
+**NOTE:** Refering to the <https://github.com/Egbert-Azure/sdltrs> emulator from Jens Guenther
 
 ![image](https://user-images.githubusercontent.com/55332675/219800153-87168b70-fd9c-40e2-b4cf-b99ee3ae718b.png)

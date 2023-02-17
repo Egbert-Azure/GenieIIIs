@@ -5,3 +5,5 @@ The Genie IIIs from Trommeschlaeger in Germany was still largely compatible with
 worked with either G-DOS, NEW-DOS or CP/M and shone with high-resolution graphics. 
 With the fast-paced Z80 processor, the Genie IIIs was one of the fastest CP/M computers ever. 
 The circuit board production for the Genie III was taken over by Siemens.
+
+In this project we create versions for https://github.com/Egbert-Azure/sdltrs emulator from Jens Guenther

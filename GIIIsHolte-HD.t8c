@@ -9,7 +9,7 @@ clock1=1.77
 clock3=2.03
 clock4=4.06
 disk0=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\DMK\g3s_f03.dmk
-disk1=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\DMK\g3s-holte.dmk
+disk1=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\DMK\g3s_f04.dmk
 disk2=
 disk3=
 disk4=
@@ -25,7 +25,7 @@ nofullscreen
 foreground=0xff00
 guibackground=0x344843
 guiforeground=0xe0e0ff
-hard0=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\DMK\HD1Holte.dmk
+hard0=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\g3s-hard36
 hard1=
 hard2=
 hard3=
@@ -36,7 +36,7 @@ nohypermem
 nojoyaxismapped
 joybuttonmap=-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
 joysticknum=none
-keypadjoy
+nokeypadjoy
 keystretch=4000
 nole18
 lowercase
@@ -80,4 +80,4 @@ wafer4=
 wafer5=
 wafer6=
 wafer7=
-window=381,49,1180,976
+window=404,94,1105,886

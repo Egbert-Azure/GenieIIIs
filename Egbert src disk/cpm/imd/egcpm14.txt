@@ -1,0 +1,32 @@
+IMageDisk Analyzer 1.18 / Mar 12 2012
+IMD 1.18:  4/10/2021 12:11:40
+GenieIIIs Egbert Schroer  Format:Holte
+INITW System Sources zu Holte CP/M+
+Festplattentreiber
+
+# egcpm014
+Required cylinders: 80
+Required heads    : 2
+Data rate         : 300kbps
+Est. maximum track: 6055 bytes
+
+Possible drives/options to write EGCPM14.IMD :
+
+ 5.25" DD 40-track
+   Double-step: OFF
+   300 kbps -> 250 kbps
+
+ 5.25" QD 80-track
+   Double-step: OFF
+   300 kbps -> 250 kbps
+
+ 5.25" HD 80-track
+   Double-step: OFF
+
+ 3.5" DD 80-track
+   Double-step: OFF
+   300 kbps -> 250 kbps
+
+ 3.5" HD 80-track
+   Double-step: OFF
+   300 kbps -> 250 kbps

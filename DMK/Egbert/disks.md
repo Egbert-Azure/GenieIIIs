@@ -27,9 +27,6 @@
 - egcpm28.dmk - lesbar;content: "Diskettenweitwurf" Volker & Egbert
 - egcpm29.dmk - lesbar;content: "Diskettenweitwurf" Volker & Egbert & Fritz
 - egcpm30.dmk - lesbar;content: DFUE stuff
-- egcpm31.dmk - damaged/nich lesbar; Holte CP/M System src fuer 20 MB HD
-- egcpm32.dmk - lesbar;content: Wordstar und Brief fritzeflink (Fritz, solltest Du loeschen, da steht ne Kontonummer drin)
-- egcpm33.dmk - damaged/nich lesbar; Systemerstellung ZPM3
 - egcpm34.dmk - lesbar;content: Systemerstellung Testdisk
 - egcpm35.dmk - damaged/nich lesbar vom Holte CP/M aus; CP/M 2.2 Kaempf fuer Genie IIIs
 - egcpm36.dmk - damaged/nich lesbar vom Holte CP/M aus; CP/M 3.0 Kaempf fuer Genie IIIs

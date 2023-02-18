@@ -1,19 +1,15 @@
 ## Holte virtual disks for Emulator:
 
-- egcpm01.dmk - lesbar; content: CP/M 3.0 plus. Bootdiskette Holte CP/M mit Seagate ST225 und OMTI Controller
-- egcpm02.dmk - damaged/nicht lesbar; content: Systemerstellung Disk/HD-Boot
-- egcpm03.dmk - lesbar; content: CP/M 3.0; Systemerstellung; Originalzustand, fuer original Tandon TM252 harddisk
-- egcpm04.dmk - lesbar; content: Systemdisk; Originalzustand
-- egcpm05.dmk - damaged/nich lesbar; content: src files Holte CP/M 3.0 plus with Tandon TM252 harddisk
-- egcpm06.dmk - lesbar; content: Testprogramme zur Erstellung HD
-- egcpm07.dmk - Boot Disk mit ZPM3; on Github details about ZPM3 > wwarthen/CPU280: CPU280 System Software (github.com)
-- egcpm08.dmk - damaged/nich lesbar; content: C src code disk; Format Kaempf; 80DS/DD
-- egcpm09.dmk - lesbar; content: verschiedene Files von Volker Dose und Egbert; u.a. HRG Grafik Tests und makefile fuer ZPM3
-- egcpm10.dmk - damaged/nich lesbar; content: ?
-- egcpm11.dmk - lesbar; content: u.a. Pascal src fuer das HD park program; boot src von Volker Dose
-- egcpm12.dmk - lesbar; content: src code fuer 2 partitionen mit ST252 20MB
-- egcpm13.dmk - lesbar; content: src code noch nicht korrigiert/angepasst fuer 1 partition mit ST252 20MB und mit ramdisk
-- egcpm14.dmk - lesbar; content: INITW src fuer verschiedene Festplatten
+- egcpm01.dmk - CP/M 3.0 plus. boot disk with Holte CP/M 3.0; Seagate ST225 and OMTI Controller
+- egcpm03.dmk - CP/M 3.0; system development boot disk; origin with Tandon TM252 harddisk
+- egcpm04.dmk - CP/M 3.0; system disk
+- egcpm06.dmk - test program using HD with Genie IIIs
+- egcpm07.dmk - Boot Disk with ZPM3; on Github details about ZPM3 > wwarthen/CPU280: CPU280 System Software (github.com)
+- egcpm09.dmk - verschiedene Files von Volker Dose und Egbert; u.a. HRG Grafik Tests und makefile fuer ZPM3
+- egcpm11.dmk - u.a. Pascal src for HD park program; boot src Volker Dose
+- egcpm12.dmk - src code for partition Seagate ST252 20MB
+- egcpm13.dmk - origin src code 1 partition with ST252 20MB and ramdisk
+- egcpm14.dmk - INITW src for different harddisks
 - egcpm15.dmk - lesbar; content: UUCP stuff > stands for Unix-to-Unix Copy; allowing remote execution of commands and transfer of files, emails
 - egcpm16.dmk - lesbar; content: angepasstes Wordstar
 - egcpm17.dmk - lesbar; content: unzip, unarj, unarc

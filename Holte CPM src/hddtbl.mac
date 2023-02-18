@@ -1,0 +1,70 @@
+	title	'Harddisk DPHs and DPBs for CP/M-3 BIOS'
+
+
+	public	hdsk0,hdsk1,hdsk2,hdsk3
+
+	extrn   hdlogi,hdinit,hd1ini	; hard-disk routines
+	extrn	hdwrit,hdread
+
+;	maclib	pkonfig
+	maclib	xcpm3			; mit hdpb fuer grosse Drives
+
+;	fuer Harddisks mit 6 Koepfen und 820 Zylindern
+;	Seagate ST 251
+
+	dseg			; banked
+
+        hdskew   equ      0; Skew durch Formatierung vorbelegt!
+
+
+
+; Extended Disk Parameter Headers (XDPHs).
+
+; hard disk dph's
+	dw	hdwrit 		; Routinen in HD2.MAC
+	dw	hdread
+	dw	hdlogi
+	dw	hdinit
+	db	7		; relative harddisk 0
+	db	0		; media flag	: not used
+hdsk0 	dph     hdskew,hddpb0,0
+
+	dw	hdwrit
+ 	dw	hdread
+ 	dw	hdlogi
+ 	dw	hd1ini
+ 	db	8		; relative harddisk 1
+	db	0		; media flag	: not used
+hdsk1 	dph	hdskew,hddpb1,0
+
+	dw	hdwrit
+ 	dw	hdread
+ 	dw	hdlogi
+ 	dw	hd1ini
+ 	db	9		; relative harddisk 2
+	db	0		; media flag	: not used
+hdsk2 	dph	hdskew,hddpb2,0
+
+	dw	hdwrit
+ 	dw	hdread
+ 	dw	hdlogi
+ 	dw	hd1ini
+ 	db	10		; relative harddisk 3
+	db	0		; media flag	: not used
+hdsk3 	dph	hdskew,hddpb3,0
+
+	cseg			; DPB mu~ resident sein
+
+; hard disk parameter block macros hdpb
+;	zur korrekten Berechnung der HDPB's ist das spezielle
+;	XCPM3.LIB von Peter Petersen zu verwenden
+	
+hddpb0	hdpb	512,182,183,4096,2048,1,8000h	; partition 0
+
+hddpb1	hdpb	512,182,366,4096,2048,183,8000h	; partition 1
+
+hddpb2	hdpb	512,182,549,4096,2048,366,8000h	; partition 2
+
+hddpb3	hdpb	512,182,733,4096,2048,549,8000h	; partition 3
+
+        end

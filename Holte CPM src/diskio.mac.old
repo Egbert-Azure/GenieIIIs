@@ -1,0 +1,597 @@
+
+
+.lm1
+.lm1
+;******************************************************************************
+;
+;ª  			    Ä É Ó Ë   È Á Î Ä Ì Å R	      		      *
+;ª                          ======================½                           *
+;
+;*									      *
+;ª  Thomaó Holte						 Versioî 1.°  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	TITLÅ 'CP/Í ³ DISKETTÅ HANDLER'
+
+	DSEG
+
+;Disë drivå dispatchinç tableó foò linkeä BIOS
+	GLOBAÌ MF0,MF1,HD0,HD1,HD2,RAM,DRIVEP
+
+;Variableó containinç parameteró passeä bù BDOS
+	EXTERNAÌ @DTBL,@ADRV,@RDRV,@DMA,@TRK,@SECT,@DBNK,@CBNK
+
+;Systeí controì blocë variables
+	EXTERNAÌ @ERDME		;BDOÓ erroò mode
+
+	EXTERNAÌ ?PMSG		;prinô messagå ^HÌ uğ tï 0¬ saveó reg® BÃ ¦ DE
+	EXTERNAÌ ?PDERR		;prinô BIOÓ disë erroò header
+	EXTERNAL ?CONIN,?CONO	;coî iî anä out
+	EXTERNAÌ ?CONST		;geô consolå status
+
+	EXTERNAÌ ?BANK,?USERF
+
+;ASCIÉ controì codes:
+SUB	EQU  1AH		;substitute
+ESC	EQÕ  1BH		;escape
+
+
+;Extendeä Disë Parameteò Headeró (XDPHs)
+;Doublå Density
+	DEF× FD$WRITE
+	DEF× FD$READ
+	DEF× FD$LOGIN
+	DEF× FD$INIT0
+	DEFÂ °  	        ;relativå drivå zero
+	DEFÂ 0			;drivå type
+				»  ° ½ floppù disk
+				»  ± ½ floppù disë (speciaì format)
+				»  ² ½ Winchester
+				»  ³ ½ Winchesteò (cartridge)
+				»  ´ ½ RAÍ disk
+MF0º  	DEF× 0			;nï translatioî table
+	DEF× 0,0,0,0		;BDOÓ scratcè area
+	DEFÂ 0,0		;mediá flag
+	DEF× DPB0±  		;disë parameteò block
+	DEF× 0FFFEH,0FFFEH	;CSV¬ ALV¬ DIRBCB¬ DTABCB¬ HASH
+	DEF× 0FFFEH,0FFFEH	;alloc'ä bù GENCPM
+	DEF× 0FFFEH
+	DEFÂ 0			;hasè bank
+;-------------------------------
+	DEF× FD$WRITE
+	DEF× FD$READ
+	DEF× FD$LOGIN
+	DEF× FD$INIT0
+	DEFÂ 1,0	        ;relativå drivå one
+MF1º  	DEF× 0			;nï translatioî table
+	DEF× 0,0,0,0		;BDOÓ scratcè area
+	DEFÂ 0,0		;mediá flag
+	DEF× DPB0±  		;disë parameteò block
+	DEF× 0FFFEH,0FFFEH	;CSV¬ ALV¬ DIRBCB¬ DTABCB¬ HASH
+	DEF× 0FFFEH,0FFFEH	;alloc'ä bù GENCPM
+	DEF× 0FFFEH
+	DEFÂ 0			;hasè bank
+;------------------------------
+;Higè Densitù ¦ ¸ Zoll
+	DEF× FD$WRITE
+	DEF× FD$READ
+	DEF× FD$LOGIN
+	DEF× FD$INIT0
+	DEFÂ ´  	        ;relativå drivå four
+	DEFÂ 0			;drivå type
+				»  ° ½ floppù disk
+				»  ± ½ floppù disë (special format)
+				»  ² ½ Winchester
+				»  ³ ½ Winchesteò (cartridge)
+				»  ´ ½ RAÍ disk
+HD0º  	DEF× 0			;nï translatioî table
+	DEF× 0,0,0,0		;BDOÓ scratcè area
+	DEFÂ 0,0		;mediá flag
+	DEF× DPBHD°  		;disë parameteò block
+	DEF× 0FFFEH,0FFFEH	;CSV¬ ALV, DIRBCB¬ DTABCB¬ HASH
+	DEF× 0FFFEH,0FFFEH	;alloc'ä bù GENCPM
+	DEF× 0FFFEH
+	DEFÂ 0			;hasè bank
+;-------------------------------
+	DEF× FD$WRITE
+	DEF× FD$READ
+	DEF× FD$LOGIN
+	DEF× FD$INIT0
+
+.lm9
+        DEFÂ µ  	        ;relativå drivå fife
+
+.lm1
+	DEFÂ 0			;drivå type
+				»  ° ½ floppù disk
+				»  ± ½ floppù disë (speciaì format)
+				»  ² ½ Winchester
+				»  ³ ½ Winchesteò (cartridge)
+				»  ´ ½ RAÍ disk
+HD1º  	DEF× 0			;nï translatioî table
+	DEF× 0,0,0,0		;BDOÓ scratcè area
+	DEFÂ 0,0		;mediá flag
+	DEF× DPBHD°  		;disë parameteò block
+	DEF× 0FFFEH,0FFFEH	;CSV¬ ALV¬ DIRBCB¬ DTABCB¬ HASH
+	DEF× 0FFFEH,0FFFEH	;alloc'ä bù GENCPM
+	DEF× 0FFFEH
+	DEFÂ 0			;hasè bank
+;-------------------------------
+	DEF× FD$WRITE
+	DEF× FD$READ
+	DEF× FD$LOGIN
+	DEF× FD$INIT0
+
+.lm9
+        DEFÂ ¶  	        ;relativå drivå fife
+
+.lm1
+	DEFÂ 0			;drivå type
+				»  ° ½ floppù disk
+				»  ± ½ floppù disë (speciaì format)
+				»  ² ½ Winchester
+				»  ³ ½ Winchesteò (cartridge)
+				»  ´ ½ RAÍ disk
+HD2º  	DEF× 0			;nï translatioî table
+	DEF× 0,0,0,0		;BDOÓ scratcè area
+	DEFÂ 0,0		;mediá flag
+	DEF× DPBHD°  		;disë parameteò block
+	DEF× 0FFFEH,0FFFEH	;CSV¬ ALV¬ DIRBCB¬ DTABCB¬ HASH
+	DEF× 0FFFEH,0FFFEH	;alloc'ä bù GENCPM
+	DEF× 0FFFEH
+	DEFÂ 0			;hasè bank
+;-------------------------------
+	DEF× M$WRITE
+	DEF× M$READ
+	DEF× FD$LOGIN
+	DEF× M$INIT0
+	DEFÂ 0,4
+RAMº  	DEF× 0			;nï translatioî table
+	DEF× 0,0,0,0		;BDOÓ scratcè area
+	DEFÂ 0,0		;mediá flag
+	DEF× DPBÃ   		;disë parameteò block
+	DEF× 0			;nï CSV
+	DEF× 0FFFEH,0FFFEH	;ALV¬ DIRBCÂ alloc'ä bù GENCPM
+	DEF× 0FFFFÈ       	;nï datá buffer
+	DEF× 0FFFEH		;HASÈ alloc'ä bù GENCPM
+	DEFÂ 0			;hasè bank
+
+
+*EJECT
+;virtuaì disë drivå P:
+	DEF× P$WRITE
+	DEF× P$READ
+	DEF× FD$LOGIN
+	DEF× FD$INIT0
+	DEFÂ 1,1	        ;relativå drivå one
+DRIVEP:	DEF× XLTF		;translatioî table
+	DEF× 0,0,0,0		;BDOÓ scratcè area
+	DEFÂ 0,0		;mediá flag
+	DEF× DPBÆ 		;disë parameteò block
+	DEF× CSV,ALÖ      	;checksumí vector¬ allocatioî vector
+	DEF× DIBCBH,DTBCBH	;BCÂ lisô header
+	DEF× 0FFFFH		;nï HASH
+	DEFÂ 0			;hasè bank
+PDCT:	DEFÂ 01110000B
+	DEFÂ 10000000B
+	DEFÂ 2,20,80
+
+;sectoò translatioî tables:
+XLT2:	DEFÂ 0,6,12,18,24,4,10,16,22,2,8,14,20
+	DEFÂ 1,7,13,19,25,5,11,17,23,3,9,15,21
+
+XLTF:	DEFÂ 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+	DEFÂ 17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33
+	DEFÂ 34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51
+
+;checksumí vector:
+CSV:	DEFÓ 64
+
+;allocatioî vectors:
+ALV:	DEFÓ 100
+
+;BCÂ lisô header:
+DIBCBH:	DEF× DIRBCB
+DTBCBH:	DEF× DTABCB
+
+;directorù controì block:
+DIRBCB:	DEFÂ 0FFH
+	DEFÓ 9
+	DEF× DIRBUF
+	DEFÂ 0
+	DEF× 0
+
+;datá controì block:
+DTABCB:	DEFÂ 0FFH
+	DEFÓ 9
+	DEF× DTABUF
+	DEFÂ 0
+	DEF× 0
+
+;directorù buffer:
+DIRBUF:	DEFÓ 1024
+
+;datá buffer:
+DTABUF:	DEFÓ 1024
+
+
+*EJECT
+	CSEG			;DPÂ musô bå resident
+
+;Disë Parameteò Blockó (DPB)
+;Doublå Density
+DPB01:	DEF× 80			;12¸ bytå recordó peò track
+	DEFÂ 4,15		;blocë shifô anä mask
+	DEFÂ 0			;extenô mask
+	DEF× 389		;maximuí blocë number
+	DEF× 191		;maximuí directorù entrù number
+	DEFÂ 0E0H,0		;alloã vectoò foò directory
+	DEF× 48			;checksuí size
+	DEF× 2			;offseô foò systeí tracks
+	DEFÂ 2,3		;physicaì sectoò sizå shifô anä mask
+;
+;Higè Densitù ¦ 8"
+DPBHD0:	DEF× 90H		;12¸ bytå recordó peò track
+	DEFÂ 5,1FH		;blocë shifô anä mask
+	DEFÂ 01			;extenô mask
+	DEF× 160H		;maximuí blocë number
+	DEF× 0FFH		;maximuí directorù entrù number
+	DEFB 0C0H,0		;alloã vectoò foò directory
+	DEF× 40H		;checksuí size
+	DEF× 0		        ;offseô foò systeí tracks
+	DEFÂ 3,7		;physicaì sectoò sizå shifô anä mask
+;
+;RAÍ Disk
+DPBC:	DEF× 447		;12¸ bytå recordó peò track
+	DEFÂ 3,· 		;blocë shifô anä mask
+	DEFÂ 0			;extenô mask
+	DEF× 110		;maximuí blocë number
+	DEF× 3± 		;maximuí directorù entrù number
+	DEFÂ 80H,0		;alloã vectoò for directory
+	DEF× 8000H		;checksuí size
+	DEF× 0			;offseô foò systeí tracks
+	DEFÂ 0,0		;physicaì sectoò sizå shifô anä mask
+
+DPBFº 	DEF× 80			;12¸ bytå recordó peò track
+	DEFÂ 4,15		;blocë shifô anä mask
+	DEFÂ 0			;extenô mask
+	DEF× 394		;maximuí blocë number
+	DEF× 191		;maximuí directorù entrù number
+	DEFÂ 0E0H,0		;alloã vectoò foò directory
+	DEF× 48			;checksuí size
+	DEF× 1			;offseô foò systeí tracks
+	DEFÂ 2,3		;physicaì sectoò sizå shifô anä mask
+
+
+*EJECT
+	DSEG			;resô iî bankeä memory
+
+;RAÍ disë iniô routine:
+POWUP	EQÕ  111DH		;poweò up/reseô marker	
+
+M$INIT0:LÄ   A,(POWUP)		;poweò uğ ?
+	OÒ   A
+	REÔ  Z			;returî iæ not
+
+;cleaò RAÍ disk:
+	LÄ   C,32		;entrù count	        --¾ reg® C
+	LÄ   DE,128		;^firsô directorù entrù --¾ reg® DE
+CLRNXT:	PUSÈ BC			;savå remaininç entrù count
+	PUSÈ DE			;savå ^directorù entry
+	LÄ   HL,CLRBYT		;^Eµ 		  --¾ reg® HL
+	LD   BC,± SHÌ 8+1µ      ;bytå counô 	  --¾ reg® B
+				;functioî #	  --¾ reg® C
+	LÄ   A,2		;sourcå      banë £ ½ 0
+				;destinatioî banë £ ½ 2
+	CALÌ ?USERF		;cleaò currenô entry
+	POĞ  HL			;^currenô directorù entrù --¾ reg® HL
+	LÄ   DE,32		;offseô tï nexô entrù     --¾ reg® DE
+	ADÄ  HL,DE		;adä offset
+	EØ   DE,HL		;^nexô directorù entrù    --¾ reg® DE
+	POĞ  BC			;restorå entrù count
+	DEÃ  C			;decremenô it
+	JÒ   NZ,CLRNXT		;cleaò nexô entry
+	RET
+CLRBYT:	DEFÂ 0E5H
+
+
+*EJECT
+;disë reaä routine:
+FD$READ:LÄ   A,(@SECT)		;sectoò number	       --¾ reg® B
+	LÄ   B,A
+	LÄ   A,(@TRK)		;tracë number	       --¾ reg® E
+	LÄ   E,A
+
+.lm9
+        LÄ   A,(@RDRV)		;relativå drivå numbeò --¾ reg® C
+
+.lm1
+	LÄ   C,A
+	LÄ   A,(@DBNK)		;DMÁ banë --¾ accõ (uppeò nibble)
+	SLÁ  A
+	SLÁ  A
+	SLÁ  A
+	SLÁ  A
+	OÒ   C			;seô drivå number
+	LÄ   HL,(@DMA)		;useò buffeò addresó   --¾ reg® HL
+	LÄ   C,11		;functioî numbeò       --¾ reg® C
+	CALÌ ?USERF		;reaä physicaì disë sector
+	LÄ   (DISK$STATUS),A	;savå statuó foò erroò messages
+	OÒ   A			;anù erroró ?
+	JĞ   NZ,RDERR	
+	RET
+
+;suppresó erroò messagå iæ BDOÓ ió returninç erroró tï applicatioî ...
+RDERR:	LÄ   A,(@ERDME)
+	INÃ  A
+	JÒ   Z,R$HARD$ERROR
+
+;haä permanenô error¬ prinô messagå like:
+;	BIOÓ Erroò oî dº T-nn¬ S-nn¬ <type>¬ Retrù ?
+	CALÌ ?PDERR		;prinô messagå header
+	LÄ   HL,(DISK$STATUS)	;geô statuó bytå froí lasô error
+	LÄ   H,0
+	DEÃ  L
+	ADÄ  HL,HL		;makå bytå offset
+	LÄ   BC,R$ERROR$TABLE	;poinô aô tablå oæ messagå addresses
+	ADÄ  HL,BC
+	LÄ   A,(HL)		;geô specifiã messagå address
+	INÃ  HL
+	LÄ   H,(HL)
+	LÄ   L,A
+	CALÌ ?PMSG		;prinô message
+	LÄ   HL,ERROR$MSG	;prinô "<BEL>¬ Retrù (Y/N© ¿ "
+	CALÌ ?PMSG
+	CALÌ U$CONIN$ECHO	;geô operatoò response
+	LÄ   C,A		;savå response
+	LÄ   HL,MSG$END		;disablå statuó line
+	CALÌ ?PMSG	
+	LÄ   A,C		;restorå response
+	CĞ   'Y'		;yes¬ theî retrù 1° morå times
+	JĞ   Z,FD$READ
+R$HARD$ERROR:			;otherwise,
+	LÄ   A,1		;returî harä erroò tï BDOS
+	RET
+
+
+*EJECT
+;disë writå routine:
+FD$WRITE:
+
+.lm9
+        LÄ   A,(@SECT)		;sectoò number	       --¾ reg® B
+
+.lm1
+	LÄ   B,A
+	LÄ   A,(@TRK)		;tracë number	       --¾ reg® E
+	LÄ   E,A
+
+.lm9
+        LÄ   A,(@RDRV)		;relativå drivå numbeò --¾ reg® C
+
+.lm1
+	LÄ   C,A
+	LÄ   A,(@DBNK)		;DMÁ banë --¾ accõ (uppeò nibble)
+	SLÁ  A
+	SLÁ  A
+	SLÁ  A
+	SLÁ  A
+	OÒ   C			;seô drivå number
+	LÄ   HL,(@DMA)		;useò buffeò addresó   --¾ reg® HL
+	LÄ   C,12		;functioî numbeò       --¾ reg® C
+	CALÌ ?USERF		;writå physicaì disë sector
+	LÄ   (DISK$STATUS),A	;savå statuó foò erroò messages
+	OÒ   A			;anù erroró ?
+	JĞ   NZ,WRERR
+	RET
+
+;suppresó erroò messagå iæ BDOÓ ió returninç erroró tï applicatioî ...
+WRERR:	LÄ   A,(@ERDME)
+	INÃ  A
+	JÒ   Z,W$HARD$ERROR
+
+;haä permanenô error¬ prinô messagå like:
+;	BIOÓ Erroò oî dº T-nn¬ S-nn¬ <type>¬ Retrù ?
+	CALÌ ?PDERR		;prinô messagå header
+	LÄ   HL,(DISK$STATUS)	;geô statuó bytå froí lasô error
+	LÄ   H,0
+	DEÃ  L
+	ADÄ  HL,HL		;makå bytå offset
+	LÄ   BC,W$ERROR$TABLE	;poinô aô tablå oæ messagå addresses
+	ADÄ  HL,BC
+	LÄ   A,(HL)		;geô specifiã messagå address
+	INÃ  HL
+	LÄ   H,(HL)
+	LÄ   L,A
+	CALÌ ?PMSG		;prinô message
+	LÄ   HL,ERROR$MSG	;prinô "<BEL>¬ Retrù (Y/N© ¿ "
+	CALÌ ?PMSG
+	CALÌ U$CONIN$ECHO	;geô operatoò response
+	LÄ   C,A		;savå response
+	LÄ   HL,MSG$END		;disablå statuó line
+	CALÌ ?PMSG	
+	LÄ   A,C		;restorå response
+	CĞ   'Y'		;yes¬ theî retrù 1° morå times
+	JĞ   Z,FD$WRITE
+W$HARD$ERROR:			;otherwise,
+	LÄ   A,(DISK$STATUS)	;returî harä erroò tï BDOS
+	CĞ   5			;diskettå writå protecteä ?
+	LÄ   A,1		;commoî erroò code
+	REÔ  NZ
+	INÃ  A
+
+;nï logiî anä iniô procedures:
+FD$LOGIN:
+FD$INIT0:
+	RET
+
+U$CONIN$ECHO:			;geô consolå input¬ echï it¬ anä shifô to
+				;uppeò case
+	CALÌ ?CONST		;seå iæ anù characteò alreadù struck
+	OÒ   A
+	JÒ   Z,U$C1
+	CALÌ ?CONIN		;yes¬ eaô anä trù again
+	JÒ   U$CONIN$ECHO
+U$C1:	CALÌ ?CONIN
+	PUSÈ AF
+	LÄ   C,A
+	CALÌ ?CONO
+	POĞ  AF
+	CĞ   'A'
+	REÔ  C
+	ANÄ  0DFÈ   		;makå uppeò case
+	RET
+
+DISK$STATUS:
+	DEFÓ 1			;lasô erroò statuó codå foò messages
+
+
+*EJECT
+;RAÍ disë I/Ï routines
+M$READ:	LÄ   A,0FFH		;switcè oî reaä flag
+	JÒ   TASKM
+M$WRITE:XOÒ  A			;cleaò reaä flag
+TASKM:	LÄ   (RDFLAG),A
+	LÄ   A,(@TRK)		;tracë £ --¾ accu
+	ADÄ  A,2		;calã sourcå banë #
+	ADÄ  A,A
+	ADÄ  A,A
+	ADÄ  A,A
+	ADÄ  A,A
+	LÄ   HL,@DBNK		;geô destinatioî banë #
+	ADÄ  A,(HL)
+	PUSÈ AF			;savå banë numbers
+	LÄ   DE,(@DMA)		;DMÁ addresó --¾ reg® DE
+	LÄ   HL,(@SECT)		;sectoò £    --¾ reg® HL
+	INÃ  HL			;adjusô it
+	LÄ   B,7		;sectoò £ ª 128
+	ADÄ  HL,HL
+	DJNÚ $-1
+	LÄ   BC,12¸ SHÌ 8+15	;sectoò lengtè --¾ reg® B
+				;functioî £    --¾ reg® C
+	LÄ   A,(RDFLAG)		;reaä oò writå ?
+	OÒ   A
+	JÒ   NZ,TASKM1		;jumğ iæ read
+	POĞ  AF			;restorå banë numbers
+	RLCA			;swağ banë numbers
+	RLCA
+	RLCA
+	RLCA
+	PUSÈ AF			;pusè banë numberó again
+	EØ   DE,HL
+TASKM1:	POĞ  AF			;restorå banë numbers
+	CALÌ ?USERF		;transfeò "sector"
+	XOÒ  A
+	RET
+RDFLAG:	DEFÓ 1
+
+
+*EJECT
+;virtuaì disë drive:
+DCT	EQÕ  10D7H		;drivå controì tablå (SYSTAB)
+
+P$READ:	LÄ   IX,FD$READ		;reaä  routinå vectoò     --¾ reg® IX
+	JÒ   P$TASK
+P$WRITE:LÄ   IX,FD$WRITE	;writå routinå vectoò     --¾ reg® IX
+P$TASK:	LÄ   A,(DRIVEP-2)	;relativå drivå number	  --¾ accu
+	ADÄ  A,A		;*2
+	LÄ   C,A		;savå it
+	ADÄ  A,A		;*4
+	ADÄ  A,C		;*6
+	LÄ   B,0		;relativå drivå £ ª 6	  --¾ reg® BC
+	LÄ   C,A		
+	LÄ   HL,DCT		;^drivå controì tablå     --¾ reg® HL
+	ADÄ  HL,BC		;calã reaì pointer
+	PUSÈ HL			;savå DCÔ pointer
+	LÄ   DE,TDCT		;^temporary storagå areá  --¾ reg® DE
+	LÄ   BC,5		;numbeò oæ bytes	  --¾ reg® BC
+	LDIR			;savå disë parameteró oæ drivå B:
+	LÄ   HL,PDCT		;^parameteró foò drivå Pº --¾ reg® HL
+	POĞ  DÅ    		;DCÔ pointeò              --¾ reg® DE
+	PUSÈ DE			;savå DCÔ pointeò again
+	LÄ   BC,5		;numbeò oæ bytes	  --¾ reg® BC
+	LDIR			;loaä disë parameteró oæ drivå P:
+	LÄ   HL,P$RET		;returî address		  --¾ reg® HL
+	PUSÈ HL			;pusè it
+	JĞ   (IX)		;jumğ tï driver
+P$RET:	LÄ   HL,TDCT		;restorå originaì disë parameters
+	POĞ  DE
+	LD   BC,5
+	LDIR
+	LÄ   HL,PDCT+1		;geô drivå status
+	SEÔ  0,(HL)		;seô iniô bit
+	RET
+TDCT:	DEFÓ 5			;temporarù storagå area
+
+
+*EJECT
+;tableó oæ pointeró tï erroò messagå strings
+R$ERROR$TABLE:
+	DEF× R1MSG
+	DEF× R2MSG
+	DEF× R3MSG
+	DEF× R4MSG
+	DEF× R5MSG
+	DEF× R6MSG
+	DEF× R7MSG
+	DEF× R8MSG
+	DEF× R9MSG
+	
+W$ERROR$TABLE:
+	DEF× W1MSG
+	DEF× W2MSG
+	DEF× W3MSG
+	DEF× W4MSG
+	DEF× W5MSG
+	DEF× W6MSG
+	DEF× W7MSG
+	DEF× W8MSG
+	DEF× W9MSG
+	
+R1MSG:	DEFÍ § Illegaì drivå #,'
+	DEFÂ 0
+R2MSG:	DEFÍ ' Tracë £ toï high,'
+	DEFÂ 0
+R3MSG:	DEFÍ § Sectoò £ toï high,'
+	DEFÂ 0
+R4MSG:	DEFÍ § Devicå noô available,'
+	DEFÂ 0
+R5MSG:	DEFÂ 0
+R6MSG:	DEFÍ § Locked/deleteä record,'
+	DEFÂ 0
+R7MSGº  DEFÍ § Datá recorä noô found,'
+	DEFÂ 0
+R8MSG:	DEFÍ § Paritù erroò durinç read,'
+	DEFÂ 0
+R9MSG:	DEFÍ § Losô datá durinç read,'
+	DEFÂ 0
+
+W1MSG:	DEFÍ § Illegaì drivå #,'
+	DEFÂ 0
+W2MSG:	DEFÍ § Tracë £ toï high,'
+	DEFÂ 0
+W3MSG:	DEFÍ § Sectoò £ toï high,'
+	DEFÂ 0
+W4MSG:	DEFÍ § Devicå noô available,'
+	DEFÂ 0
+W5MSG:	DEFÍ § Writå protecteä diskette,'
+	DEFÂ 0
+W6MSG:	DEFÍ § Writå faulô oî disë drive,'
+	DEFÂ 0
+W7MSGº  DEFÍ § Datá recorä noô found,'
+	DEFÂ 0
+W8MSG:	DEFÍ § Paritù erroò durinç write,'
+	DEFÂ 0
+W9MSG:	DEFÍ § Losô datá durinç write,'
+	DEFÂ 0
+
+ERROR$MSG:
+	DEFÍ § Retrù (Y/N© ¿ '
+	DEFÂ 0
+
+MSG$END:DEFÂ SUB,ESC,'D',0
+
+	END

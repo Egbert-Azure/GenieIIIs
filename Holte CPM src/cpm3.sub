@@ -1,0 +1,25 @@
+x80
+<=BNKBIOS
+<=SCB
+<=BOOT
+<=CHARIO
+<=MOVE
+<=DRVTBL
+<=DISKIO
+<=hd2 
+<
+
+LINK BNKBIOS3[B,NR]=BNKBIOS,SCB,BOOT,CHARIO,MOVE,hd2,DRVTBL,DISKIO
+
+GENCPM AUTO
+
+ERA BNKBIOS.REL
+ERA SCB.REL
+ERA BOOT.REL
+ERA CHARIO.REL
+ERA MOVE.REL
+era hd2.rel
+ERA DRVTBL.REL
+ERA DISKIO.REL
+ERA BNKBIOS3.SPR
+

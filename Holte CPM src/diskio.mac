@@ -1,0 +1,574 @@
+;******************************************************************************
+;*  D I S K I O  *  C P M S Y S 4 f  *  T h o m a s   H o l t e * 8 5 0 7 2 3 *
+;******************************************************************************
+;*                                                                            *
+;*                           D I S K   H A N D L E R                          *
+;*                           =======================                          *
+;*                                                                            *
+;*                                                                            *
+;*  Thomas Holte                                            Version 1.0       *
+;*                                                                            *
+;******************************************************************************
+
+        
+        TITLE 'CP/M 3 DISKETTE HANDLER'
+
+        DSEG
+
+;Disk drive dispatching tables for linked BIOS
+        GLOBAL MF0,MF1,HD0,HD1,HD2,RAM,DRIVEP
+
+;Variables containing parameters passed by BDOS
+        EXTERNAL @DTBL,@ADRV,@RDRV,@DMA,@TRK,@SECT,@DBNK,@CBNK
+
+;System control block variables
+        EXTERNAL @ERDME          ;BDOS error mode
+
+        EXTERNAL ?PMSG           ;print message ^HL up to 0, saves reg. BC & DE
+        EXTERNAL ?PDERR          ;print BIOS disk error header
+        EXTERNAL ?CONIN,?CONO    ;con in and out
+        EXTERNAL ?CONST          ;get console status
+
+        EXTERNAL ?BANK,?USERF
+
+;ASCII control codes:
+SUB     EQU  1AH          ;substitute
+ESC     EQU  1BH          ;escape
+
+
+;Extended Disk Parameter Headers (XDPHs)
+;Double Density
+        DEFW FD$WRITE
+        DEFW FD$READ
+        DEFW FD$LOGIN
+        DEFW FD$INIT0
+        DEFB 0             ;relative drive zero
+        DEFB 0                   ;drive type
+                                ;  0 = floppy disk
+                                ;  1 = floppy disk (special format)
+                                ;  2 = Winchester
+                                ;  3 = Winchester (cartridge)
+                                ;  4 = RAM disk
+MF0:      DEFW 0                   ;no translation table
+        DEFW 0,0,0,0             ;BDOS scratch area
+        DEFB 0,0         ;media flag
+        DEFW DPB01                 ;disk parameter block
+        DEFW 0FFFEH,0FFFEH       ;CSV, ALV, DIRBCB, DTABCB, HASH
+        DEFW 0FFFEH,0FFFEH       ;alloc'd by GENCPM
+        DEFW 0FFFEH
+        DEFB 0                   ;hash bank
+;-------------------------------
+        DEFW FD$WRITE
+        DEFW FD$READ
+        DEFW FD$LOGIN
+        DEFW FD$INIT0
+        DEFB 1,0         ;relative drive one
+MF1:      DEFW 0                   ;no translation table
+        DEFW 0,0,0,0             ;BDOS scratch area
+        DEFB 0,0         ;media flag
+        DEFW DPB01                 ;disk parameter block
+        DEFW 0FFFEH,0FFFEH       ;CSV, ALV, DIRBCB, DTABCB, HASH
+        DEFW 0FFFEH,0FFFEH       ;alloc'd by GENCPM
+        DEFW 0FFFEH
+        DEFB 0                   ;hash bank
+;------------------------------
+;High Density & 8 Zoll
+        DEFW FD$WRITE
+        DEFW FD$READ
+        DEFW FD$LOGIN
+        DEFW FD$INIT0
+        DEFB 4             ;relative drive four
+        DEFB 0                   ;drive type
+                                ;  0 = floppy disk
+                                ;  1 = floppy disk (special format)
+                                ;  2 = Winchester
+                                ;  3 = Winchester (cartridge)
+                                ;  4 = RAM disk
+HD0:      DEFW 0                   ;no translation table
+        DEFW 0,0,0,0             ;BDOS scratch area
+        DEFB 0,0         ;media flag
+        DEFW DPBHD0                ;disk parameter block
+        DEFW 0FFFEH,0FFFEH       ;CSV, ALV, DIRBCB, DTABCB, HASH
+        DEFW 0FFFEH,0FFFEH       ;alloc'd by GENCPM
+        DEFW 0FFFEH
+        DEFB 0                   ;hash bank
+;-------------------------------
+        DEFW FD$WRITE
+        DEFW FD$READ
+        DEFW FD$LOGIN
+        DEFW FD$INIT0
+        DEFB 5             ;relative drive fife
+        DEFB 0                   ;drive type
+                                ;  0 = floppy disk
+                                ;  1 = floppy disk (special format)
+                                ;  2 = Winchester
+                                ;  3 = Winchester (cartridge)
+                                ;  4 = RAM disk
+HD1:      DEFW 0                   ;no translation table
+        DEFW 0,0,0,0             ;BDOS scratch area
+        DEFB 0,0         ;media flag
+        DEFW DPBHD0                ;disk parameter block
+        DEFW 0FFFEH,0FFFEH       ;CSV, ALV, DIRBCB, DTABCB, HASH
+        DEFW 0FFFEH,0FFFEH       ;alloc'd by GENCPM
+        DEFW 0FFFEH
+        DEFB 0                   ;hash bank
+;-------------------------------
+        DEFW FD$WRITE
+        DEFW FD$READ
+        DEFW FD$LOGIN
+        DEFW FD$INIT0
+        DEFB 6             ;relative drive fife
+        DEFB 0                   ;drive type
+                                ;  0 = floppy disk
+                                ;  1 = floppy disk (special format)
+                                ;  2 = Winchester
+                                ;  3 = Winchester (cartridge)
+                                ;  4 = RAM disk
+HD2:      DEFW 0                   ;no translation table
+        DEFW 0,0,0,0             ;BDOS scratch area
+        DEFB 0,0         ;media flag
+        DEFW DPBHD0                ;disk parameter block
+        DEFW 0FFFEH,0FFFEH       ;CSV, ALV, DIRBCB, DTABCB, HASH
+        DEFW 0FFFEH,0FFFEH       ;alloc'd by GENCPM
+        DEFW 0FFFEH
+        DEFB 0                   ;hash bank
+;-------------------------------
+        DEFW M$WRITE
+        DEFW M$READ
+        DEFW FD$LOGIN
+        DEFW M$INIT0
+        DEFB 0,4
+RAM:      DEFW 0                   ;no translation table
+        DEFW 0,0,0,0             ;BDOS scratch area
+        DEFB 0,0         ;media flag
+        DEFW DPBC                   ;disk parameter block
+        DEFW 0                   ;no CSV
+        DEFW 0FFFEH,0FFFEH       ;ALV, DIRBCB alloc'd by GENCPM
+        DEFW 0FFFFH             ;no data buffer
+        DEFW 0FFFEH              ;HASH alloc'd by GENCPM
+        DEFB 0                   ;hash bank
+
+
+*EJECT
+;virtual disk drive P:
+        DEFW P$WRITE
+        DEFW P$READ
+        DEFW FD$LOGIN
+        DEFW FD$INIT0
+        DEFB 1,1         ;relative drive one
+DRIVEP: DEFW XLTF                ;translation table
+        DEFW 0,0,0,0             ;BDOS scratch area
+        DEFB 0,0         ;media flag
+        DEFW DPBF                 ;disk parameter block
+        DEFW CSV,ALV           ;checksumm vector, allocation vector
+        DEFW DIBCBH,DTBCBH       ;BCB list header
+        DEFW 0FFFFH              ;no HASH
+        DEFB 0                   ;hash bank
+PDCT:   DEFB 01110000B
+        DEFB 10000000B
+        DEFB 2,20,80
+
+;sector translation tables:
+XLT2:   DEFB 0,6,12,18,24,4,10,16,22,2,8,14,20
+        DEFB 1,7,13,19,25,5,11,17,23,3,9,15,21
+
+XLTF:   DEFB 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+        DEFB 17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33
+        DEFB 34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51
+
+;checksumm vector:
+CSV:    DEFS 64
+
+;allocation vectors:
+ALV:    DEFS 100
+
+;BCB list header:
+DIBCBH: DEFW DIRBCB
+DTBCBH: DEFW DTABCB
+
+;directory control block:
+DIRBCB: DEFB 0FFH
+        DEFS 9
+        DEFW DIRBUF
+        DEFB 0
+        DEFW 0
+
+;data control block:
+DTABCB: DEFB 0FFH
+        DEFS 9
+        DEFW DTABUF
+        DEFB 0
+        DEFW 0
+
+;directory buffer:
+DIRBUF: DEFS 1024
+
+;data buffer:
+DTABUF: DEFS 1024
+
+
+*EJECT
+        CSEG                    ;DPB must be resident
+
+;Disk Parameter Blocks (DPB)
+;Double Density
+DPB01:  DEFW 80                  ;128 byte records per track
+        DEFB 4,15                ;block shift and mask
+        DEFB 0                   ;extent mask
+        DEFW 389         ;maximum block number
+        DEFW 191         ;maximum directory entry number
+        DEFB 0E0H,0              ;alloc vector for directory
+        DEFW 48                  ;checksum size
+        DEFW 2                   ;offset for system tracks
+        DEFB 2,3         ;physical sector size shift and mask
+;
+;High Density & 8"
+DPBHD0: DEFW 90H         ;128 byte records per track
+        DEFB 5,1FH               ;block shift and mask
+        DEFB 01                  ;extent mask
+        DEFW 160H                ;maximum block number
+        DEFW 0FFH                ;maximum directory entry number
+        DEFB 0C0H,0              ;alloc vector for directory
+        DEFW 40H         ;checksum size
+        DEFW 0                   ;offset for system tracks
+        DEFB 3,7         ;physical sector size shift and mask
+;
+;RAM Disk
+DPBC:   DEFW 447         ;128 byte records per track
+        DEFB 3,7          ;block shift and mask
+        DEFB 0                   ;extent mask
+        DEFW 110         ;maximum block number
+        DEFW 31           ;maximum directory entry number
+        DEFB 80H,0               ;alloc vector for directory
+        DEFW 8000H               ;checksum size
+        DEFW 0                   ;offset for system tracks
+        DEFB 0,0         ;physical sector size shift and mask
+
+DPBF:    DEFW 80                  ;128 byte records per track
+        DEFB 4,15                ;block shift and mask
+        DEFB 0                   ;extent mask
+        DEFW 394         ;maximum block number
+        DEFW 191         ;maximum directory entry number
+        DEFB 0E0H,0              ;alloc vector for directory
+        DEFW 48                  ;checksum size
+        DEFW 1                   ;offset for system tracks
+        DEFB 2,3         ;physical sector size shift and mask
+
+
+*EJECT
+        DSEG                    ;rest in banked memory
+
+;RAM disk init routine:
+POWUP   EQU  111DH                ;power up/reset marker    
+
+M$INIT0:LD   A,(POWUP)             ;power up ?
+        OR   A
+        RET  Z                    ;return if not
+
+;clear RAM disk:
+        LD   C,32          ;entry count             --> reg. C
+        LD   DE,128                ;^first directory entry --> reg. DE
+CLRNXT: PUSH BC                  ;save remaining entry count
+        PUSH DE                  ;save ^directory entry
+        LD   HL,CLRBYT             ;^E5               --> reg. HL
+        LD   BC,1 SHL 8+15      ;byte count    --> reg. B
+                                ;function #        --> reg. C
+        LD   A,2           ;source      bank # = 0
+                                ;destination bank # = 2
+        CALL ?USERF              ;clear current entry
+        POP  HL                   ;^current directory entry --> reg. HL
+        LD   DE,32         ;offset to next entry     --> reg. DE
+        ADD  HL,DE                ;add offset
+        EX   DE,HL         ;^next directory entry    --> reg. DE
+        POP  BC                   ;restore entry count
+        DEC  C                    ;decrement it
+        JR   NZ,CLRNXT             ;clear next entry
+        RET
+CLRBYT: DEFB 0E5H
+
+
+*EJECT
+;disk read routine:
+FD$READ:LD   A,(@SECT)             ;sector number          --> reg. B
+        LD   B,A
+        LD   A,(@TRK)              ;track number           --> reg. E
+        LD   E,A
+        LD   A,(@RDRV)             ;relative drive number --> reg. C
+        LD   C,A
+        LD   A,(@DBNK)             ;DMA bank --> accu (upper nibble)
+        SLA  A
+        SLA  A
+        SLA  A
+        SLA  A
+        OR   C                     ;set drive number
+        LD   HL,(@DMA)             ;user buffer address   --> reg. HL
+        LD   C,11          ;function number       --> reg. C
+        CALL ?USERF              ;read physical disk sector
+        LD   (DISK$STATUS),A       ;save status for error messages
+        OR   A                     ;any errors ?
+        JP   NZ,RDERR      
+        RET
+
+;suppress error message if BDOS is returning errors to application ...
+RDERR:  LD   A,(@ERDME)
+        INC  A
+        JR   Z,R$HARD$ERROR
+
+;had permanent error, print message like:
+;       BIOS Error on d: T-nn, S-nn, <type>, Retry ?
+        CALL ?PDERR              ;print message header
+        LD   HL,(DISK$STATUS)      ;get status byte from last error
+        LD   H,0
+        DEC  L
+        ADD  HL,HL                ;make byte offset
+        LD   BC,R$ERROR$TABLE      ;point at table of message addresses
+        ADD  HL,BC
+        LD   A,(HL)                ;get specific message address
+        INC  HL
+        LD   H,(HL)
+        LD   L,A
+        CALL ?PMSG               ;print message
+        LD   HL,ERROR$MSG  ;print "<BEL>, Retry (Y/N) ? "
+        CALL ?PMSG
+        CALL U$CONIN$ECHO        ;get operator response
+        LD   C,A           ;save response
+        LD   HL,MSG$END            ;disable status line
+        CALL ?PMSG       
+        LD   A,C           ;restore response
+        CP   'Y'           ;yes, then retry 10 more times
+        JP   Z,FD$READ
+R$HARD$ERROR:                   ;otherwise,
+        LD   A,1           ;return hard error to BDOS
+        RET
+
+
+*EJECT
+;disk write routine:
+FD$WRITE:
+        LD   A,(@SECT)             ;sector number          --> reg. B
+        LD   B,A
+        LD   A,(@TRK)              ;track number           --> reg. E
+        LD   E,A
+        LD   A,(@RDRV)             ;relative drive number --> reg. C
+        LD   C,A
+        LD   A,(@DBNK)             ;DMA bank --> accu (upper nibble)
+        SLA  A
+        SLA  A
+        SLA  A
+        SLA  A
+        OR   C                     ;set drive number
+        LD   HL,(@DMA)             ;user buffer address   --> reg. HL
+        LD   C,12          ;function number       --> reg. C
+        CALL ?USERF              ;write physical disk sector
+        LD   (DISK$STATUS),A       ;save status for error messages
+        OR   A                     ;any errors ?
+        JP   NZ,WRERR
+        RET
+
+;suppress error message if BDOS is returning errors to application ...
+WRERR:  LD   A,(@ERDME)
+        INC  A
+        JR   Z,W$HARD$ERROR
+
+;had permanent error, print message like:
+;       BIOS Error on d: T-nn, S-nn, <type>, Retry ?
+        CALL ?PDERR              ;print message header
+        LD   HL,(DISK$STATUS)      ;get status byte from last error
+        LD   H,0
+        DEC  L
+        ADD  HL,HL                ;make byte offset
+        LD   BC,W$ERROR$TABLE      ;point at table of message addresses
+        ADD  HL,BC
+        LD   A,(HL)                ;get specific message address
+        INC  HL
+        LD   H,(HL)
+        LD   L,A
+        CALL ?PMSG               ;print message
+        LD   HL,ERROR$MSG  ;print "<BEL>, Retry (Y/N) ? "
+        CALL ?PMSG
+        CALL U$CONIN$ECHO        ;get operator response
+        LD   C,A           ;save response
+        LD   HL,MSG$END            ;disable status line
+        CALL ?PMSG       
+        LD   A,C           ;restore response
+        CP   'Y'           ;yes, then retry 10 more times
+        JP   Z,FD$WRITE
+W$HARD$ERROR:                   ;otherwise,
+        LD   A,(DISK$STATUS)       ;return hard error to BDOS
+        CP   5                     ;diskette write protected ?
+        LD   A,1           ;common error code
+        RET  NZ
+        INC  A
+
+;no login and init procedures:
+FD$LOGIN:
+FD$INIT0:
+        RET
+
+U$CONIN$ECHO:                   ;get console input, echo it, and shift to
+                                ;upper case
+        CALL ?CONST              ;see if any character already struck
+        OR   A
+        JR   Z,U$C1
+        CALL ?CONIN              ;yes, eat and try again
+        JR   U$CONIN$ECHO
+U$C1:   CALL ?CONIN
+        PUSH AF
+        LD   C,A
+        CALL ?CONO
+        POP  AF
+        CP   'A'
+        RET  C
+        AND  0DFH            ;make upper case
+        RET
+
+DISK$STATUS:
+        DEFS 1                   ;last error status code for messages
+
+
+*EJECT
+;RAM disk I/O routines
+M$READ: LD   A,0FFH                ;switch on read flag
+        JR   TASKM
+M$WRITE:XOR  A                    ;clear read flag
+TASKM:  LD   (RDFLAG),A
+        LD   A,(@TRK)              ;track # --> accu
+        ADD  A,2          ;calc source bank #
+        ADD  A,A
+        ADD  A,A
+        ADD  A,A
+        ADD  A,A
+        LD   HL,@DBNK              ;get destination bank #
+        ADD  A,(HL)
+        PUSH AF                  ;save bank numbers
+        LD   DE,(@DMA)             ;DMA address --> reg. DE
+        LD   HL,(@SECT)            ;sector #    --> reg. HL
+        INC  HL                   ;adjust it
+        LD   B,7           ;sector # * 128
+        ADD  HL,HL
+        DJNZ $-1
+        LD   BC,128 SHL 8+15 ;sector length --> reg. B
+                                ;function #    --> reg. C
+        LD   A,(RDFLAG)            ;read or write ?
+        OR   A
+        JR   NZ,TASKM1             ;jump if read
+        POP  AF                   ;restore bank numbers
+        RLCA                    ;swap bank numbers
+        RLCA
+        RLCA
+        RLCA
+        PUSH AF                  ;push bank numbers again
+        EX   DE,HL
+TASKM1: POP  AF                   ;restore bank numbers
+        CALL ?USERF              ;transfer "sector"
+        XOR  A
+        RET
+RDFLAG: DEFS 1
+
+
+*EJECT
+;virtual disk drive:
+DCT     EQU  10D7H                ;drive control table (SYSTAB)
+
+P$READ: LD   IX,FD$READ            ;read  routine vector     --> reg. IX
+        JR   P$TASK
+P$WRITE:LD   IX,FD$WRITE   ;write routine vector     --> reg. IX
+P$TASK: LD   A,(DRIVEP-2)  ;relative drive number      --> accu
+        ADD  A,A          ;*2
+        LD   C,A           ;save it
+        ADD  A,A          ;*4
+        ADD  A,C          ;*6
+        LD   B,0           ;relative drive # * 6         --> reg. BC
+        LD   C,A           
+        LD   HL,DCT                ;^drive control table     --> reg. HL
+        ADD  HL,BC                ;calc real pointer
+        PUSH HL                  ;save DCT pointer
+        LD   DE,TDCT               ;^temporary storage area  --> reg. DE
+        LD   BC,5          ;number of bytes    --> reg. BC
+        LDIR                    ;save disk parameters of drive B:
+        LD   HL,PDCT               ;^parameters for drive P: --> reg. HL
+        POP  DE               ;DCT pointer              --> reg. DE
+        PUSH DE                  ;save DCT pointer again
+        LD   BC,5          ;number of bytes    --> reg. BC
+        LDIR                    ;load disk parameters of drive P:
+        LD   HL,P$RET              ;return address            --> reg. HL
+        PUSH HL                  ;push it
+        JP   (IX)          ;jump to driver
+P$RET:  LD   HL,TDCT               ;restore original disk parameters
+        POP  DE
+        LD   BC,5
+        LDIR
+        LD   HL,PDCT+1             ;get drive status
+        SET  0,(HL)               ;set init bit
+        RET
+TDCT:   DEFS 5                   ;temporary storage area
+
+
+*EJECT
+;tables of pointers to error message strings
+R$ERROR$TABLE:
+        DEFW R1MSG
+        DEFW R2MSG
+        DEFW R3MSG
+        DEFW R4MSG
+        DEFW R5MSG
+        DEFW R6MSG
+        DEFW R7MSG
+        DEFW R8MSG
+        DEFW R9MSG
+        
+W$ERROR$TABLE:
+        DEFW W1MSG
+        DEFW W2MSG
+        DEFW W3MSG
+        DEFW W4MSG
+        DEFW W5MSG
+        DEFW W6MSG
+        DEFW W7MSG
+        DEFW W8MSG
+        DEFW W9MSG
+        
+R1MSG:  DEFM ' Illegal drive #,'
+        DEFB 0
+R2MSG:  DEFM ' Track # too high,'
+        DEFB 0
+R3MSG:  DEFM ' Sector # too high,'
+        DEFB 0
+R4MSG:  DEFM ' Device not available,'
+        DEFB 0
+R5MSG:  DEFB 0
+R6MSG:  DEFM ' Locked/deleted record,'
+        DEFB 0
+R7MSG:  DEFM ' Data record not found,'
+        DEFB 0
+R8MSG:  DEFM ' Parity error during read,'
+        DEFB 0
+R9MSG:  DEFM ' Lost data during read,'
+        DEFB 0
+
+W1MSG:  DEFM ' Illegal drive #,'
+        DEFB 0
+W2MSG:  DEFM ' Track # too high,'
+        DEFB 0
+W3MSG:  DEFM ' Sector # too high,'
+        DEFB 0
+W4MSG:  DEFM ' Device not available,'
+        DEFB 0
+W5MSG:  DEFM ' Write protected diskette,'
+        DEFB 0
+W6MSG:  DEFM ' Write fault on disk drive,'
+        DEFB 0
+W7MSG:  DEFM ' Data record not found,'
+        DEFB 0
+W8MSG:  DEFM ' Parity error during write,'
+        DEFB 0
+W9MSG:  DEFM ' Lost data during write,'
+        DEFB 0
+
+ERROR$MSG:
+        DEFM ' Retry (Y/N) ? '
+        DEFB 0
+
+MSG$END:DEFB SUB,ESC,'D',0
+
+        END

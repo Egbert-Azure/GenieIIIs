@@ -1,22 +1,22 @@
 ;******************************************************************************
 ;*  B O O T E R  *  C P M S Y S 2  *  T h o m a s   H o l t e  *  8 5 1 1 2 0 *
 ;******************************************************************************
-;*									      *
+;*									      									  *
 ;*    B O O T S T R A P   L O A D E R   F O R   C P / M   3   O N   T H E     *
 ;*    ===================================================================     *
-;*									      *
+;*									      									  *
 ;*        G E N I E  I I I s   M I C R O C O M P U T E R   S Y S T E M        *
-;*	  ============================================================        *
-;*									      *
-;*									      *
-;*  Thomas Holte			                         Version 1.1  *
-;*									      *
-;*  geändert von Volker Dose für Egbert Schröer.			      *
-;*  									      *	
+;*	  ============================================================        	  *
+;*									      									  *
+;*									      									  *
+;*  Thomas Holte			                         Version 1.1  			  *
+;*									      									  *
+;*  geändert von Volker Dose für Egbert Schröer.			      			  *
+;*  									      								  *	
 ;*  Die Übertragung der Seriennummer vom Bildschirm in den Speicher           *
 ;*  zur Copyright-Protection wird gelöscht. Statt dessen werden NOPs          *
 ;*  eingebaut, um dort eventuell Code für Z180 Betrieb zu patchen.            *
-;*									      *
+;*									      									  *
 ;******************************************************************************
   
 	.Z80

@@ -1,7 +1,7 @@
 # Grafik des Genie IIIs unter Holte CP/M+ #
 Volker Dose, Egbert Schröer, November 1993
 
-Im ersten Beitrag zur kleinen Artikelserie }ber die Ansteuerung  der
+Im ersten Beitrag zur kleinen Artikelserie über die Ansteuerung  der
 Grafik des Genie IIIs unter CP/M wurde eine Möglichkeit in Assembler
 vorgestellt.  Auch mit  Hochsprachen  wie  Turbo  Pascal  ist  dies
 möglich, wenn man dazu die BDOS-Funktion 50 nutzt. Die entsprechende

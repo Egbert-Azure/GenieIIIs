@@ -2,6 +2,13 @@
 
 Das Programm `pc2cpm` konvertiert Textdateien mit dem IBM-8bit-Zeichensatz in 7-Bit-ASCII-Code wie bei CP/M. Der Programmcode stammt aus Club 80 Info 34.
 
+## Funktionsweise ##
+Das Programm arbeitet mit zwei Byte-Dateien: einer Quell- und einer Ziel-Datei. Die Quell-Datei wird als Parameter beim Programmstart übergeben oder vom Benutzer per Eingabeaufforderung eingegeben. Die Ziel-Datei wird automatisch erzeugt und erhält den gleichen Namen wie die Quell-Datei, jedoch mit der Endung ".CPM".
+
+Das Programm liest die Quell-Datei zeichenweise ein und überprüft, ob das jeweilige Zeichen im IBM-8bit Zeichensatz enthalten ist (d.h. ob das höchstwertige Bit gesetzt ist). Ist dies der Fall, wird das Zeichen in einen 7bit ASCII Code konvertiert, der dem entsprechenden Zeichen in CP/M entspricht. Die Umwandlung erfolgt mithilfe einer vorgegebenen Tabelle, die im Programmcode als Konstante "umcode" definiert ist.
+
+Das konvertierte Zeichen wird in die Ziel-Datei geschrieben. Am Ende wird die Quell- und Ziel-Datei geschlossen und eine Erfolgsmeldung ausgegeben.
+
 ## Verwendete Bibliotheken
 
 Das Programm verwendet die Bibliothek `BYTEFILE.BIB`.

@@ -1,0 +1,23 @@
+
+;UP SECTORBUFFER MIT DATEN (IN A) FUELLEN
+fill	PUSH	HL
+	PUSH	BC
+	PUSH	AF
+	LD	HL,fillda
+	LD	BC,050FH
+	CALL	hdscmd
+	POP	AF
+	LD	HL,200h
+	LD	B,A
+	LD	C,hddata
+LOOP5	CALL	wcr
+	OUT	(C),B
+	DEC	HL
+	LD	A,L
+	OR	H
+	JR	NZ,LOOP5
+	POP	BC
+	POP	HL
+	CALL	err
+	RET
+

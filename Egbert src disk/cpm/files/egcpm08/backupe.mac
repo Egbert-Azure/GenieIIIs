@@ -1,0 +1,101 @@
+;******************************************************************************
+;*  B A C K U P E * U T I L S 0 0 1 a * T h o m a s   H o l t e * 8 6 0 7 0 1 *
+;******************************************************************************
+;*									      *
+;*  	L A N G U A G E   D E P E N D E N T   P A R T   O F   B A C K U P     *
+;*      =================================================================     *
+;*									      *
+;*  			( E N G L I S H   V E R S I O N )		      *
+;*			=================================		      *
+;*									      *
+;*  Version 4.0							Thomas Holte  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	GLOBAL CANCEL,ERROR2,ERROR3,ERROR4,ERROR5,ERROR6,ERROR7,NATIONAL,PRMPT1
+	GLOBAL PRMPT2,PRMPT3,PRMPT4,PRMPT5,PRMPT6,PRMPT7,PRMPT8,PRMPT9,PRMT10
+	GLOBAL PRMT11,PRMT12,PRMT13,PRMT14,PRMT15,PROCEED,RESTORE,RETRY,SAVE
+
+;ASCII control code:
+BEL	EQU  07H		;bell
+BS	EQU  08H		;backspace
+LF	EQU  0AH		;line feed	
+ESC	EQU  1BH		;escape
+
+NATIONAL:
+	DEFB ESC,'A',0
+
+ERROR2: DEFB LF
+	DEFM 'Disk select error on source'
+	DEFB 0
+ERROR3: DEFB LF
+	DEFM 'Disk select error on destination'
+	DEFB 0
+ERROR4: DEFB LF
+	DEFM 'Out of memory'
+	DEFB 0
+ERROR5:	DEFB LF,LF
+	DEFM 'Fatal I/O error'
+	DEFB LF,0
+ERROR6:	DEFB LF,LF
+	DEFM 'Diskette write protected'
+	DEFB LF,0
+ERROR7:	DEFB LF
+	DEFM '*** ATTENTION *** WRONG DISK ***'
+	DEFB 0
+
+PRMPT1: DEFB LF
+	DEFM 'Backup Ver. 4.0'
+	DEFB LF,0
+PRMPT2: DEFB LF
+	DEFM 'Mode   Function'
+	DEFB LF,LF
+	DEFM 'SAVE   Save contents of mass media'
+	DEFB LF
+	DEFM 'REST   Restore contents of mass media'
+	DEFB LF,LF
+	DEFM 'Enter your backup mode: '
+	DEFB 0
+PRMPT3: DEFB LF
+	DEFM 'Enter source drive: '
+	DEFB 0
+PRMPT4: DEFB LF
+	DEFM 'Enter destination drive: '
+	DEFB 0
+PRMPT5: DEFB LF
+	DEFM '(^C to abort)'
+	DEFB LF,0
+PRMPT6:	DEFM 'Return to save contents of drive '
+	DEFB 0
+PRMPT7: DEFB ' ',0
+PRMPT8: DEFM 'Return to restore contents of drive '
+	DEFB 0
+PRMPT9: DEFB ' ',0
+PRMT10:	DEFB LF,LF,BEL
+	DEFM 'Insert next disk into drive '
+	DEFB 0
+PRMT11:	DEFM ' and press <ENTER> '
+	DEFB 0
+PRMT12:	DEFM 'Reading block       '
+	DEFB BS,BS,0
+PRMT13:	DEFM 'Writing block       '
+	DEFB BS,BS,0
+PRMT14:	DEFM 'Verifying block     '
+	DEFB 0
+PRMT15:	DEFB LF
+	DEFM '(C)ancel, (P)roceed, or (R)etry'
+	DEFB LF,0
+ 
+SAVE:	DEFM 'SAVE'
+	DEFB 0
+RESTORE:DEFM 'REST'
+	DEFB 0
+
+CANCEL:	DEFB 'C'
+PROCEED:DEFB 'P'
+RETRY:	DEFB 'R'
+
+	END
+

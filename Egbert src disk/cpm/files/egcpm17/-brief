@@ -1,0 +1,125 @@
+
+Hallo Volker,
+
+funktioniert  bei Dir eigentlich die serielle Schnittstelle beim  Holte-
+CP/M ? Wenn bei mir ein Terminalprogramm direkt auf die Ports  zugreift, 
+gibt  es nat}rlich keine Probleme, wenn ich aber z.B. mit COMM }ber  AUX 
+gehe, geht nichts mehr. Auf der CPU280 l{uft dasselbe Programm aber ein-
+wandfrei und am Stecker habe 6-8-20 gebr}ckt, soda~ ein m|glicher  Hard-
+ware-Handshake abgeschaltet sein m}~te. Beim K{mpf-CP/M geht's  }brigens 
+auch, gibt es da noch irgendeinen Trick, auf den ich noch nicht gekommen 
+bin ? K|nntest Du mir bitte mal Deine ZPM3-Installation schicken ?  Ent-
+weder habe ich hier tats{chlich eine fehlerhaftes CP/M, oder ich bin  zu 
+bl|d,  das zum Laufen zu bringen (obwohl keine Fehlermeldung kommt,  nur 
+bootet der Rechner mit dem neuen System nicht mehr).
+
+Da~ die I/O-Funktionen nicht zur Sprachdefinition geh|ren finde ich auch 
+nicht gerade toll, aber deshalb nehme ich am liebsten printf. Da mu~ man 
+alle Steuerzeichen wirklich selber angeben und da kann es  normalerweise 
+keine solchen b|sen ]berraschungen geben, da~ da einfach noch ein CR an-
+geh{ngt wird. Kann h|chstens sein, da~ der Code mit printf etwas  gr|~er 
+wird,  aber  das kann man ja ausprobieren und wenn wo  anders  auch  ein 
+printf gebraucht wird, wird der ben|tigte Code sowieso dazugelinkt.
+
+Ich h{nge schon seit l{ngerer Zeit am FIDO. Da gibt es zwar eine CPM.GER 
+und  eine  COMP_OLD.GER (f}r 8-Bit-Rechner), aber in der  CP/M-Area  ist 
+kaum  was los und an die COMP_OLD komme ich nicht ran. So lese ich  z.B. 
+die ELEKTRONIK.GER und was es sonst noch an interessanten und unterhalt-
+samen Areas gibt. Mit am besten finde ich die IBM.GER, die ist fast noch 
+besser  als die JOKES.GER. Ist zwar gemein, aber da liege  ich  manchmal 
+vor  Lachen  fast am Boden. Fr}her, als das meiste noch  Selbstbau  war, 
+kannte man seinen Rechner halt zwangsl{ufig in- und auswendig und  wu~te 
+somit  einigerma~en bescheid, aber heute kauft sich ja jeder Depp  einen 
+Compi und meint, da~ er damit automatisch Ingenieur ist. Dann werden  so 
+Behauptungen  aufgestellt, da~ z.B. die CPU mit  zunehmender  Temperatur 
+"Temperaturwartezyklen" einlegt und der Rechner daher langsamer bzw. an-
+dersrum, also mit einem K}hlk|rper, schneller wird. Boah ey, echt stark, 
+fehlt  nur  noch, da~ einer die CPU tieferlegt. Wir haben  ja  auch  mal 
+klein  angefangen,  aber diese Pseudo-Fachleute schie~en den  Vogel  ab. 
+]brigens  gibt's neben der PASCAL.GER und MODULA. GER auch ein Area  na-
+mens  C-Echo.GER...  Das Angebot in einer Fido-Box wird  vom  Sysop  be-
+stimmt,  schlie~lich mu~ der f}r jedes Byte Telefonkosten  bezahlen  und 
+auch je nach Box-Programm sieht jede Box anders aus. Als negatives  Bei-
+spiel m|chte ich eine Box hier in der Gegend nennen, die nur Areas  hat, 
+die sich mit dem Amiga besch{ftigen :-(
+
+Mit dem Offline-Reader mu~t Du sehen, welcher bei Dir l{uft. Die Version 
+1.40 l{uft unter CP/M 2.2 und CP/M Plus, die Version 1.50a hat aber  an-
+geblich  noch einen Fehler und l{uft nur unter CP/M Plus (die  1.60  ist 
+aber schon in Arbeit). Die Registrierung kostet 15 Pfund, im Moment sind 
+das  rund 40 Mark und wenn man damit regelm{~ig arbeitet, finde ich  das 
+einen fairen Preis. Wie Du siehst, wird das Programm nach wie vor erwei-
+tert  und gewartet und man spart erheblich Arbeit und  Online-Zeit.  Ich 
+m|chte  auf  keinen Fall mehr ohne den Offline-Reader arbeiten,  es  ist 
+einfach  wesentlich bequemer. Ich bekomme jeden Tag rund 500KB an  neuen 
+Mails,  das sind gepackt ca. 200-250KB, die ich mit 2  Geb}hreneinheiten 
+im  Billigtarif (2400 Baud) sauge. Ohne den Offline-Reader w{re das  gar 
+nicht  zu machen und ich k|nnte entweder viel weniger Areas  lesen  oder 
+ich m}~te viel mehr an Telefongeb}hren zahlen. Hast Du noch kein eigenes 
+Modem ? Ich habe mir das 2400 Baud Pocketmodem von Pearl Agency zugelegt 
+und bin sehr zufrieden damit. Es hat zwar kein MNP usw., aber das  Komp-
+rimieren  macht ja der Offline-Reader bzw. die Mailbox und f}r 129  Mark 
+bekommt man sonst kaum ein gebrauchtes. Zum ersten Ausprobieren habe ich 
+Dir ein kleines Mailpaket aus der Discovery (siehe Clubinfo)  beigelegt, 
+ohne das l{~t sich der Offline-Reader n{mlich nicht starten. Wenn Du das 
+ausgepackt hast, kannst Du den Reader gleich mit CRR starten.  Normaler-
+weise  bekommt man das Mailpaket aber im QWK-Format und da muss man  die 
+beiden  *.DAT-Files auspacken und den Reader mit CRR QWK  aufrufen.  Bei 
+CP/M nimmt man als Packer am besten ARC und wenn man das Paket hat,  mu~ 
+man es erstmal in *.ARC umbenennen (der Name ist z.B. bei der  Discovery 
+DISCOV.QWK).  Der  Reader wandelt das Mailpaket in  ein  anderes  Format 
+(XRS)  um  und dann kann's auch hier losgehen. Schade ist nur,  da~  der 
+Reader  mit dem $$$.SUB arbeitet und sich das nicht mit dem Z3PLUS  ver-
+tr{gt. Solange man nur liest geht's, aber sobald man selber was  schrei-
+ben  will,  mu~ man vorher aus dem Z3PLUS raus. Ich habe  mir  dazu  ein 
+kleines Alias (CR.COM) gebaut, das das ggf. automatisch macht, dann  mu~ 
+man  das Z3PLUS hinterher nur noch von Hand wieder starten.  Der  Reader 
+wird  dazu  einfach mit CR QWK aufgerufen. Schau es Dir einfach  an  und 
+wenn es noch Fragen gibt, sag' bescheid.
+
+Einen Teil der ZCPR-Software saugt Helmut Jungkunz selber aus dem Compu-
+serve  und einen anderen Teil bekommt er direkt von Jay Sage,  soda~  es 
+wohl  wenig sinnvoll ist, da selber was zu holen. Soweit ich wei~,  gibt 
+es in jeder Gro~stadt Einw{hlpunkte f}r Compuserve, aber f}r  Privatper-
+sonen  ist das insgesamt ziemlich teuer. Files per Fido  zu  verschicken 
+geht  in  der Tat, aber bis jetzt habe ich das nur bei  "echten"  Point-
+Programmen f}r DOSen gesehen. Man "bestellt" bei seiner Mailbox ein File 
+und  wenn man Gl}ck hat, ist es dann irgendwann mal da. Wie  das  aller-
+dings  genau funktioniert und wie das mit den Kosten aussieht, wei~  ich 
+leider nicht. Wenn Du Dir ein paar MB bestellst, m}ssen die ja von einer 
+Box zur n{chsten weitergegeben werden und jeder hat zus{tzliche Telefon-
+kosten, die er wahrscheinlich gerne erstattet h{tte. Im Internet  merkst 
+Du  davon nur nichts, weil das die Uni oder wer auch immer bezahlt  aber 
+im FIDO sind das lauter Privatpersonen, die das als Hobby machen.
+
+Mit was machst Du Dein Festplatten-Backup ? Mit dem Holte-Programm  oder 
+mit  was anderem ? Das BACKUP.COM hat nur den  entscheidenden  Nachteil, 
+da~ man keine einzelnen Files restaurieren kann, sondern immer nur  eine 
+ganze  Partition am St}ck. Das BU17 hat auch seine Schw{chen  und  sonst 
+kenne  ich kein brauchbares Programm. Tilmann Reh meinte schon,  ob  ich 
+nicht sowas schreiben will, aber bevor ich mir das antue, frage ich doch 
+lieber  rum, ob es nicht schon was brauchbares gibt. Am besten w{re  ein 
+Programm, das wie das DOSen-Backup arbeitet und alle Files in ein gro~es 
+File auf die Disketten schreibt. Dadurch k|nnen die bis zum letzten  Bit 
+gef}llt werden und durch eine Steuerdatei, die mit auf der Floppy steht, 
+kann man auch einzelne Files rekonstruieren. Im Fido habe ich schon  mal 
+eine  Anfrage in der CPM.GER losgelassen, aber keine  Antwort  bekommen. 
+W}rdest  Du mir eventuell den Gefallen tun und }ber UUCP rumfragen,  was 
+es  unter CP/M f}r neuere Backupprogramme gibt ? Es gibt zwar  noch  ein 
+paar ganz alte Teile, aber gegen die ist selbst BU17 hochmodern.
+
+Noch was ganz nebens{chliches am Schlu~: ist zwar nicht weiter tragisch, 
+aber wieso nennst Du mich immer ANDREAS ? :-I
+
+
+Mit fragenden Gr}~en,
+
+  Alexander
+
+
+P.S.  Rainer Schmitz hat auch eine neue Adresse und wohnt nicht mehr  in 
+der Dornierstra~e :-) Er haust jetzt im K{ferweg 12/1, 7327 Adelberg.
+Und wenn wir schon dabei sind, meine neue "Postleidzahl" ab dem 1.7  ist 
+96317.
+
+

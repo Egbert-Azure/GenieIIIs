@@ -1,0 +1,135 @@
+PEEP.COM:  Text File Viewer
+Version 1.3  -  5 NOV 87
+
+Version 1.3 Update:
+  - V 1.2 introduced a minor bug with major import - typing a non-existent
+	command crashed the program!  Very sorry about that.
+  - LF's are stripped to make room for a few more K of file.
+  - Responds to ^C,^R,^E,^X as per WordStar convention.
+
+Version 1.2 Update:
+  - File printing available in "L" version.
+  - Tab expansion done internally.  No more line wrap problems.  Long lines 
+    are truncated on CRT but sent whole to printer.
+  - One line of overlap when scrolling.
+  - High bit masking done immediately to avoid problems with listing and 
+    finding.
+
+FEATURES:
+
+1.  PEEP is a small program intended as a RAM disk resdient utility
+	(a major reason for keeping it to 1k size)
+	for viewing and printing text files in a flexible way.
+
+2.  You can do all of the things needed to look through the file
+	without moving from the home row. (page, scan, find, etc.)
+	No need to keep a (callused) finger on the CTRL key.
+
+3.  Before being displayed, characters are high bit masked.  Control
+	characters (except CR, LF, and TAB) are printed in "^" format.
+	Thus WordStar files and captured files from a BBS are viewable.
+
+4.  PEEP reads the whole file into available memory.  If the file is
+	too big, it reads what does fit, and you can get the rest
+	with the R command.
+
+5.  You can set a place marker in the text.
+
+6.  Files may be printed out from the place marker.
+
+7.  The installation file (PEEPINST.ASM) is for terminal installation.
+	As is, the program is compatible with Wyse, Televideo, et. al.
+
+	The source contains screen dependent code for:
+		INSERT LINE : esc, E
+		ERASE TO END OF LINE : esc, T
+		HOME CURSOR : 1eh  (^^)
+		GOTOXY : esc, =, row+20h, col+20h
+		DIM VIDEO ON AND OFF : esc ')' and esc '('
+
+	These are most easily altered with the PEEPINST.ASM file.
+
+
+USAGE:
+
+Commands are not intended to be mnemonic but are grouped physically for
+ease of use.  (Don't panic!  Essentially, the right hand moves ahead and
+the left hand moves back through the text.  The main commands are mirror
+images, e.g. left index - ahead one screen, right index - back one screen.)
+
+    							     ---
+Usage: PEEP <ufn>                               Go To Mark  | 0 |
+    							     ---
+
+                         Read   Type          Init Printer  Mark   Print
+                          ---    ---                  ---    ---    ---
+                         | R |  | T |                | I |  | O |  | P |
+                          ---    ---                  ---    ---    ---
+     ---    ---    ---    ---    ---    ---    ---    ---    ---    ---
+    | A |  | S |  | D |  | F |  | G |  | H |  | J |  | K |  | L |  | ; |
+     ---    ---    ---    ---    ---    ---    ---    ---    ---    ---
+     End   Scan   Next   Next    Find   Find   Prev    Up  R/Scan   Top
+                  Line  Screen         Again  Screen  Line
+
+
+         X - Exit    <sp> - Hop 10 lines    <cr> - Next Screen (F)
+
+
+Details ->
+
+A Display final screen.                ; Display first screen.
+
+S Scroll continuously forward          L Scroll back until key pressed.
+
+D Move forward one line of text        K Move back one line of text
+
+F Move forward one screen              J Move back one screen
+
+G Find a string                        H Repeat find
+  - Search is forward
+  - If found, string is contained in the top line of the screen
+
+
+R - READ:
+	If PEEP beeped when reading in the file, additional text may be
+	read in.  The new text replaces text currently in memory with one
+	screen of overlap.  The beginning of the text can be re-read with
+	additional R commands.
+
+O - MARK:
+	Sets a pointer to the beginning of the line at top of screen.
+	(Home cursor position).  The marker is initialized to the beginning
+	of the file.
+
+0 - GO TO MARK:
+	Instant return to the marker.
+
+I - INIT:
+ 	Send initialization string to printer.  It is installed with the
+	PEEPINST overlay.
+
+P - PRINT:
+	Send text from MARK to bottom of current screen to printer.
+	Abort listing with ^C.  Although long lines are truncated on the
+	terminal display, they are sent whole to the printer.
+
+T - TYPE:
+	Type a line to the printer, e.g. comments.  A blank line sends a
+	CRLF to the printer.
+
+
+				 ----
+Known bugs:
+1.  The FIND function uses BDOS function 10.  Injudicious use of ^P, ^U
+	etc. can lead to unexpected results.
+
+
+Note:  PEEP is a bare-bones version of VIEW.  The same style of file viewing
+is also used in VCOMP (compare two text files) and BCOMP (compare two binary
+files).  The latter three are for ZCPR3 users.  PEEP is also available as
+an RCP segment.
+
+Oct 1987  Rob Friefeld  4607 Colorado St., Long Beach, CA  90814
+213-434-7338 (voice)
+Suggestions and complaints welcome.
+

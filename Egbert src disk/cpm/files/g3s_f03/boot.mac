@@ -1,0 +1,173 @@
+;******************************************************************************
+;*  B O O T  *  C P M S Y S 4 b  *  T h o m a s   H o l t e   *  8 5 1 1 2 0  *
+;******************************************************************************
+;*									      *
+;*  	 B O O T   L O A D E R   M O D U L E   F O R   C P / M   3 . 0	      *
+;*       =============================================================        *
+;*									      *
+;*									      *
+;*  Thomas Holte						 Version 1.0  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	TITLE 'BOOT LOADER MODULE FOR CP/M 3.0'
+
+;ASCII control codes
+BEL	EQU  07H		;bell
+LF	EQU  0AH		;line feed
+CR	EQU  0DH		;carriage return
+SUB	EQU  1AH		;substitute
+ESC	EQU  1BH		;escape
+RS	EQU  1EH		;record separator
+
+        GLOBAL ?INIT,?LDCCP,?RLCCP,?TIME
+	EXTERNAL ?PMSG,?CONIN,?USERF
+	EXTERNAL @CIVEC,@COVEC,@AIVEC,@AOVEC,@LOVEC
+	EXTERNAL @DATE,@HOUR,@MIN
+
+BDOS	EQU  0005H
+
+	DSEG			;init done from banked memory
+
+?INIT:  LD   HL,8000H           ;assign console to CRT 
+        LD   (@CIVEC),HL
+        LD   (@COVEC),HL
+	LD   HL,4000H		;assign printer to LPT1
+        LD   (@LOVEC),HL
+        LD   HL,1000H           ;assign AUX to TTY1
+        LD   (@AIVEC),HL
+        LD   (@AOVEC),HL
+	LD   HL,SIGNON$MSG	;print signon message
+	JP   ?PMSG
+
+
+	CSEG			;boot loading must be done from resident memory
+
+;This version of the boot loader loads the CCP from a file called CCP.COM on
+;the system drive (A:).
+
+;First time, load the A:CCP.COM file into TPA
+?LDCCP:	XOR  A                  ;zero extent
+	LD   (CCP$FCB+15),A
+	LD   HL,0               ;start at beginning of file
+	LD   (FCB$NR),HL
+     	LD   DE,CCP$FCB		;open file containing CCP
+        CALL OPEN
+	INC  A                  ;error if no file ...
+	JR   Z,NO$CCP
+	LD   DE,0100H 		;start of TPA
+	CALL SETDMA
+	LD   DE,128  		;allow up to 16k bytes
+	CALL SETMULTI
+	LD   DE,CCP$FCB		;load the thing
+	CALL READ		;now, copy CCP to secret bank for reloading
+
+;move copy of CCP into secret bank:
+	LD   HL,0100H		;source      address --> reg. HL
+	LD   DE,3500H		;destination address --> reg. DE
+     	LD   B,25		;record count        --> reg. B
+LDLOOP: PUSH BC			;save record count
+	LD   A,10H		;source      bank = 1
+        			;destination bank = 0
+	LD   BC,128 SHL 8+15	;byte count --> reg. B
+	          		;function # --> reg. C
+	CALL ?USERF		;move CCP record
+	LD   BC,128		;record length --> reg. BC
+	ADD  HL,BC		;bump source address
+	EX   DE,HL
+	ADD  HL,BC		;bump destination address
+	EX   DE,HL
+	POP  BC			;restore record count
+	DJNZ LDLOOP		;move next record	
+	RET			;return to caller
+	
+;here if we couldn't find the file:
+NO$CCP:	LD   HL,CCP$MSG		;report this ...
+	CALL ?PMSG
+	CALL ?CONIN		;get response
+	JR   ?LDCCP		;and try again
+
+;reload CCP:
+?RLCCP:	LD   HL,3500H		;source      address --> reg. HL
+	LD   DE,0100H		;destination address --> reg. DE
+     	LD   B,25		;record count        --> reg. B
+RLLOOP: PUSH BC			;save record count
+	LD   A,01H		;source      bank = 0
+        			;destination bank = 1
+	LD   BC,128 SHL 8+15	;byte count --> reg. B
+	          		;function # --> reg. C
+	CALL ?USERF		;move CCP record
+	LD   BC,128		;record length --> reg. BC
+	ADD  HL,BC		;bump source address
+	EX   DE,HL
+	ADD  HL,BC		;bump destination address
+	EX   DE,HL
+	POP  BC			;restore record count
+	DJNZ RLLOOP		;move next record	
+	RET			;return to caller
+	
+
+*EJECT
+;External clock.
+?TIME:	PUSH HL			;save reg. HL & DE
+	PUSH DE
+        INC  C  		;time get/set flag ?
+	JR   Z,SET$TIM		;set time
+	LD   HL,@DATE		;^(time & date buffer) --> reg. HL
+	LD   C,18		;function # 	       --> reg. C
+	JR   GET$TIM		;get time & date and return to caller
+SET$TIM:LD   HL,(@DATE)		;date		       --> reg. HL
+	LD   A,(@HOUR)		;hours		       --> reg. D
+	LD   D,A
+	LD   A,(@MIN)		;minutes	       --> reg. E
+	LD   E,A
+	LD   C,19 		;function #	       --> reg. C
+GET$TIM:CALL ?USERF		;set time & date and return to caller
+	POP  DE			;restore reg. HL & DE
+	POP  HL
+	RET
+
+
+;CP/M BDOS function interfaces
+OPEN:	LD   C,15		;open file control block
+	JP   BDOS
+SETDMA:	LD   C,26		;set data transfer address
+	JP   BDOS
+SETMULTI:
+	LD   C,44		;set record count
+	JP   BDOS
+READ:	LD   C,20		;read records
+	JP   BDOS
+	
+
+*EJECT
+SIGNON$MSG:
+        DEFB CR,LF,LF,LF,LF,LF,LF,LF,LF,RS,ESC,'R'
+	DEFM ' C P / M   V e r s i o n   3 '
+	DEFB ESC,'S',CR,LF,LF
+	DEFM 'GENIE IIIs SYSTEM (+ 12.6 MBytes Winchester)'
+	DEFB CR,LF
+	DEFM 'Special "INITW" system (851120)'
+	DEFB CR,LF
+	DEFM 'Thomas Holte '
+	DEFB 98H
+	DEFM ' 1985'
+	DEFB CR,LF,LF,LF,LF,LF,LF,LF,LF,LF,LF,LF,LF,0
+ENDMSG	EQU  $
+
+CCP$MSG:DEFB CR,LF,CR,LF
+	DEFM 'BIOS Err on A: No CCP.COM file'
+	DEFB 0
+
+CCP$FCB:DEFB 1
+	DEFM 'CCP     COM'
+	REPT 20
+	DEFB 0
+	ENDM
+
+FCB$NR:	DEFB 0,0,0
+
+	END
+

@@ -1,0 +1,187 @@
+;******************************************************************************
+;*  C H A R I O  *  C P M S Y S 4 c  *  T h o m a s   H o l t e * 8 5 0 7 1 7 *
+;******************************************************************************
+;*									      *
+;*    C H A R A C T E R   I / O   H A N D L E R   F O R   Z 8 0   C H I P     *
+;*    ===================================================================     *
+;*									      *
+;*  	       		    B A S E D   S Y S T E M			      *
+;*	                    =======================              	      *
+;*									      *
+;*									      *
+;*  Thomas Holte						 Version 1.0  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	TITLE 'CHARACTER I/O HANDLER FOR Z80 CHIP BASED SYSTEMS'
+
+;Character I/O for the modular CP/M 3 BIOS
+
+;ASCII control code
+SUB	EQU  1AH		;substitute
+
+	INCLUDE MODEBAUD	;define mode bits and baud equates
+
+	GLOBAL ?CINIT,?CI,?CO,?CIST,?COST,@CTBL
+	EXTERNAL ?USERF
+
+MAX$DEVICES EQU 5
+
+
+	CSEG
+
+?CINIT: LD   A,C		
+	CP   MAX$DEVICES
+	RET  NC			;illegal device
+        SUB  2          	;RS232C interface ?
+	RET  C 			;no initializing
+	RET  Z
+	DEC  A
+	LD   B,A		;number of RS232C interface --> reg. B
+	LD   L,C		;make 16 bits from device number
+	LD   H,0
+	ADD  HL,HL		;* 8
+	ADD  HL,HL
+	ADD  HL,HL
+	LD   DE,@CTBL+7		;get baud rate
+	ADD  HL,DE
+	LD   L,(HL)
+	LD   H,0		;get baud rate	
+        LD   DE,SPEED$TABLE     ;point to counter entry
+        ADD  HL,DE
+        LD   E,(HL)             ;get baud rate factor
+	LD   A,11000100B        ;load data format
+	LD   C,1       		;function # --> reg. C
+        JP   ?USERF		;init RS232C interface and return to caller
+
+;character input
+?CI:	LD   A,B
+	OR   A
+	JR   Z,CON$IN		;jump to console input
+	DEC  A
+	JR   Z,NULL$INPUT	;can't read from centronics
+	DEC  A
+	JR   Z,NULL$INPUT      	;can't read from centronics
+	DEC  A
+	JR   NZ,RS$1IN
+	LD   B,A		;RS232C interface 0
+	JR   TTY$IN 
+RS$1IN:	DEC  A
+	JR   NZ,NULL$INPUT
+	LD   B,1		;RS232C interface 1
+TTY$IN:	LD   C,8		;function # --> reg. C
+	JP   ?USERF		;receive char from RS232C interface 
+CON$IN: LD   C,3                ;function # --> reg. C
+	JP   ?USERF           	;wait for keyboard character
+
+NULL$INPUT:
+	LD   A,SUB		;return a CTL-Z for no device
+	RET
+
+
+;character input status
+?CIST:  LD   A,B
+	OR   A
+	JR   Z,CON$ST		;jump to console input status
+        DEC  A
+	JR   Z,NULL$STATUS      ;can't read from centronics
+	DEC  A
+	JR   Z,NULL$STATUS      ;can't read from centronics
+	DEC  A
+	JR   NZ,RS$1IST
+	LD   B,A		;RS232C interface 0
+	JR   TTY$IST
+RS$1IST:DEC  A
+	JR   NZ,NULL$STATUS
+	LD   B,1		;RS232C interface 1
+TTY$IST:LD   C,7		;function # --> reg. C
+	JR   CON$ST+2
+CON$ST:	LD   C,2		;function # --> reg. C
+        CALL ?USERF		;check input status
+	OR   A			;char ready
+	RET  Z
+STAT$OK:LD   A,0FFH
+	RET
+
+NULL$STATUS:
+        XOR  A
+	RET
+
+
+;character output
+?CO:	LD   A,B
+        OR   A
+        LD   A,C		;char --> accu
+	JR   Z,CON$OUT		;jump to console output
+        DEC  B
+	JR   Z,LST$OUT 		;parallel printer 0
+        DEC  B
+	JR   NZ,RS$0OUT
+	INC  B			;parallel printer 1
+	JR   LST$OUT
+RS$0OUT:DEC  B
+	JR   Z,TTY$OUT		;RS232C interface 0
+	DEC  B
+	RET  NZ
+	INC  B			;RS232C interface 1
+TTY$OUT:LD   C,10		;function # --> reg. C
+       	JP   ?USERF             ;transmit char to RS232C interface
+CON$OUT:LD   C,4  		;function # --> reg. C
+      	JP   ?USERF		;display char
+LST$OUT:LD   C,6                ;function # --> reg. C
+      	JP   ?USERF		;output char to printer
+
+
+;character output status
+?COST:  LD   A,B
+        OR   A
+        JR   Z,STAT$OK
+        DEC  A
+        JR   NZ,PR$1ST		;jump to list status
+	LD   B,A		;parallel printer 0
+	JR   LST$ST
+PR$1ST: DEC  A
+	JR   NZ,RS$0OST
+	LD   B,1		;parallel printer 1
+	JR   LST$ST
+RS$0OST:DEC  A
+	JR   NZ,RS$1OST
+	LD   B,A		;RS232C interface 0
+	JR   TTY$OST
+RS$1OST:DEC  A
+	JR   NZ,NULL$STATUS
+	LD   B,1		;RS232C interface 1
+TTY$OST:LD   C,9		;function # --> reg. C
+       	JR   LST$ST+2
+LST$ST:	LD   C,5		;function # --> reg. C
+        CALL ?USERF		;check output status
+        OR   A			;ok ?
+        JR   NZ,NULL$STATUS
+	JR   STAT$OK
+
+
+*EJECT
+@CTBL:  DEFM 'CRT   '		;device 0, CRT
+	DEFB MB$IN$OUT
+        DEFB BAUDNONE
+	DEFM 'LPT1  '		;device 1, LPT1
+	DEFB MB$OUTPUT
+	DEFB BAUDNONE
+	DEFM 'LPT2  '		;device 2, LPT2
+	DEFB MB$OUTPUT
+	DEFB BAUDNONE
+        DEFB 'TTY1  '		;device 3, TTY1
+	DEFB MB$IN$OUT+MB$SERIAL+MB$SOFT$BAUD
+	DEFB BAUD9600
+        DEFB 'TTY2  '		;device 4, TTY2
+	DEFB MB$IN$OUT+MB$SERIAL+MB$SOFT$BAUD
+	DEFB BAUD9600
+	DEFB 0			;table terminator
+
+SPEED$TABLE:
+	DEFB 0,2,3,15,4,14,13,6,11,10,7,0,9,0,8,0
+
+	END
+

@@ -1,0 +1,14 @@
+Genie3s Kaempf CP/M 2 - DSDD 96 tpi 5.25" format
+
+Bootet CP/M2 mit Zeichensatzdemo
+
+
+B0:ASM.COM         B0:AUTO.COM        B0:BOOT.COM        B0:CONFIG.COM      
+B0:CPMGEN.COM      B0:DATUM.COM       B0:DDT.COM         B0:DUMP.ASM        
+B0:DUMP.COM        B0:ED.COM          B0:FKEY.COM        B0:FORMAT.COM      
+B0:INFO.COM        B0:LOAD.COM        B0:PD.COM          B0:PDRIVE.SYS      
+B0:PIP.COM         B0:README.COM      B0:SIO.COM         B0:STAT.COM        
+B0:SUBMIT.COM      B0:TASTEN.COM      B0:TERM.COM        B0:UHR.COM         
+B0:WNFORMAT.COM    B0:XSUB.COM        B0:ZEIT.COM        B0:ZL.COM          
+
+612K free on drive B:

@@ -1,0 +1,114 @@
+;******************************************************************************
+;*  A M 9 5 1 1 A  *  L I B C 0 1 0 a * T h o m a s   H o l t e * 8 6 0 3 2 8 *
+;******************************************************************************
+;*									      *
+;*     H A R D W A R E   D E P E N D E N T   P A R T   O F   C F L O A T A    *
+;*     ===================================================================    *
+;*									      *
+;*									      *
+;*  Thomas Holte 						 Version 1.0  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	GLOBAL _A9511
+	GLOBAL FADD,FSUB,FMUL,FDIV
+	GLOBAL FIXD,FLTD,FLTS
+	GLOBAL _SQRT,_SIN,_COS,_TAN,_ASIN,_ACOS,_ATAN,_LOG,LN,_EXP,PWR
+
+	EXTERNAL _CC0DIV,_CCOVL
+
+APUDR	EQU  58H		;Am9511A data    port
+APUSR	EQU  APUDR+1		;Am9511A status  port
+APUCR	EQU  APUSR		;Am9511A command port
+
+;Am9511A commands:
+FADD	EQU  10H		;Add TOS to NOS. Result to NOS. Pop Stack.
+FSUB	EQU  11H		;Subtract TOS from NOS. Rsult to NOS.
+				;Pop Stack.
+FMUL	EQU  12H		;Multiply NOS by TOS. Result to NOS. Pop Stack.
+FDIV	EQU  13H		;Divide NOS by TOS. Result to NOS. Pop Stack.
+
+FIXD	EQU  1EH		;Convert TOS from floating format to 32-bit 
+				;fixed point format.
+FLTS	EQU  1DH		;Convert TOS from 16-bit fixed point format to
+				;floating point format.
+FLTD	EQU  1CH		;Convert TOS from 32-bit fixed point format to
+				;floating point format.
+
+_SQRT	EQU  01H		;Square root of TOS. Result to TOS.
+_SIN	EQU  02H		;Sine of TOS. Result to TOS.
+_COS	EQU  03H		;Cosine of TOS. Result to TOS.
+_TAN	EQU  04H		;Tangent of TOS. Result to TOS.
+_ASIN	EQU  05H		;Inverse sine of TOS. Result to TOS.
+_ACOS	EQU  06H		;Inverse cosine of TOS. Result to TOS.
+_ATAN	EQU  07H		;Inverse tangent of TOS. Result to TOS.	
+_LOG	EQU  08H		;Common logarithm of TOS. Result to TOS.
+LN	EQU  09H		;Natural logarithm of TOS. Result to TOS.
+_EXP	EQU  0AH		;e raised to power in TOS. Result to TOS.
+PWR	EQU  0BH		;NOS raised to power in TOS. Result to NOS.
+				;Pop stack
+
+;To call the following program, on entry:
+;HL = pointer to the first  operand (NOS)
+;DE = pointer to the second operand (TOS)
+;BC = pointer to the result (0 = no result)
+; A = opcode
+
+;On return:
+;All pointers are destroyed
+
+_A9511:	PUSH BC			;save result pointer
+	PUSH AF			;save opcode
+
+;check if Am9511A is ready to accept data:
+CHK1:	IN   A,(APUSR)		;read APU status
+	OR   A			;set CPU flags
+	JP   M,CHK1		;loop back if not ready
+
+;the Am9511A is ready if fallen through:
+	LD   BC,4 SHL 8+APUDR	;init loop1 counter
+	OTIR			;push operand 1 onto APU data stack
+
+	EX   DE,HL		;put operand 2 pointer in HL
+	LD   B,4		;init loop2 counter
+	OTIR			;push operand 2 onto APU data stack
+
+;operands loaded, write command:
+	POP  AF			;retrieve opcode
+	OUT  (APUCR),A		;write command to APU
+
+;set up result pointer and loop3 counter:
+	POP  HL
+	LD   A,H		;store result ?
+	OR   L  
+	LD   DE,3
+	ADD  HL,DE		;move pointer to MSB
+	LD   E,A
+	LD   B,4		;init loop3 counter
+
+;wait until Am9511A finishes execution:
+CHK2:	IN   A,(APUSR)		;read APU status port
+	OR   A			;set status flags
+	JP   M,CHK2		;loop back if not ready
+
+;the Am9511A has finished execution:
+ 	BIT  4,A		;divide by zero ?
+	JR   Z,CHK3
+	BIT  3,A			
+ 	JP   Z,_CC0DIV
+CHK3: 	BIT  1,A		;overflow ?
+ 	JP   NZ,_CCOVL
+
+;read result:
+	INC  E			;read result ?
+	DEC  E
+	RET  Z			;return if not
+
+	INDR			;read APU data stack & store result in memory
+
+	RET
+
+	END
+

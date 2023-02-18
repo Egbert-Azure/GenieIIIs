@@ -1,0 +1,62 @@
+
+                        CP/M UNZIP v0.99
+
+Usage:  UNZIP  <filename[.zip]>  [<afn>]
+
+Extracts all members of the specified ZIPfile matching <afn>.
+If <afn> is not present, a directory of the ZIPfile is displayed.
+
+Examples:
+
+UNZIP TEST *.*
+  extracts all members of TEST.ZIP to the current drive.
+
+UNZIP TEST
+  displays a directory of the members of TEST.ZIP
+
+-----
+Good news:
+
+1. Now extracts all files regardless of the compression method or
+   version of PKZIP used to create the ZIP file.
+
+2. Now also performs a full ZIPfile directory listing.
+
+3. Extracts from SFX (self-extracting) .EXE type ZIPfiles.
+
+4. Should perform all functions with no more than 46k of TPA.
+
+Other news.
+
+1. The program uses three (ugh) overlay files, one for each of the three
+   possible main compression methods.  I had a single file version
+   pretty much running, but was having problems with Aztec 'C's dynamic
+   memory functions.  It should be possible (the memory allocation
+   functions could be circumvented if necessary) but that version was
+   nearing the practical TPA limit anyway.  The main problem with the
+   overlays is not so much execution speed (an overlay is only called
+   in once per file to be extracted) but is rather the inconvenience
+   created by the limited ability of the compiled code to find its
+   overlays.  This version pretty much has to be run from the same drive
+   & user the overlays are located in (or they can be in the same user
+   area of drive 'A').
+
+2. The program still doesn't perform the 32-bit CRC check of the
+   extracted file.  A thoughtful user just sent me some Z80 code to
+   perform this function, but time pressures prevents me from
+   incorporating this at the moment.  The same time constraints are
+   preventing me from working further on other aspects of the program -
+   the issues mentioned above as well as enhancements like non-
+   extracting (typing/viewing) capability.  Hopefully I will be able to
+   get back to some of this soon.
+
+   The program does do as many internal validity checks as feasible of
+   the file being processed.  Although I have every reason to believe
+   the program is performing properly, the possibility of an incorrect
+   extraction cannot be eliminated, so "standard disclaimers apply".  If
+   anyone encounters any of the internal error messages, or has other
+   problems or comments, please leave a message at the CRUNCH BBS at
+   (201) 447-6543.
+                                                - Steven  Greenberg
+                                                  12 September 1989
+

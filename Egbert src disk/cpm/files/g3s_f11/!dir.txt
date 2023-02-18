@@ -1,0 +1,22 @@
+Genie3s Kaempf CP/M - DSDD 96 tpi 5.25" format
+
+Bootet nicht - Booterror
+
+
+Holte C files und einige Kaempf Dateien
+
+B0:AUTO.COM        B0:BIOS.H          B0:CCP.COM         B0:CCZ.COM         
+B0:CHECKTRK.MAC    B0:CHECKTRK.REL    B0:CONFIG.COM      B0:CONFIG.SYS      
+B0:COPYSYS.COM     B0:CPM3.SYS        B0:CPMLDR.REL      B0:ED.COM          
+B0:ERASE.COM       B0:ERRNO.H         B0:FKEY.COM        B0:FORMAT.COM      
+B0:FORMTRK.MAC     B0:FORMTRK.REL     B0:GENCOM.COM      B0:GENCPM.COM      
+B0:GET.COM         B0:GETARGS.H       B0:ID.COM          B0:INFO.COM        
+B0:INITDIR.COM     B0:L80.COM         B0:M80.COM         B0:NAMES.SUB       
+B0:NEWLIBC.REL     B0:PATCH.COM       B0:PCCOPY.C        B0:PCCOPY.COM      
+B0:PCCOPY.MAC      B0:PCCOPY.REL      B0:PD.COM          B0:PDRIVE.SYS      
+B0:PIP.COM         B0:PUT.COM         B0:SQ306.H         B0:ST412.H         
+B0:STDIO.H         B0:STDIOP.H        B0:TOOLS.H         B0:UHR.COM         
+B0:WINDOW.C        B0:WINDOW.MAC      B0:WINDOW.REL      B0:XREF.COM        
+B0:ZEIT.COM        
+
+100K free on drive B:

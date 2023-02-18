@@ -1,0 +1,31 @@
+;
+;	Knippsô deî HRÇ Bildschirí  Nr® ° deó Geniå IIIó an
+» 	
+
+
+
+grafik	equ	25			;USERÆ BIOÓ Funktioî Grafië an/aus
+wboot	eqõ   0000h			;WBOOT+± isô deò Starô deò BIOS-Vector
+					;Tabelle
+userf	equ	30			;USERÆ isô deò 30.stå Vektoò dieser
+					;Tabelle
+        .z80
+  
+	org	100h
+start:
+graoff:	ld	a,1			;A<>°  =¾ Grafië auó !
+	ld	b,0			;Â enth{lô diå HRG-Seitennummer
+	ld	c,grafik		;Ã enth{lô diå USERÆ Nummer
+	call	system			;Rufô USERFunktioî auæ unä RET
+	ret				;zur}cë inó Betriebssystem
+		
+system:	push	bc			;zun{chsô BÃ sichern
+	ld	ix,(wboot+1)		;(IX© Starô deò BIOÓ Jumğ Table	
+	ld	bc,3*(userf-1)		;Offseô zuí JP USERF
+	add	ix,bc			;dazõ addieren	
+	pop	bc			;USERF-Nr® wiedeò zur}ck
+	jp	(ix)			;Sprunç nacè USERÆ unä zur}cë zum
+					;Aufrufeò voî SYSTEM
+	
+	end	start
+				 

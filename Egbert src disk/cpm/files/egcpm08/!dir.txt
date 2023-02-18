@@ -1,0 +1,20 @@
+G3S-Kaempf CP/M - Non Systemdisk - DSDD 96 tpi 5.25" format
+
+B0:AM9511A.MAC     B0:ARC.C           B0:BACKUP.C        B0:BACKUPE.MAC     
+B0:BACKUPG.MAC     B0:BASF6188.H      B0:BIOS.H          B0:BITMAP.C        
+B0:BITSY.C         B0:C.SUB           B0:CCZ.COM         B0:CHARGEN.C       
+B0:CHECKTRK.MAC    B0:CIRCLE.C        B0:CLOSEPL.C       B0:CONFIG.C        
+B0:CONFIGE.MAC     B0:CONFIGG.MAC     B0:COPY.C          B0:COPYE.MAC       
+B0:COPYG.MAC       B0:DANAL.C         B0:DANALT.MAC      B0:ERASE.C         
+B0:ERRNO.H         B0:FGREP.C         B0:FKEY.C          B0:FKEYE.MAC       
+B0:FKEYG.MAC       B0:FORMAT.C        B0:FORMATG.MAC     B0:FORMTRK.MAC     
+B0:GETARGS.C       B0:GETARGS.H       B0:GREP.C          B0:INITW.C         
+B0:INITWG.MAC      B0:L80.COM         B0:M6845.C         B0:M6845E.MAC      
+B0:M6845G.MAC      B0:M80.COM         B0:MHZ.C           B0:NECD5124.H      
+B0:NECD5126.H      B0:NEWLIBC.REL     B0:OPENPL.C        B0:PCCOPY.C        
+B0:POINT.C         B0:READADDR.MAC    B0:SORT.C          B0:SQ306.H         
+B0:SSORT.C         B0:ST412.H         B0:STDIO.H         B0:STDIOP.H        
+B0:STOI.C          B0:TM252.H         B0:TM502.H         B0:TOOLS.C         
+B0:TOOLS.H         B0:TURTLE.C        B0:WINDOW.C        
+
+100K free on drive B:

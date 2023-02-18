@@ -1,0 +1,28 @@
+Genie3s Kaempf CP/M - DSDD 96 tpi 5.25" format
+
+Bootet K„mpf CP/M2 mit NZCOM 
+Eingerichtet fr 4 Laufwerke A: bis D: 
+Formateinstellung mir PDRIVE  -> 104 = Holte
+
+
+B0:ADIR.COM        B0:ALIAS.CMD       B0:APPEND.COM      B0:ARC.COM         
+B0:ARUNZ.COM       B0:CD.COM          B0:CHAIN.LBR       B0:CMDRUN.COM      
+B0:COMMAND.LBR     B0:CONFIG.COM      B0:COPY.COM        B0:CPC.COM         
+B0:CPMGEN.COM      B0:DI.COM          B0:DU.COM          B0:FINDBAD.COM     
+B0:FKEY.COM        B0:FORMAT.COM      B0:GENINS.COM      B0:JETLDR.COM      
+B0:LC.COM          B0:LDIR.COM        B0:LGET.COM        B0:LHC.COM         
+B0:MEMRS.COM       B0:MEMTEST1.COM    B0:MKZCM.COM       B0:NSWP.COM        
+B0:NULU.COM        B0:NZCOM.CCP       B0:NZCOM.COM       B0:NZCOM.ENV       
+B0:NZCOM.LBR       B0:NZCOM.Z3T       B0:NZCOM.ZCM       B0:NZCPM.COM       
+B0:NZCPR.LBR       B0:NZFCP.LBR       B0:NZRCP.LBR       B0:PATH.COM        
+B0:PD.COM          B0:PDRIVE.COM      B0:PDRIVE.SYS      B0:PIP.COM         
+B0:PKXARC.ZEX      B0:RS.COM          B0:SDZ.COM         B0:SFZ.COM         
+B0:SH.COM          B0:SH.OVR          B0:SHSAVE.COM      B0:SIO.COM         
+B0:STARTZCM.COM    B0:STAT.COM        B0:SUBMIT.COM      B0:TASTEN.COM      
+B0:TCCHECK.COM     B0:TERM.COM        B0:UHR.COM         B0:UNARC.COM       
+B0:UNERA.COM       B0:VLU.COM         B0:W.COM           B0:WNFORMAT.COM    
+B0:XD.COM          B0:XSUB.COM        B0:Z.COM           B0:Z3TCAP.Z3T      
+B0:ZDE.COM         B0:ZDENST13.COM    B0:ZEIT.COM        B0:ZF.COM          
+B0:ZFILER.BAK      B0:ZFILER.CMD      B1:PDRIVE.SYS      
+
+56K free on drive B:

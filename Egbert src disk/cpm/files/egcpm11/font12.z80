@@ -1,0 +1,421 @@
+;*******************************************************************************
+;* FONT12.COM   *  C P / M - P L U S  *  f}r Version HOLTE  *    Volker Dose   *     									      *
+;*******************************************************************************
+;*									       *	
+;*									       *
+;*									       *	
+;*	Dieses Programm soll es erm|glichen, ohne [nderung des Boot-	       *
+;*	sektors den Zeichensatz von FONT12 auf FONT14 zu {ndern.	       *
+;*	Der Aufbau dieser Zeichens{tze ist gleich, die jeweiligen	       *
+;*	.MAC-Files sind direkt von den Sources }bernommen. Die L{nge	       *
+;*	der Tabellen ist 144 * 16 Bytes, also 2304 Bytes. Sie werden	       *
+;*	in 128 Byte-Bl|cken mit der XMOVE-Funktion des BIOS in Bank 0	       *
+;*	}bertragen, das macht dann 18 Blocktransfere. Der Original-	       *
+;*	Zeichensatz steht nach dem Booten wieder zur Verf}gung, es k|nnen      *
+;*	unendlich viele Zeichens{tze neu generiert werden, die mit diesem      *
+;*	Programm - Header transferiert werden k|nnen. Je nach Geschmack.       *
+;*									       *
+;*									       *
+;*	Volker Dose, Januar 1993					       *
+;*									       *	
+;*******************************************************************************  
+
+lf	equ	0ah
+cr	equ	0dh
+esc	equ	1bh
+
+bdos	equ	0005h				;BDOS-Entry
+wboot	equ	0000h				;Warmstartadresse, BIOS-Entry
+userf	equ	30				;additional BIOS-Funktion
+prtstr	equ	9				;Print String BDOS-Fnkt.
+bnktra	equ	15				;Interbank Memory Transfer
+resfon	equ	21				;Restore Font in Bank 0
+addrfon	equ	07d7h				;Start of Fontset in Bank 0
+
+
+	org 100h
+start	ld	de,hallo			;Begr}~ung ausgeben, Kennung
+	ld	c,prtstr			;auch - }ber BDOS 9
+	call	bdos	
+	
+	ld	hl,fontset			;Quelladresse
+	ld	de,addrfon			;Zieladresse
+
+	ld	b,18				;es sollen 18*128 Bytes
+						;transferiert werden.
+								
+loop	push	bc				;der Z{hler wird gesichert
+		
+	ld	b,128				;128 Byte / transfer
+	ld	c,bnktra			;Interbank transfer
+	ld	a,10h				;Quellbank = 1 (ob. nibble)
+						;Zielbank  = 0 (un. nibble)	
+
+	call	system
+
+	ld	bc,128				;HL und DE m}ssen weiterge-
+	add	hl,bc				;z{hlt werden
+	
+	push	hl				;da DE nicht mit BC addiert
+	ex	de,hl				;werden kann, muss der Umweg
+	add	hl,bc				;HL gew{hlt werden
+	ex	de,hl				;jetzt ist DE okay
+	pop	hl				;HL jetzt auch
+	 	
+	pop	bc				;z{hler restaurieren
+	djnz	loop				;bis Z{hler auf 0 runter
+	
+	ld	c,resfon			;Zeichensatz restaurieren
+	call	system
+	
+
+	jp	wboot				;zur}ck ins Betriebsystem
+	
+	
+			
+	
+; SYSTEM -  Unterprogramm, um die physischen Treiberroutinen
+;	    des Holte CP/Ms zu erreichen. 	
+	
+system	push	bc				;save Reg. BC
+	ld	ix,(wboot+1)			;warm boot entry         => IX	
+	ld	bc,3*(userf-1)			;offset to system entry  => BC
+	add	ix,bc				;add offset
+	pop	bc				;restore reg. BC
+	jp	(ix)				;perform system call and return
+						;to caller
+							
+	ret
+	
+hallo	defb	lf,cr,' ',esc,'R','FONT14.COM',esc,'S'
+	defb	' by Volker Dose, 26.01.93',lf,cr
+	defb	'  Nur lauff{hig auf Genie IIIs mit Holte CP/M + !',lf,cr,lf
+	defb	'  Zeichensatz mit 14 Scanzeilen wird eingeschaltet.',lf,cr
+	defb	'$'	
+
+;******************************************************************************
+;*  F O N T 1 2  *  C P M S Y S 1 a  *  T h o m a s   H o l t e * 8 5 1 1 2 6 *
+;******************************************************************************
+;*									      *
+;*  		   F O N T S E T   F O R   M O N I T O R S 		      *
+;*		   =======================================		      *
+;*									      *
+;*  	  W I T H   1 2   S C A N L I N E S   P E R   T E X T L I N E	      *
+;*	  ===========================================================         *
+;*									      *
+;*									      *
+;*  Thomas Holte			                         Version 1.0  *
+;*									      *
+;******************************************************************************
+
+	.RADIX 16
+
+;storage area for font set:
+FONTSET:
+
+;graphic characters:
+	DEFB 18,18,18,18,18,18,18,18	;	vertical bar
+	DEFB 18,18,18,18,18,18,18,18
+	DEFB 00,00,00,00,00,0FF,0FF,00	;	horizontal bar
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 18,18,18,18,18,0FF,0FF,18	;	cross
+	DEFB 18,18,18,18,18,18,18,18
+	DEFB 18,18,18,18,18,1F,1F,18	;	left half of a cross
+	DEFB 18,18,18,18,18,18,18,18
+	DEFB 18,18,18,18,18,0F8,0F8,18	;	right half of a cross
+	DEFB 18,18,18,18,18,18,18,18
+	DEFB 18,18,18,18,18,0FF,0FF,00	;	upper half of a cross
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,00,0FF,0FF,18	;	lower half of a cross
+	DEFB 18,18,18,18,18,18,18,18
+	DEFB 18,18,18,18,18,1F,1F,00	;	upper left corner
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 18,18,18,18,18,0F8,0F8,00	;	upper right corner
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,00,1F,1F,18	;	lower left corner
+	DEFB 18,18,18,18,18,18,18,18
+	DEFB 00,00,00,00,00,0F8,0F8,18	;	lower right corner
+	DEFB 18,18,18,18,18,18,18,18
+	DEFB 18,18,18,18,1C,0F,07,00	;	upper left arc
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 18,18,18,18,38,0F0,0E0,00	;	upper right arc
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,00,07,0F,1C	;	lower left arc
+	DEFB 18,18,18,18,18,18,18,18
+	DEFB 00,00,00,00,00,0E0,0F0,38	;	lower right arc
+	DEFB 18,18,18,18,18,18,18,18
+	DEFB 00,00,08,1C,2A,08,08,08	;	up arrow
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,08,08,08,08,2A,1C	;	down arrow
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,00,08,04,7E,04,08	;	left arrow
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,10,20,7E,20,10	;	right arrow
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,08,1C,3E,7F,7F,3E	;	spades
+	DEFB 08,08,00,00,00,00,00,00
+	DEFB 00,00,00,36,7F,7F,3E,1C	;	hearts
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,08,1C,3E,7F,3E,1C	;	diamonds
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,1C,1C,08,6B,7F,6B	;	clubs
+	DEFB 08,1C,00,00,00,00,00,00
+	DEFB 55,0AA,55,0AA,55,0AA,55,0AA;	shaded area
+	DEFB 55,0AA,55,0AA,55,0AA,55,0AA
+	DEFB 00,00,3C,42,0B9,85,85,0B9	;	copyright
+	DEFB 42,3C,00,00,00,00,00,00
+	DEFB 00,00,0FA,06,0C6,46,26,0DE	;	1st part of a hand
+	DEFB 06,0FA,00,00,00,00,00,00
+	DEFB 00,00,0FF,20,0C0,3F,40,3F	;	2nd part of a hand
+	DEFB 20,1F,00,00,00,00,00,00
+	DEFB 00,00,3F,40,3F,00,00,00	;	3rd part of a hand
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,7C,2A,28,28	;	Pi
+	DEFB 28,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,41,41,63,22	;	Omega
+	DEFB 63,00,00,00,00,00,00,00
+	DEFB 00,00,3C,42,0A5,81,0A5,99	;	"Smiley"
+	DEFB 42,3C,00,00,00,00,00,00
+	DEFB 00,00,3C,42,0A5,81,99,0A5	;	"Laetschi"
+	DEFB 42,3C,00,00,00,00,00,00
+
+
+*EJECT
+;ASCII characters:
+	DEFB 00,00,00,00,00,00,00,00	;	space
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,08,08,08,08,08,00	;	!
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,14,14,00,00,00,00	;	"
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,14,14,3E,14,3E,14	;	#
+	DEFB 14,00,00,00,00,00,00,00
+	DEFB 00,00,08,3C,0A,1C,28,1E	;	$
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,26,26,10,08,04,32	;	%
+	DEFB 32,00,00,00,00,00,00,00
+	DEFB 00,00,04,0A,0A,04,2A,12	;	&
+	DEFB 2C,00,00,00,00,00,00,00
+	DEFB 00,00,0C,0C,08,04,00,00	;	'
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,10,08,04,04,04,08	;	(
+	DEFB 10,00,00,00,00,00,00,00
+	DEFB 00,00,04,08,10,10,10,08	;	)
+	DEFB 04,00,00,00,00,00,00,00
+	DEFB 00,00,00,14,08,3E,08,14	;	*
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,08,08,3E,08,08	;	+
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,00,00,00,0C	;	,
+	DEFB 0C,08,04,00,00,00,00,00
+	DEFB 00,00,00,00,00,3E,00,00	;	-
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,00,00,00,0C	;	.
+	DEFB 0C,00,00,00,00,00,00,00
+	DEFB 00,00,20,20,10,08,04,02	;	/
+	DEFB 02,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,22,2A,22,22	;	0
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,08,0C,08,08,08,08	;	1
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,20,10,08,04	;	2
+	DEFB 3E,00,00,00,00,00,00,00
+	DEFB 00,00,3E,20,10,18,20,22	;	3
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,10,08,14,12,3E,10	;	4
+	DEFB 10,00,00,00,00,00,00,00
+	DEFB 00,00,3E,02,1E,20,20,22	;	5
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,1C,02,02,1E,22,22	;	6
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,3E,20,20,10,08,04	;	7
+	DEFB 02,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,22,1C,22,22	;	8
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,22,3C,20,20	;	9
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,0C,0C,00,0C	;	:
+	DEFB 0C,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,0C,0C,00,0C	;	;
+	DEFB 0C,08,04,00,00,00,00,00
+	DEFB 00,00,10,08,04,02,04,08	;	<
+	DEFB 10,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,3E,00,3E,00	;	=
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,02,04,08,10,08,04	;	>
+	DEFB 02,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,20,10,08,00	;	?
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,3A,2A,3A,02	;	@
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,08,14,22,22,3E,22	;	A
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 00,00,1E,24,24,1C,24,24	;	B
+	DEFB 1E,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,02,02,02,22	;	C
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,1E,24,24,24,24,24	;	D
+	DEFB 1E,00,00,00,00,00,00,00
+	DEFB 00,00,3E,02,02,1E,02,02	;	E
+ 	DEFB 3E,00,00,00,00,00,00,00
+	DEFB 00,00,3E,02,02,1E,02,02	;	F
+	DEFB 02,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,02,3A,22,22	;	G
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,22,22,22,3E,22,22	;	H
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 00,00,1C,08,08,08,08,08	;	I
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,20,20,20,20,20,22	;	J
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,22,12,0A,06,0A,12	;	K
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 00,00,02,02,02,02,02,02	;	L
+	DEFB 3E,00,00,00,00,00,00,00
+	DEFB 00,00,22,36,2A,2A,22,22	;	M
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 00,00,22,22,26,2A,32,22	;	N
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,22,22,22,22	;	O
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,1E,22,22,1E,02,02	;	P
+	DEFB 02,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,22,22,2A,12	;	Q
+	DEFB 2C,00,00,00,00,00,00,00
+	DEFB 00,00,1E,22,22,1E,0A,12	;	R
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,02,1C,20,22	;	S
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,3E,08,08,08,08,08	;	T
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,22,22,22,22,22,22	;	U
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,22,22,22,14,14,08	;	V
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,22,22,22,2A,2A,2A	;	W
+	DEFB 14,00,00,00,00,00,00,00
+	DEFB 00,00,22,22,14,08,14,22	;	X
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 00,00,22,22,14,08,08,08	;	Y
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,3E,20,10,08,04,02	;	Z
+	DEFB 3E,00,00,00,00,00,00,00
+	DEFB 00,00,1C,04,04,04,04,04	;	[
+	DEFB 1C,00,00,00,00,00,00,00	
+	DEFB 00,00,02,02,04,08,10,20	;	\
+	DEFB 20,00,00,00,00,00,00,00
+	DEFB 00,00,1C,10,10,10,10,10	;	]
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,08,14,22,00,00,00	;	^
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,00,00,00,00	;	_
+	DEFB 00,00,3E,00,00,00,00,00
+	DEFB 00,00,18,18,08,10,00,00	;	`
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,1C,12,12,12	;	a
+	DEFB 3C,00,00,00,00,00,00,00
+	DEFB 00,00,02,02,1E,22,22,22	;	b
+	DEFB 1E,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,3C,02,02,02	;	c
+	DEFB 3C,00,00,00,00,00,00,00
+	DEFB 00,00,20,20,3C,22,22,22	;	d
+	DEFB 3C,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,1C,22,1E,02	;	e
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,18,24,04,0E,04,04	;	f
+	DEFB 04,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,3C,22,22,22	;	g
+	DEFB 3C,20,1E,00,00,00,00,00
+	DEFB 00,00,02,02,1E,22,22,22	;	h
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 00,00,08,00,0C,08,08,08	;	i
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,10,00,10,10,10,10	;	j
+	DEFB 12,0C,00,00,00,00,00,00
+	DEFB 00,00,02,02,12,0A,06,0A	;	k
+	DEFB 12,00,00,00,00,00,00,00
+	DEFB 00,00,04,04,04,04,04,04	;	l
+	DEFB 18,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,1E,2A,2A,2A	;	m
+	DEFB 2A,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,1E,22,22,22	;	n
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,1C,22,22,22	;	o
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,1E,22,22,22	;	p
+	DEFB 1E,02,02,00,00,00,00,00
+	DEFB 00,00,00,00,3C,22,22,22	;	q
+	DEFB 3C,20,20,00,00,00,00,00
+	DEFB 00,00,00,00,1A,26,02,02	;	r
+	DEFB 02,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,3C,02,1C,20	;	s
+	DEFB 1E,00,00,00,00,00,00,00
+	DEFB 00,00,04,04,0E,04,04,24	;	t
+	DEFB 18,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,22,22,22,22	;	u
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,22,22,22,14	;	v
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,22,22,2A,2A	;	w
+	DEFB 14,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,22,14,08,14	;	x
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 00,00,00,00,22,22,22,22	;	y
+	DEFB 3C,20,1E,00,00,00,00,00
+	DEFB 00,00,00,00,3E,10,08,04	;	z
+	DEFB 3E,00,00,00,00,00,00,00
+	DEFB 00,00,18,04,04,02,04,04	;	{
+	DEFB 18,00,00,00,00,00,00,00
+	DEFB 00,00,08,08,08,00,08,08	;	|
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,0C,10,10,20,10,10	;	}
+	DEFB 0C,00,00,00,00,00,00,00
+	DEFB 00,00,4C,32,00,00,00,00	;	~
+	DEFB 00,00,00,00,00,00,00,00
+	DEFB 00,00,00,3E,3E,3E,3E,3E	;	block
+	DEFB 00,00,00,00,00,00,00,00
+
+
+*EJECT
+;language dependent ASCII characters:
+	DEFB 00,00,1C,22,3A,2A,3A,02	;	@
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,1C,04,04,04,04,04	;	[
+	DEFB 1C,00,00,00,00,00,00,00	
+	DEFB 00,00,02,02,04,08,10,20	;	\
+	DEFB 20,00,00,00,00,00,00,00
+	DEFB 00,00,1C,10,10,10,10,10	;	]
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,18,04,04,02,04,04	;	{
+	DEFB 18,00,00,00,00,00,00,00
+	DEFB 00,00,08,08,08,00,08,08	;	|
+	DEFB 08,00,00,00,00,00,00,00
+	DEFB 00,00,0C,10,10,20,10,10	;	}
+	DEFB 0C,00,00,00,00,00,00,00
+	DEFB 00,00,4C,32,00,00,00,00	;	~
+	DEFB 00,00,00,00,00,00,00,00
+
+;German characters:
+	DEFB 00,1C,22,04,0A,12,24,28	;	paragraph
+	DEFB 10,22,1C,00,00,00,00,00
+	DEFB 22,00,08,14,22,22,3E,22	;	"Ae"
+	DEFB 22,00,00,00,00,00,00,00
+	DEFB 22,00,1C,22,22,22,22,22	;	"Oe"
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 22,00,22,22,22,22,22,22	;	"Ue"
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,14,00,1C,12,12,12	;	"ae"
+	DEFB 3C,00,00,00,00,00,00,00
+	DEFB 00,00,14,00,1C,22,22,22	;	"oe"
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,14,00,22,22,22,22	;	"ue"
+	DEFB 1C,00,00,00,00,00,00,00
+	DEFB 00,00,1C,22,22,1E,22,22	;	"sharp" "s"
+	DEFB 1E,02,02,00,00,00,00,00
+
+
+*EJECT
+	.RADIX 10
+
+	end	start
+	

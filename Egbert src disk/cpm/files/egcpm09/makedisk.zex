@@ -1,0 +1,13 @@
+|zexmsg off|
+|ccpcmd off|
+|silence on|
+|say||CR LF|                   Initialisieren einer Genie IIIs Diskette
+|endsay|
+^$1B:
+format $1
+<j
+initdir $1
+<Y
+set $1[access=on,update=on]
+
+

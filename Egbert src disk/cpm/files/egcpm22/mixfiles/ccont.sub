@@ -1,0 +1,89 @@
+-V
+;***************
+;* link only ? *
+;***************
+%if %2 = "L" then goto link
+%if %2 = "l" then goto link
+%if %3 = "L" then goto link 
+%if %3 = "l" then goto link 
+
+;*******************************
+;* erase temporary shell files *
+;*******************************
+ERA A:CTEMP.SUB
+ERA A:$$$$$$.SUB
+
+;**********************
+;* compiling errors ? *
+;**********************
+%iffile $1.LST "present" then goto error
+
+;******************
+;* assembler pass *
+;******************
++V
+M80 =$1/Z/M
+-V
+ERA $1.MAC
+
+;******************
+;* compile only ? *
+;******************
+%if %2 = "F" then goto end
+%if %2 = "f" then goto end
+
+%link
+;********************
+;* link list file ? *
+;******************** 
+%iffile $1.LNK present then goto link_list
+
+;***************
+;* linker pass *
+;***************
++V
+L80 $1/N,$1,CLIB/S/E:CCINIT
+-V
+
+%continue
+;*****************
+;* run program ? *
+;*****************
+%if %2 = "r" then goto run
+%if %2 = "R" then goto run
+%if %3 = "r" then goto run
+%if %3 = "R" then goto run
+%goto end
+
+%link_list
+;**************************
+;* linking from list file *
+;**************************
+PIP LINKLIST=$1.LNK
+%print "CLIB/S/E:CCINIT" >>LINKLIST 
++V
+L80 $1/N,$1 <LINKLIST
+-V
+ERA LINKLIST
+%goto continue
+
+%error
+;**************
+;* error exit *
+;**************
+TYPE $1.LST
+
+%end
+;***************
+;* normal exit *
+;***************
++V
+%exit
+
+%run
+;***************
+;* run program *
+;***************
++V
+$1
+

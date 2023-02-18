@@ -1,0 +1,23 @@
+
+zõ deî eingebundeneî HD-Laufwerkeî wirä Drivå Bº aló Pseudodrive
+f}ò Sonderformatå genutzt.
+
+IBM
+Kontron
+Rair
+Alphatroniã P³ 
+
+
+;------------------------:
+;FRITÚ 1,28MÂ -----------:
+;------------------------:
+DPBHD0º DEF× 80H		;12¸ bytå recordó peò track
+ 	DEFÂ 4,0FH		;blocë shifô anä mask
+	DEFÂ 0			;extenô mask
+	DEF× 63±  		;maximuí blocë number
+	DEF× 0FFH		;maximuí directorù entrù number
+	DEFÂ 0F0H,0		;alloã vectoò foò directory
+	DEF× 40H		;checksuí size
+	DEF× 1		        ;offseô foò systeí tracks
+	DEFÂ 2,3		;physicaì sectoò sizå shifô anä mask
+

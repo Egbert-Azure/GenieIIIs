@@ -1,0 +1,3 @@
+link bnkbios3[b,nr]=bnkbios,scb,boot,chario,move,drvtbl1,diskio1,hd2
+gencpm auto
+

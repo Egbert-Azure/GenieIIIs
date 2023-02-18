@@ -1,0 +1,361 @@
+From news  Sat Jul 31 01:33:08 1993
+Path: cpmgut!tpki.toppoint.de!fub!mailgzrz.TU-Berlin.DE!news.netmbx.de!Germany.EU.net!mcsun!sunic!uunet!spool.mu.edu!uwm.edu!msuinfo!netnews.upenn.edu!netnews.noc.drexel.edu!n1-20-232-hess-lab.coe.drexel.edu!Milleraw
+From: Milleraw@duvm.ocs.drexel.edu (Andrew Miller)
+Newsgroups: comp.os.cpm
+Subject: Read Disk From P.A.C. 3000 Continued
+Message-ID: <1993Jul28.134736.13475@netnews.noc.drexel.edu>
+Date: 28 Jul 93 13:47:36 GMT
+Sender: news@netnews.noc.drexel.edu
+Organization: drexel university
+Lines: 19
+X-Xxmessage-Id: <A87BFC71B60114E8@n1-20-232-hess-lab.coe.drexel.edu>
+X-Xxdate: Wed, 28 Jul 93 09:50:41 GMT
+X-Useragent: Nuntius v1.1.1d12
+
+I want to thank all of those who replied to my initial request.  I
+purchased the
+shareware program 22DISK ver. 1.39.  I can now see and copy files from my
+floppies.
+ 
+ I only have one more challenge for you all.  The files that I am coping
+are all
+ have the ".DTA" suffix.  Some how I would like to convert these files to
+a ASCII
+ format.  Is this possible?  On the P.A.C (CP/M) I am able to view these
+files in
+ a tabular format (using RTEXAM).  I would like to be able to use these
+files with
+ the same tabular format in a text file.  
+ Any help would be greatly appeciated!!!!!!
+ 
+ Please reply by mailto:  Milleraw@duvm.ocs.drexel.edu
+ 
+ Andrew Miller
+From news  Sat Jul 31 01:33:10 1993
+Path: cpmgut!tpki.toppoint.de!fub!math.fu-berlin.de!xlink.net!howland.reston.ans.net!gatech!willis1.cis.uab.edu!cs.utk.edu!not-for-mail
+From: jfarmer@cs.utk.edu (JOHN FARMER)
+Newsgroups: comp.os.cpm
+Subject: Kaypro K-10 drives info needed
+Date: 28 Jul 1993 15:47:55 -0400
+Organization: CS Department, University of Tennessee, Knoxville
+Lines: 41
+Message-ID: <236l5bINNemi@duncan.cs.utk.edu>
+NNTP-Posting-Host: duncan.cs.utk.edu
+Summary: I know I knew it, but I lost it.
+Keywords: hard drive kaypro
+
+
+I know that I used to know this, but I can't find it in my files in my
+alumi account at UTK or on my wife's Kaypro-4, or on my Morrow MD-3...
+
+	What are the *required* specs for the hard disk on the Kaypro-10?
+
+For those readers with long memories, I bought 3 dead K-10 machines last
+year.  Other matters leapt into the queue ahead of these and am just now
+getting around to trying to fix them.  We got the dist. disks from Don
+and can boot the machines from the floppy.  But trying to format the 
+hard disks fails.  (The K-10 used a SASI controller from the motherboard
+to talk to the floppy and the 10 meg HD (which _I think_ is a ST-412
+mfm type drive.  I.E. the controller on the MB talked to controller
+(looks like a SASI drive) than then controlls the MFM disk.... Still
+with me? Good!)
+
+Anyway, either the sub controller/adaptor is dead in all three machines,
+or the hard drives are toast.  (I sure hope he gets to the point soon...:^>)
+
+Susan, my wife, has reminded me (again!) that I _promised her_ at least
+one of the K-10's working....  So, I'm planning to grab some of the
+cheap 10 or 20 meg drives floating around.  I just want to do it without
+having to hack any code or make serious mods to hardware (not that I can't,
+I just don't want to now.)  Sure, since I lost my notes about this subject,
+I'm hoping that someone else kept theirs.
+
+If you can help please E-mail me (or post if you want to).
+
+Thanks in advance,
+
+John T.
+
+
+
+
+
+-- 
+John T. Farmer, Jr.					jfarmer@cs.utk.edu
+Full-time Daddy, Part-time Grad Student,
+Full-time wage slave, Wood butcher when I can.
+My son's hero's are Capt. Jean Luc Picard, Norm Abrams, and Mr. Rogers!
+From news  Sat Jul 31 01:33:11 1993
+Path: cpmgut!tpki.toppoint.de!fub!math.fu-berlin.de!xlink.net!howland.reston.ans.net!vixen.cso.uiuc.edu!uchinews!cs.umd.edu!mojo.eng.umd.edu!tedwards
+From: tedwards@eng.umd.edu (Thomas Grant Edwards)
+Newsgroups: comp.os.cpm
+Subject: Re: Help getting going on Osborne I
+Date: 28 Jul 1993 20:37:51 GMT
+Organization: Project GLUE, University of Maryland, College Park
+Lines: 20
+Message-ID: <236o2vINNblo@mojo.eng.umd.edu>
+References: <23413nINN3sd@mojo.eng.umd.edu> <1993Jul27.215653.6038@crash>
+NNTP-Posting-Host: kolo.src.umd.edu
+
+In article <1993Jul27.215653.6038@crash> donm@crash.cts.com (Don Maslin) writes:
+>The Osborne I came with both CBASIC and MBASIC.  Which are you looking 
+>for?
+
+I'm not particular...I just need some simple programming language
+which will allow me to use the RS-232 and IEEE-488.  
+ 
+>Sydex' excellent shareware program: 22DISK is capable of reading/writing
+>Osborne I disks in both SSSD and SSDD formats.  It is available on many
+>BBS and on SIMTEL20 and its mirrors as 22DSKnnn.ZIP - where nnn is the 
+>version number, currently 1.39.
+
+Thanks much for this info!  Between this and the CP/M emulator it
+shouldn't be too hard to get my Osborne going real well!
+
+-Thomas
+ 
+> 
+
+
+From news  Sat Jul 31 01:33:11 1993
+Newsgroups: comp.os.cpm
+Path: cpmgut!tpki.toppoint.de!fub!mailgzrz.TU-Berlin.DE!news.dfn.de!darwin.sura.net!spool.mu.edu!uwm.edu!cs.utexas.edu!uunet!wyvern!alpha
+From: alpha@wyvern.wyvern.com (Joe Wright)
+Subject: Re: Kaypro K-10 drives info needed
+Message-ID: <CAwKpo.407@wyvern.wyvern.com>
+Organization: ALPHA, Box 68621, Va. Beach, VA 23455
+X-Newsreader: TIN [version 1.1 PL8]
+References: <236l5bINNemi@duncan.cs.utk.edu>
+Date: Thu, 29 Jul 1993 01:41:46 GMT
+Lines: 5
+
+The K-10 used Western Digital hard disk controller (forgot the number)
+and ST-506 interface drives.  No part of it is SASI.
+-- 
+Joe Wright  alpha@wyvern.com  "If you want it wRight"
+
+From news  Sat Jul 31 01:33:12 1993
+Newsgroups: comp.os.cpm
+Path: cpmgut!tpki.toppoint.de!fub!mailgzrz.TU-Berlin.DE!news.dfn.de!darwin.sura.net!howland.reston.ans.net!spool.mu.edu!olivea!uunet!mnemosyne.cs.du.edu!nyx!grallen
+From: grallen@nyx.cs.du.edu (Gregory Allen)
+Subject: Help!  I've inherited an Osborne with no floppies!
+Message-ID: <1993Jul29.022719.18046@mnemosyne.cs.du.edu>
+Summary: inherited Osborne Executive 
+Keywords: Osborne Executive, floppies, modem, terminal program 
+Sender: usenet@mnemosyne.cs.du.edu (netnews admin account)
+Organization: Nyx, Public Access Unix at U. of Denver Math/CS dept.
+Date: Thu, 29 Jul 93 02:27:19 GMT
+Lines: 21
+
+
+I've recently inherited an Osborne Executive.  The computer seems to be in
+fine working order, and I even have the original manuals.  The only problem
+is that I have no floppies!  I have gathered from reading the manual that there
+isn't a whole lot you can do without a "working disk" of some kind from which
+other floppies are mastered.  Is this true, or is there another way around the
+problem?
+
+Second question.  Can I use any standard modem with the Osborne?  I noticed
+that there is an RS232 port for a modem, and I was wondering if I could just
+buy any modem and hook it up, or does it need to be an Osborne modem?
+Finally, if I don manage to get some working floppies and a modem, where is
+the best place to get a terminal program for it?  Can I FTP one?
+
+If anyone can help me with these problems, I'd be forever grateful.
+
+Sincerely,
+
+Gregory Allen
+grallen@nyx.cs.du.edu
+
+From news  Sat Jul 31 01:33:13 1993
+Newsgroups: comp.os.cpm
+Path: cpmgut!tpki.toppoint.de!fub!mailgzrz.TU-Berlin.DE!news.dfn.de!xlink.net!howland.reston.ans.net!agate!dog.ee.lbl.gov!newshub.nosc.mil!crash!donm
+From: donm@crash.cts.com (Don Maslin)
+Subject: Re: Kaypro K-10 drives info needed
+Organization: CTS Network Services (crash, ctsnet), El Cajon, CA
+Date: 28 Jul 93 21:12:23 PDT
+Message-ID: <1993Jul28.211223.18223@crash>
+References: <CAwKpo.407@wyvern.wyvern.com>
+Lines: 19
+
+The Kaypro 10 used a sort of bastard SASI to an interface card that took
+it from 50 pins to 40 pins, and thence to the WD1002-HDO controller.  The
+drive is ST-412/506 interface and must be at least 306 cylinders and 
+4 heads.  Assuming the stock Kaypro 10 ROM and format program, you cannot
+format more than 306 cylinders, although on some versions you can use up
+to 8 heads.  (There are not many drives out there with 8 heads and only
+306 cylinders!)  Actually an ST-412 works fine, and any ST-225 or clone
+will work fine also.  You just lose half of the capacity.  Installing
+the TurboROM throws away those limitations, however.
+
+My regards to Susan!
+						 - don
+    donm@crash.cts.com
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    Don Maslin - Keeper of the Dina-SIG CP/M System Disk Archives
+         Chairman, Dina-SIG of the San Diego Computer Society
+       Clinging tenaciously to the trailing edge of technology.
+*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*--*
+ 
+From news  Sat Jul 31 01:33:17 1993
+Path: cpmgut!tpki.toppoint.de!fub!math.fu-berlin.de!xlink.net!howland.reston.ans.net!gatech!destroyer!news.itd.umich.edu!racine.ccs.itd.umich.edu!knassen
+From: knassen@racine.ccs.itd.umich.edu (Kent Nassen)
+Newsgroups: comp.os.cpm
+Subject: Re: CP/M FAQ
+Date: 29 Jul 1993 15:31:42 GMT
+Organization: U of Michigan, Ann Arbor
+Lines: 43
+Message-ID: <238qgu$4ua@terminator.rs.itd.umich.edu>
+References: <22lodfINN2je@life.ai.mit.edu>
+NNTP-Posting-Host: racine.ccs.itd.umich.edu
+
+In article <22lodfINN2je@life.ai.mit.edu> regnad@gnu.ai.mit.edu (Paul Prescott) writes:
+>
+>Now that I think about it, I've been reading this newsgroup for over a year,
+>and I've never seen a FAQ posted.  Is there one?  If not (OK, here comes the
+>big mistake :)  ), I'd be willing to put one togeather.  If this need
+>really exists, tell me and I'll let everyone know what I need to make
+>something worthwhile.
+>
+>Paul Prescott
+>regnad@gnu.ai.mit.edu
+
+As a relatively new subscriber to this newsgroup, I looked in vain 
+for an FAQ.  In fact, I almost asked what now seems like a "stupid" 
+question regarding a particular style of CP/M file compression until 
+I figured it out for myself by poking around in oak.oakland's archive 
+and reading documentation files.  Certainly, some explanation of 
+archive formats would be a good candidate for the FAQ.
+  I also gather that there are several businesses still supporting 
+CP/M products.  Getting them listed in the FAQ would be helpful.
+  Other possibilities for an FAQ:  What can I do with CP/M?, putting 
+together a CP/M system, disk drives (floppy, hard, ramdisk), the 
+22DISK program, WordStar and other "major" application programs, 
+editors, the HighTech C compiler: availability and setup, utility 
+programs that should be on every CP/M system, how to patch programs 
+so they run with your terminal, transferring data (modem, null modem, 
+sneaker net), programming languages, ZCPR and other CP/M system 
+improvements/replacements, BBS's that support CP/M (what is RCPM 
+anyway?), and Internet ftp sites with CP/M-related files.  
+  Obviously, there's room for a lot of material in a CP/M FAQ.  I 
+would find it a helpful resource, but I'm just starting out with 
+CP/M.  I suspect there are quite a few people like me out there 
+getting good deals on used equipment and wanting to learn how make 
+the most of what they have.  Encouraging such exploration will help 
+the CP/M community endure.  An FAQ can help be a central database of 
+basic information for getting started (or re-started).  
+  If you want to create and maintain an FAQ, Paul, I think it would 
+be great.
+
+
+-- 
+ .----------------Kent Nassen --- University of Michigan -----------------.
+ |  "There's never time to do it right, but always time to do it again."  |
+ `------------------------------------------------------------------------'
+From news  Sat Jul 31 01:33:23 1993
+Xref: tpki.toppoint.de comp.os.cpm:3470 comp.os.msdos.misc:13856
+Path: cpmgut!tpki.toppoint.de!fub!math.fu-berlin.de!fauern!xlink.net!howland.reston.ans.net!math.ohio-state.edu!cs.utexas.edu!uunet!tron!news.pgh.wec.com!godel!oscsf
+From: oscsf@godel.pgh.wec.com (Chuck Fuller)
+Newsgroups: comp.os.cpm,comp.os.msdos.misc
+Subject: Legacy system disk needed
+Followup-To: comp.os.cpm
+Date: 29 Jul 1993 20:21:56 GMT
+Organization: Westinghouse Corporate Computer Services
+Lines: 20
+Distribution: world
+Message-ID: <239bh4INNnv@daisy.pgh.wec.com>
+NNTP-Posting-Host: godel.pgh.wec.com
+X-Disclaimer: The author of this message is NOT an official spokesperson 
+              for Westinghouse Electric Corporation.  Views expressed 
+              herein are solely those of the author.
+Originator: oscsf@godel
+
+[I posted a message on this subject to the comp.os.cpm group awhile 
+back, but I'm not sure it ever left Westinghouse.  Pardon me if this is 
+a re-run ...] 
+
+
+I'm in need of a system disk for a Kaypro II with add-ons from Legacy 
+Computer Systems.  Specifically, this box has an 8088 co-processor 
+[hence the cross-post to msdos.misc], an 800KB (TEAC) disk upgrade, and 
+a 1200-baud internal modem.  I've already checked with Don Maslin ...  
+
+I would also be interested in any documentation that could tell me more
+about these things than I've been able to glean from old advertisements.
+
+Thanks!
+- Chuck
+-- 
+Charles S. Fuller                                       ____/   ____/   ____/
+Westinghouse Corporate Computer Services               /       /       /    
+Westinghouse Electric Corp., Pittsburgh, PA, USA      /           /   ____/
+oscsf@godel.pgh.wec.com, fuller@wccs.psc.edu        _____/  _____/   /    
+From news  Sat Jul 31 01:33:25 1993
+Path: cpmgut!tpki.toppoint.de!fub!math.fu-berlin.de!xlink.net!howland.reston.ans.net!math.ohio-state.edu!cs.utexas.edu!uunet!tron!news.pgh.wec.com!godel!oscsf
+From: oscsf@godel.pgh.wec.com (Chuck Fuller)
+Newsgroups: comp.os.cpm
+Subject: Re: CP/M FAQ
+Date: 30 Jul 1993 11:53:58 GMT
+Organization: Westinghouse Corporate Computer Services
+Lines: 24
+Message-ID: <23b24mINNhp4@daisy.pgh.wec.com>
+References: <22lodfINN2je@life.ai.mit.edu> <238qgu$4ua@terminator.rs.itd.umich.edu>
+NNTP-Posting-Host: godel.pgh.wec.com
+
+I, too, would like to see a CP/M FAQ.  It would certainly be better than
+creating a comp.os.cpm.you.need.22DISK newsgroup ;-)
+
+All jokes aside, the wealth of information currently available from the
+minds of the good folks who populate this newsgroup will, in all
+probability, decrease as people lose the time, interest, or access to
+devote to answering F A Q's.  Let's face it: our CP/M systems aren't 
+getting any younger ;-)  It would behoove us to "pick brains" while we 
+can.
+
+May I suggest separate (short) sections for the more popular systems 
+(Kaypro, Morrow, S100, Osborne, your-system, etc.) with a general 
+description, product lineage, OS versions, and the like ...?  Perhaps 
+volunteers could help Paul by maintaining these sections?  I, for one, 
+would not be averse to wordsmithing a Kaypro section.  
+
+Just a thought ...
+- Chuck
+
+-- 
+Charles S. Fuller                                       ____/   ____/   ____/
+Westinghouse Corporate Computer Services               /       /       /    
+Westinghouse Electric Corp., Pittsburgh, PA, USA      /           /   ____/
+oscsf@godel.pgh.wec.com, fuller@wccs.psc.edu        _____/  _____/   /    
+From news  Sun Jul 31 01:33:26 19153
+Path: cpmgut!tpki.toppoint.de!fub!math.fu-berlin.de!xlink.net!howland.reston.ans.net!math.ohio-state.edu!cs.utexas.edu!not-for-mail
+From: MAT%PLTUMK11.BITNET@SEARN.SUNET.SE (Maciej J. Woloszyk)
+Newsgroups: comp.os.cpm
+Subject: Small C-Where am I doing wrong?
+Date: 30 Jul 1993 10:31:29 -0500
+Organization: UTexas Mail-to-News Gateway
+Lines: 19
+Sender: daemon@cs.utexas.edu
+Message-ID: <9307301532.AA26077@deepthought.cs.utexas.edu>
+NNTP-Posting-Host: cs.utexas.edu
+
+     Hi!
+For a few months I'm using CPM emulator called ProDos on my Sam Coupe.
+It seem to be quite good emulation, but there are no software supplied
+with it. I've been looking into simtel mirror to get some programs, and
+now I have a few. My problem is that I have Small C compiler but I can't
+use it. After I compile program and assemble it with Small C assembler,
+I can't link it. There are very few words about how to do that in docs
+which comes with Small C and I haven't any other docs (especially books).
+I'll be grateful if someone can tell me where is my problem with this.
+But please don't tell me to get HiTech C. I've already done it. It's
+great, but I think my machine (6 MHz Z80) is a bit to slow for it.
+Thanx in advance.
+
+                        Maciej.
+
+--
+Maciej J. Woloszyk (MAT of ESI)       ...Shields up! Red alert!
+BITNET  :MAT@PLTUMK11                     Ready phasers, lock on torpedos...
+INTERNET:MAT@VM.CC.TORUN.EDU.PL
+

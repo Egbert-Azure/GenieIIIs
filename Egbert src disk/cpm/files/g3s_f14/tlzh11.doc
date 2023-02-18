@@ -1,0 +1,181 @@
+                        TYPELZH v11
+
+    TYPELZH is merely a grafting of the separately released LZH 
+decoding capability to TYPELZ v22.   Version 1.0 was the Beta 
+test.
+
+    TYPELZH treats files with the extension .?Y? as LZH encoded, 
+just as the original TYPELZ treated files with the extentions 
+.?Z? and .?Q? as CRUNCHED and SQueezed.  Everything else should 
+be the same.
+
+    FYI: The offical release of LZH compression and decompression 
+is in the library CRLZH11.LBR.  These programs are Z80-only.  
+However, there are other 'graftings' of this compression method to 
+LT and to the FCRUNCH programs for 8080/8085-only applications.
+
+---------------------TYPELZ docs follow:-------------------------
+
+			 TYPELZ v22
+
+
+     TYPELZ22  is  functional replacement for the  previous  v1.5
+release.  All installation, usage, and switches are identical  to
+those of v1.5 as described below.  The main differences are  that
+all  of  the data decompression code has been moved  out  of  the
+source	into  two .REL files.  This  substantially  shortens  the
+source	code, (which was  getting unwieldy), and allows the  pro-
+gram  to work with the new v24 type crunched files.  If  the  in-
+stallation patches provided prove insufficient, the source can be
+reassembled & linked.  There is a short note on linking near  the
+beginning of the source code.			  - SGG
+
+
+INSTALLATION:
+=============
+     Beginning with version 1.5, virtually ALL user  configurable
+options can be implemented by patching the .COM file with DDT  or
+PATCH.COM.  See TZINST15.DOC for assistance with installation.
+
+
+USAGE:
+======
+ TYPELZ  [d [u]:]  [ <lbr-name> ]  <filename>  [ /o ]
+
+    If	two filenames are specified, it will be assumed that  the
+first  is a Library file, in which case the suffix .LBR  will  be
+added if it wasn't specified explicitly.
+
+    Drive/user,  drive	only, or neither may  precede  the  first
+filename.   The current user# and the currently logged	(default)
+drive will be used when either is not specified.
+
+
+SWITCHES:
+=========
+    If '/N' is added to the command line, the file will be  typed
+without  stopping after every screenful of text.   Otherwise  the
+typing	will stop after each screenful (default 23 lines for  one
+line  "overlap"  on a 24 line screen). When stopped,  the  prompt
+'[more]'  will	be displayed.  If "L", "l", or the space  bar  is
+hit,  the  screen will be advanced by a single	line;  any  other
+character will cause a full screen advance.  These characters may
+be  changed to suit one's personal preference (see source  for	a
+full selection of assembly time options).
+
+     If '/L' is added to the command line, and the WHEEL byte  is
+non-zero,  the file will be output to the LST: device  (printer.)
+Page  ejects will be performed every 60 lines, and tabs  will  be
+expanded  to the appropriate number of spaces.	NOTE that if  the
+wheel byte is not set, the online USAGE message will not refer to
+the '/L' option, and attempting to use it will produce an  "Input
+file not found" error.
+
+
+
+HISTORY:
+========
+	       *** Changes for v1.5. [Michael Conley] ***
+
+INSTALLATION  made  easier via improved patch table at	start  of
+	      program. See TZINST15.DOC for patching assistance.
+
+CONSOLE       is  now monitored continuously for ^S pause, ^X  or
+	      ^C abort.
+_________________________________________________________________
+
+	       *** Changes for v1.4. [Michael Conley] ***
+
+PRINTER     output can be obtained by typing ' /L' at the end  of
+	    the  command  line, provided that the WHEEL  byte  is
+	    set.   The	program will expand tabs to  the  correct
+	    number  of	spaces and will send a page  eject  (0CH)
+	    after each 60 lines.
+_________________________________________________________________
+
+	       *** Changes for v1.3. [Michael Conley] ***
+
+WHEEL	    byte implemented.  The Wheel byte location is equated
+	    (set  to  03EH) and is checked before  the	following
+	    restrictions  are tested.  If non-zero,  all  of  the
+	    following tests are over-ridden.
+
+MAXLIN	    is	implemented  (set to 80 lines now,  no	limit  if
+	    wheel.)
+
+NOTYP	    table  is included.  If a filetype is listed  in  the
+	    NOTYP table, program refuses to type it. (.COM, .OVR,
+	    etc...)
+
+SYSTEM	    files are not typed unless wheel.
+
+RESTRICTED  files (high bit set on second character of	filename)
+	    are not typed.  This allows you to individually  pro-
+	    tect a file without putting it into the NOTYP  table.
+	    Same  bit  is tested by some versions  of  XMODEM  to
+	    restrict downloading.
+
+PAGINATION  can  be  defeated by typing ' /N' at the end  of  the
+	    command line.  The program will then type the  entire
+	    file (up to the limit of MAXLIN if no wheel)  without
+	    breaking for the [more] prompt.
+
+LUXTYP	    replacement.  The program makes an ideal  replacement
+	    for  Luxtyp because its command structure allows  LUX
+	    to call it without modification, thus enabling LUX to
+	    type Crunched as well as Squeezed files.
+_________________________________________________________________
+
+*** v12  [Steven Greenberg] added  "DU:" support ***
+*** v11  [Steven Greenberg] fixed a small in v1.0 ***
+*** v10  [Steven Greenberg] original release ***
+_________________________________________________________________
+
+
+
+	    INSTALLATION GUIDE FOR TYPELZ22
+
+
+Beginning with the release of TYPELZ15, virtually all user-configurable
+conditionals and values may be patched directly into the .COM file using
+DDT or PATCH, or an equivalent program.
+
+For convenience, each location is marked with a pointer, so that when the
+file is displayed, the byte to change will be clearly indicated ... for
+example the byte following:  [COLUMNS>	in the DDT or PATCH display would
+be the one to change to adjust the number of columns on your CRT screen.
+
+Here is a rundown of the user-alterable values and flags:
+
+
+POINTER 	ADDRESS 	APPLICATION
+
+MAXDRV+1>	10Dh		Highest accessible drive + 1 (A=2, B=3, etc)
+
+MAXUSR+1>	118h		Highest accessible user + 1
+
+MAXLINES>	123h		Max # of lines to display. 0 = no limit.
+
+CRTLINES>	12Eh		# of lines on your screen
+
+COLUMNS>	12Eh		# of columns on your screen
+
+NEXTLN> 	141h-143h	After pause, up to 3 character choices to
+			   display one additional line. L,l,(space)?
+EJECTPG>	14Eh		send Form Feed to printer after # of lines.
+
+WHLTEST>	158h		0 = NO Restrictions. 0FFh = Restricted except
+			   for WHEEL users. (Wheel Address 03Eh)
+
+NOTYPE> 	161h-188h	Table of entries for filetypes not to be
+			   displayed.  Each MUST be 3 characters long,
+			   and '?' characters are acceptable, function
+			   as "wildcards" in the search.  Typical
+			   entries should include non-text files, such
+			   as COM OBJ LBR REL, etc...
+
+End of user alterable area.
+
+Note that the source code is included in the library and may be re-assembled
+and linked, in the event the options here are insufficient for the application.
+

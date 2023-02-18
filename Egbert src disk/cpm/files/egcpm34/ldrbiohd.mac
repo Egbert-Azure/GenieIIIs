@@ -1,0 +1,472 @@
+;******************************************************************************
+;*  L D R B I O S  *  C P M S Y S 3  *  T h o m a s   H o l t e * 8 5 0 9 0 8 *
+;******************************************************************************
+;*									      *
+;*  		 M I N I M U M   B I O S   F O R   C P M L D R		      *
+;*               =============================================                *
+;*									      *
+;*									      *
+;*  Thomas Holte						 Version 1.0  *
+;*									      *	
+;*  Dies ist die Version f}r Egbert Schr|er.				      *
+;*  ge{ndert f}r 20MB Festplatte mit OMTI-Controller                          *
+;*   Februar 1992 / Volker Dose                                               * 	
+;* DPH f]r 21,4 MB Harddisk / 1 Partition angepa~t 21.02.93 E.Schr|er         *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+;ASCII control codes:
+BEL	EQU  07H		;bell
+LF	EQU  0AH		;line feed
+CR	EQU  0DH		;carriage return
+SUB	EQU  1AH		;substitute
+ESC	EQU  1BH		;escape
+RS	EQU  1EH		;record separator
+
+$SYS1 	EQU  0FAH		;system byte 1
+
+PUSHHL	EQU  0E5H		;machine code of PUSH HL
+
+;BIOS jump vector.
+
+;All BIOS routines are invoked by calling these entry points.
+
+?BOOT:	JP   BOOT		;initial entry on cold start
+        JP   DUMMY		;not used jumps in LDRBIOS
+	JP   DUMMY
+	JP   DUMMY
+?CONO:	JP   CONOUT		;send console output character
+        JP   DUMMY		;not used jumps in LDRBIOS
+	JP   DUMMY
+	JP   DUMMY
+?HOME:	JP   HOME		;set disks to logical home
+?SLDSK:	JP   SELDSK		;select disk drive, return disk parameter info
+?STTRK:	JP   SETTRK		;set disk track
+?STSEC:	JP   SETSEC		;set disk sector
+?STDMA:	JP   SETDMA		;set disk I/O memory address
+?READ:	JP   READ		;read physical block(s)
+        JP   DUMMY		;not used jumps in LDRBIOS
+	JP   DUMMY
+?SCTRN:	JP   SECTRN		;translate logical to physical sector
+        JP   DUMMY		;not used jumps in LDRBIOS
+	JP   DUMMY
+	JP   DUMMY
+	JP   DUMMY
+	JP   DUMMY
+	JP   DUMMY
+	JP   DUMMY
+	JP   DUMMY
+?MOVE:	JP   MOVE		;block move memory to memory
+	JP   DUMMY		;not used jumps in LDRBIOS
+	JP   DUMMY
+	JP   DUMMY
+	JP   DUMMY
+ 	
+
+*EJECT
+BOOT:
+;====
+
+;Initial entry point for system startup.
+
+	JP   ?INIT		;perform any additional system initialization
+				;and print signon message
+
+
+CONOUT:
+;======
+
+;Console output. Send character in reg. C to all selected devices.
+	LD   A,C		;character  --> accu
+        LD   C,4  		;function # --> reg. C
+      	JP   ?USERF		;display char
+
+
+HOME:
+;====
+
+;Home selected drive. Treated as SETTRK (0).
+
+	LD   BC,0		;same as set track zero
+	JR   SETTRK
+
+
+SELDSK:
+;======
+
+;Select disk drive. Drive code in reg. C. Invoke login procedure for drive if
+;this is first select. Return address of disk parameter header in reg. HL.
+
+	LD   HL,DS0             ;^extended disk parameter header --> reg. HL
+	RET
+
+;Extended Disk Parameter Headers (XDPHs)
+
+	DEFS 8
+	DEFB 0,2	        ;relative drive zero
+DS0:  	DEFW 0			;no translation table
+	DEFW 0,0,0,0		;BDOS scratch area
+	DEFB 0,0		;media flag
+	DEFW DPB0   		;disk parameter block
+	DEFW 0            	;no CSV
+	DEFW ALV0  		;allocation vector
+	DEFW DIRBCB		;DIRBCB alloc'd by GENCPM
+	DEFW DTABCB	
+	DEFW 0FFFFH		;no HASH
+	DEFB 0			;hash bank
+
+;Disk Parameter Block (DPB)
+DPB0: 	DEFW 136		;128 byte records per track
+	DEFB 5,31		;block shift and mask
+	DEFB 1			;extent mask
+	DEFB 059H,014H		;maximum block number = 5226
+	DEFW 2047		;maximum directory entry number
+	DEFB 0FFH,0FFH		;alloc vector for directory
+	DEFB 000H,080H		;checksumm size
+	DEFW 2			;offset for system tracks
+	DEFB 2,3		;physical sector size shift and mask
+
+
+;directory buffer control block:
+DIRBCB:	DEFB 0FFH		;drive
+	DEFS 4			;record #, written ?
+	DEFB 0
+	DEFS 4			;track, sector
+	DEFW DIR		;buffer address
+
+;data buffer:
+DTABCB:	DEFB 0FFH		;drive
+	DEFS 4			;record #, written ?
+	DEFB 0
+	DEFS 4			;track, sector
+	DEFW DATA		;buffer address
+
+
+SETTRK:
+;======
+
+;Set track. Saves track address from reg. BC in @TRK for further operations.
+
+	LD   (@TRK),BC
+	RET
+
+
+SETSEC:
+;======
+
+;Set sector. Saves sector number from reg. BC in @SECT for further operations.
+
+	LD   (@SECT),BC
+	RET
+
+
+SETDMA:
+;======
+
+;Set disk memory address. Saves DMA address from reg. BC in @DMA.
+
+	LD   (@DMA),BC
+	RET
+
+
+READ:
+;====
+
+;Read physical record from currently selected drive. Finds address of proper
+;read routine from extended disk parameter header (XDPH).
+
+hdport	equ	40h
+hdstat	equ	hdport+1
+hdres	equ	hdport+1
+hdsel	equ	hdport+2
+hdconf	equ	hdport+2
+hdmask	equ	hdport+3
+
+hdread:	xor	a
+	ld	(head),a
+	ld	bc,(@trk)
+	ld	a,c
+	ld	(cylind),a
+	rr	b
+	rr	c
+	rr	b
+	rr	c
+	ld	a,c
+	and	0c0h
+	ld	c,a
+	ld	hl,head
+	ld	a,(@sect)
+	cp	17
+	jr	c,hds0
+	sub	17
+	set	0,(hl)
+	jr	hdsok
+hds0:	res	0,(hl)
+hdsok:	or	c
+	ld	(sect),a
+	
+rdsect:	di
+	ld	bc,0508h
+	call	hdscmd
+rd1$:	in	a,(hdstat)
+	cp	0cfh
+	jr	z,termcmd
+	cp	0cbh
+	jr	nz,rd1$
+	ld	hl,(@dma)
+	ld	c,hdport
+	jr	rd_dat
+	
+hdrdlp:	in	a,(hdstat)
+	cp	0cfh
+	jr	z,termcmd
+	cp	0cbh
+	jr	nz,hdrdlp
+rd_dat:	ini
+	jr	hdrdlp
+	
+termcmd:
+	ld	c,8
+tr$:	ld	b,0
+tr$1:	in	a,(hdstat)
+	cp	0cfh
+	jr	z,tr$2
+	djnz	tr$1
+	ld	hl,hdmsg2
+	jr	tr$3
+	dec	c
+	jr	nz,tr$
+	
+tr$2:	in	a,(hdport)
+	and	2
+	jr	z,exit
+	ld	hl,hdmsg1
+tr$3:	call	pr_msg
+	ld	a,1
+exit:	ret
+
+															
+
+SECTRN:
+;======
+
+;Sector translate. Indexes skew table in reg. DE with sector in reg. BC.
+;Returns physical sector in reg. HL. If no skew table (reg. DE = 0) then
+;returns physical = logical.
+
+	LD   L,C
+	LD   H,B
+	RET
+
+
+MOVE:
+;====
+      	EX   DE,HL		;we are passed source in DE and dest in HL
+	LDIR			;use Z80 block move instruction
+        EX   DE,HL              ;need next addresses in same regs
+DUMMY:  RET
+
+
+*EJECT
+?INIT:	DI			;disable interrupts
+	IM   1			;interrupt mode 1 (RST 7)
+      	LD   C,23		;function # --> reg. C
+	CALL ?USERF		;general system initialization
+
+	.XLIST
+	.XCREF
+
+
+;hard disk init routine:
+DS$INIT:out	(hdres),a
+get_st:	in	a,(hdstat)
+	cp	0c0h
+	jr	nz,get_st
+setmsk:	xor	a
+	out	(hdmask),a
+w0:	in	a,(hdstat)
+	cp	0c0h
+	jr	nz,w0
+			
+
+trpara:	ld	hl,ifield
+	ld	bc,050ch
+	call	hdscmd
+	ld	hl,hd_charact
+	ld	c,hdport
+	ld	b,8
+tr_p1:	in	a,(hdstat)
+	cp	0c9h
+	jr	nz,tr_p1
+	jr	nx1
+	
+nxtbyt:	call	wcr
+nx1:	ld	a,(hl)
+	out	(c),a
+	inc	hl
+	djnz	nxtbyt
+	
+rdy1:	in	a,(hdstat)
+	cp	0cfh
+	jr	nz,rdy1
+	in	a,(hdport)
+	bit	2,a
+	jr	z,pri_ok
+	out	(hdres),a
+	ld	hl,hdmsg1
+	call	pr_msg
+	ret
+
+
+pri_ok:	ld	hl,iniok
+	call	pr_msg
+	ret
+
+
+cfield:
+head:	db	0
+sect:	db	0
+cylind:	db	0
+bcount:	db	1
+termin:	db	2
+
+
+hd_charact:
+	db	02h			;entspricht 615 Cylinder
+	db	67h			;LSB	
+	db	4			;4 K|pfe
+	db	02h,58h			;first cyl. reduced current
+	db	01h,2ch			;first cyl. precomp.
+	db	0
+
+ifield:	db	0,0,0,0,0		
+
+iniok:	db	'Seagate ST 225   21,4 MB',cr,lf,0
+hdmsg1:	db	bel,cr,lf
+	db	'Hard Disk Terminate Error !'
+	db	cr,lf,lf,0
+hdmsg2:	db	bel,cr,lf
+	db	'Hard Disk Read Error  !'
+	db	cr,lf,lf,0
+
+
+; Subroutine Area				
+
+pr_msg:	ld	a,(hl)
+	cp	0
+	ret	z
+	ld	c,a
+	call	conout
+	inc	hl
+	jr	pr_msg
+	
+	
+wcr:	push	bc
+	ld	b,0
+wcr1:	in	a,(hdstat)
+	bit	0,a
+	jr	nz,wcr2
+	djnz	wcr1
+wcr2:	pop	bc
+	ret
+	
+	
+hdscmd:	in	a,(hdstat)
+	cp	0c0h
+	jr	z,hdc_id
+	xor	a
+	out	(hdres),a
+	jr	hdscmd
+hdc_id:	out	(hdsel),a
+	call	wcr
+	ld	a,c
+	out	(hdport),a
+	ld	c,40h
+nxbhd:	call	wcr
+	outi
+	jr	nz,nxbhd
+	ret
+								
+			
+
+*EJECT
+;table of driver entry vectors:
+$VDINIT	EQU  0    		;initialize the video controller chip M6845
+$RSINIT	EQU  1    		;initialize the RS-232-C interface
+$KBCHAR	EQU  2    		;get a keyboard character if available
+$KBWAIT	EQU  3     		;wait for a keyboard character
+$VDCHAR	EQU  4    		;display a character
+$PRSTAT	EQU  5    		;test printer status
+$PRCHAR	EQU  6    		;output a character to the printer
+$RSRCST	EQU  7    		;get a character from the RS-232-C interface if
+				;available
+$RSRCV	EQU  8    		;receive a character from the RS-232-C
+				;interface
+$RSTXST	EQU  9    		;test the RS-232-C output status
+$RSTX	EQU  10    		;transmit a character to the RS-232-C interface
+$READ	EQU  11   		;read a disk sector
+$WRITE	EQU  12   		;write a disk sector
+$GETTIM	EQU  13   		;get time and date in binary format
+$SETTIM	EQU  14   		;set time and date in binary format
+$XMOVE	EQU  15			;interbank data transfer
+$GTIME3	EQU  18			;get time and date in CP/M 3 format
+$STIME3	EQU  19			;set time and date in CP/M 3 format
+$LDCHAR	EQU  20			;load bit pattern into character RAM
+$RSTCHR	EQU  21			;restore original character set
+$SCRNIO EQU  22			;direct screen I/O
+$INIT	EQU  23			;general system initialization
+$CLOCK	EQU  24			;turn clock display on/off
+$DISP	EQU  25			;turn on/off graphic display
+$CLS	EQU  26			;clear graphic screen
+$PLOT	EQU  27			;plot dot    on graphic screen
+$POINT	EQU  28			;read dot  from graphic screen
+$LINE	EQU  29			;draw line   on graphic screen
+$CIRCLE	EQU  30			;draw circle on graphic screen
+$ARC	EQU  31			;draw arc    on graphic screen
+$COPY	EQU  33			;copy area
+
+;call ROM driver routines:
+?USERF:	LD   (SAVESP),SP	;save stack pointer
+	LD   SP,0E100H  	;temporary stack --> stack pointer
+        PUSH BC			;save register set
+	PUSH DE
+	PUSH HL
+	PUSH IX
+	PUSH IY
+	DI			;disable interrupts
+       	RST  0     		;call driver routine
+	PUSH AF    		;save accu
+	LD   A,11010101B	;disable memory mapped I/O
+				;disable graphic display
+				;disable boot EPROM
+				;disable graphic page
+				;7.2 MHz clock frequency
+				;enable video display
+	OUT  ($SYS1),A		;write system byte 1
+	POP  AF    		;restore accu
+	POP  IY			;restore register set
+	POP  IX
+	POP  HL
+	POP  DE
+	POP  BC
+	LD   SP,(SAVESP)	;restore stack pointer
+	RET			;return to caller
+
+SAVESP: DEFS 2			;temporary memory for stack pointer
+
+
+*EJECT
+@TRK:	DEFS 2			;current track number
+@SECT:	DEFS 2			;current sector number
+@DMA:	DEFS 2			;current DMA address
+
+
+ALV0    EQU  $
+DIR     EQU  ALV0+203
+DATA   	EQU  DIR+512
+SPARE$DIRECTORY EQU DATA+512
+
+	END
+

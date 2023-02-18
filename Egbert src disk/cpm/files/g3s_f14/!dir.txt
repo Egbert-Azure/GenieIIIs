@@ -1,0 +1,16 @@
+Genie3s Kaempf CP/M - DSDD 96 tpi 5.25" format
+
+Diskette von Helmut Jungkunz - siehe rund.brf
+
+
+B0:ALIAS.CMD       B0:ALPHA.COM       B0:ARC2-3.COM      B0:CLEAN.COM       
+B0:CRUNCH.COM      B0:DI.COM          B0:DIRF31P.LBR     B0:DSKPRAM.COM     
+B0:DU-V86.COM      B0:JAYSAGE.ASC     B0:LDIR.COM        B0:LIESMICH.COM    
+B0:PDIR.COM        B0:PDTINS.COM      B0:PDTINS.DTA      B0:PIP.COM         
+B0:PLOOK.COM       B0:QL.COM          B0:QL31.COM        B0:QL31.DZC        
+B0:QL41.DZK        B0:RUND.BRF        B0:SF.LBR          B0:SFCPC.COM       
+B0:SFDEU.DOC       B0:TLZH11.COM      B0:TLZH11.DOC      B0:UCRLZH11.COM    
+B0:UNARC.COM       B0:UNCRUNCH.COM    B0:UNZIP.COM       B0:UNZIP.DOC       
+B0:V15-24.JZY      B0:WOIST.COM       B0:XD.COM          B0:ZCPR1-22.LBR    
+
+424K free on drive B:

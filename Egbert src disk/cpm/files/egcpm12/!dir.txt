@@ -1,0 +1,19 @@
+Genie3s Holte CP/M - DSDD 96 tpi 5.25" format
+
+B0:BAD.COM         B0:BNKBDOS3.SPR    B0:BNKBIOS.MAC     B0:BNKBIOS.REL     
+B0:BNKBIOS3.SPR    B0:BOOT.MAC        B0:BOOT.REL        B0:CCP.COM         
+B0:CHARIO.MAC      B0:CHARIO.REL      B0:CPM3.SUB        B0:CPM3.SYS        
+B0:DATE.COM        B0:DIR.COM         B0:DISKIO1.BAK     B0:DISKIO1.MAC     
+B0:DISKIO1.REL     B0:DO.COM          B0:DRVTBL1.BAK     B0:DRVTBL1.MAC     
+B0:DRVTBL1.REL     B0:GENCPM.COM      B0:GENCPM.DAT      B0:HD2.BAK         
+B0:HD2.MAC         B0:HD2.REL         B0:HDDTBL.ASM      B0:HDDTBL.BAK      
+B0:HDDTBL.COM      B0:HDDTBL.PRN      B0:HDDTBL.REL      B0:HDDTBL.SYM      
+B0:HDNDF.BAK       B0:HDNDF.COM       B0:HDNDF.Z80       B0:INITDIR.COM     
+B0:L80.COM         B0:LINK.COM        B0:LINKCPM3.BAK    B0:LINKCPM3.SUB    
+B0:M80.COM         B0:MODEBAUD.MAC    B0:MOVE.MAC        B0:MOVE.REL        
+B0:NURDRIVE.SUB    B0:PIP.COM         B0:PIPE.COM        B0:RESBDOS3.SPR    
+B0:RMAC.COM        B0:SCB.MAC         B0:SCB.REL         B0:SET.COM         
+B0:SHOW.COM        B0:SLR180.COM      B0:SZ4.COM         B0:T80.COM         
+B0:XCPM3.LIB       B0:ZDE.COM         
+
+302K free on drive B:

@@ -1,0 +1,32 @@
+
+;EJECT
+;RAÍ disë iniô routine:
+;---------------------:
+POWUP	EQU	111DH		» Poweò up/reseô marker
+
+M$INIT0:LD	A,(POWUP)	» Poweò uğ ?
+	OR	A
+	RET	Z
+
+;cleaò RAÍ disk:
+	LD	C,192		» Entrù count		 --¾ reg® C
+	LD	DE,128		» ^firsô directorù entrù --¾ reg® DE
+CLRNXT:	PUSH	BC		» Savå remaininç entrù count
+	PUSH	DE		» Savå ^directorù entry
+	LD	HL,CLRBYT	» ^E5		   --¾ reg® HL
+	LD	BC,± SHÌ 8+15	» Bytå count	   --¾ reg® B
+				» Functioî #	   --¾ reg® C
+	LD	A,SBANK		» Sourcå      banë £ ½ 0
+				» Destinatioî banë £ ½ 2
+	CALL	?USERF		» Cleaò currenô entry
+	POP	HL		» ^currenô directorù entrù --¾ reg® HL
+	LD	DE,32		» Offseô tï nexô entry	   --¾ reg® DE
+	ADD	HL,DE		» Adä offset
+	EX	DE,HL		» ^nexô directorù entrù    --¾ reg® DE
+	POP	BC		» Restorå entrù count
+	DEC	C		» Decremenô it
+	JR	NZ,CLRNXT	» Cleaò nexô entry
+	RET
+CLRBYT:	DEFB	0E5H
+          
+

@@ -1,0 +1,27 @@
+ 
+
+SCI - Ein Interpreter fuer die Sprache C
+
+SCI bietet einen Grundwortschatz der Sprache C und lehnt sich an den
+Befehlssatz des Compilers Small-C an. SCI eignet sich fuer Umsteiger
+von Basic auf C, weil es aehnlich Basic interaktiv arbeitet. Ausserdem
+ist es gedacht fuer Programmierer, die noch fehlerhafte C-Programme
+interaktiv testen wollen.
+
+Die folgenden Dateien gehoeren zu SCI:
+
+SCI     .COM     Der SCI-Interpreter
+SCI     .DOC     Dokumentation
+CALC    .SCI     Beispielprogramm
+SHELL   .SCI     Beispielprogramm
+
+Diese Diskette und eine grosse Zahl weiterer interessanter Public Domain-
+Programme erhalten Sie bei:
+
+Martin Kotulla
+Grabbestrasse 9
+8500 Nuernberg 90
+
+Telefon 0911/30 33 33
+er Public Domain-
+Programme erhalten Sie

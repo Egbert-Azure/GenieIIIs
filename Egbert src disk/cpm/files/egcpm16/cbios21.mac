@@ -1,0 +1,3426 @@
+TITLE	CBIOS 2.1 - CP/M 2.2x - Genie III  
+
+	.Z80
+
+;************************************************
+;*						*
+;*	CBIOS	2.1	aus dem CP/M 2.2x	*
+;*	(=Chaotic Bios)	des Genie III		*
+;*						*
+;*	(C) 1984 by	Klaus K{mpf		*
+;*						*
+;*	rekonstruiert				*
+;*	1986	by	Ulrich Heidenreich	*
+;*						*
+;************************************************
+     
+SUBTTL	Invers-Macro
+PAGE
+;********************************************************
+;*	Name:		Invers-DB            		*
+;*	Funktion:	MACRO zur Erzeugung von Texten	*
+;*			in Invers-Darstellung.        	*
+;********************************************************
+
+INVDB  	MACRO	TEXT		
+	IRPC	X,<TEXT>
+	IF	"&X" NE "'"
+	DB	"&X"+80H
+	ENDIF
+	ENDM
+	ENDM
+
+SUBTTL	Labels und Konstanten  
+PAGE
+iobyte	EQU	0003H		; Intel's I/O-Byte
+cdisk	EQU	0004H		; Aktuelle Disk/ Aktueller User
+intrst	EQU	0038H		; INTerrupt-ReSTartadresse
+line	EQU	0050H		; L{nge einer Bildschirmzeile
+line25	EQU	4380H		; Adresse der Statuszeile
+ccp	EQU	0D100H		; CCP-Startadresse
+
+SUBTTL I/O-Map
+PAGE
+;-------------------------------------------------------------------------
+;	Ports		                                                  
+;-------------------------------------------------------------------------
+clkdat	EQU	0E0H	; Uhr-Daten/Adressport
+clockrw	EQU	0E1H	; Bit 6: Uhr lesen, Bit 7: Uhr stellen
+invprt	EQU 	0F5H	; Bit 0: Grafik/Inversumschaltung
+crtcadr	EQU	0F6H 	; CRTC-Adress-Port
+crtcdat	EQU	0F7H 	; CRTC-Daten-Port
+bnkprt 	EQU	0FAH	; Banking-Port                                  
+priprt	EQU 	0FDH 	; Drucker-Port
+
+;---------------------------------------------------------------------------
+;	FDC-Memory Map		FDC-Register		Sonderfunktion
+;---------------------------------------------------------------------------
+ilatch	EQU	37E0H	;	Bit 6: FDC-Interrupt 	Bit 7: Uhr-Interrupt
+drvsel	EQU	37E1H	;	Drive-Select		Bit 4: Side-Select
+cmdreg	EQU	37ECH	;	FDC Command-Register	Bit 0: Density
+trkreg	EQU	37EDH	;	FDC Track-Register
+secreg	EQU	37EEH	;	FDC Sektor-Register	Bit 6: Disk-Gr|~e
+datreg	EQU	37EFH	;	FDC Data-Register
+
+;-------------------------------------------------------------------------
+;	Tastatur-Memory Map	Bit: --7---6---5---4---3---2---1---0--
+;-------------------------------------------------------------------------
+kbmap0	EQU	3801H	;	       G   F   E   D   C   B   A   ]
+kbmap5	EQU	3820H	;	       /   .   -   ,   \   ~   9   8
+kbmap6	EQU	3840H	;	     space rk  lk  dk  uk brk clr  enter
+belmap	EQU	3860H	;	                                   bell
+kbmap7	EQU	3880H	;	     l-Pen                    ctrl shift
+;------- Zehnerblock -----------------------------------------------------
+kbmap9	EQU	38C0H	;	       7   6   5   4   3   2   1   0
+kbmapa	EQU	38E0H	;	           .   -   ,  lock 00  9   8
+;-------------------------------------------------------------------------
+
+SUBTTL	Bios-Sprungvektoren
+PAGE
+	ORG	0E700H
+
+ 	JP	boot		; System-Kaltstart
+wboote:	JP	wboot		; System-Warmstart
+	JP	const		; "Console Status"
+	JP	conin		; CON: (Input)	
+	JP	conout		; CON: (Output)
+	JP	list		; LST:
+
+;punch-vektor:			        
+	RET			; PUN:
+	NOP
+	NOP
+
+;reader-vektor:
+	LD	A,1AH		; RDR:
+	RET
+
+	JP	home		; Kopf auf Spur Null
+	JP	seldsk		; Laufwerk w{hlen
+	JP	settrk		; Spur w{hlen                
+	JP	setsec		; Sektor w{hlen
+	JP	setdma		; Sektorpuffer bestimmen
+	JP	read		; Sektor lesen
+	JP	write		; Sektor schreiben
+	JP	listst		; "List Status"
+	JP	sectran		; Skew-Faktor beachten
+
+	JP	clpatch		; CP/M 2.2 CLOSE-Patch
+
+SUBTTL	BIOS-Stack einrichten
+PAGE
+;****************************************************************
+;*	Name:		User Stack 		       	 	*
+;*	Funktion:	Einrichten eines Daten-Stacks     	*
+;*			an stacku bis zum n{chsten RET		*
+;*	Input:		--					*
+;*	Ver{ndert:	--					*
+;*	Output:		--					*
+;****************************************************************
+
+ustack:	DI			; Bitte nicht st|ren!
+	EX	(SP),HL		; HL ->	Stack; CALLer-Adresse -> HL
+	LD	(ME749),HL	; CALLer-Adresse merken.
+	POP	HL		; HL restaurieren.
+	LD	(ME74C),SP	; System-Stack-Pointer retten.
+	LD	SP,stacku	; User-Stack einrichten.
+	PUSH	HL		; HL retten.
+	LD	HL,systack	; R}ckkehradresse -> Stack
+	EX	(SP),HL		; und HL restaurieren.
+	JP	$-$   		; Zur}ck zum CALLer!                 
+ME749	EQU	$-2
+
+systack:LD	SP,$-$   	; Systemstack restaurieren
+ME74C	EQU	$-2
+	EI			; Interrupts an
+	RET			; Zur}ck wie gehabt.
+
+SUBTTL	Memory-Banking
+PAGE
+;********************************************************
+;*	Name:		Bank I/O-Map		       	*
+;*	Funktion:	Einbanken der Memory-Map I/O	*
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+bankio:	DI
+	LD	A,01110001B
+	JR	bank
+   
+;********************************************************
+;*	Name:		Bank RAM     		       	*
+;*	Funktion:	Einbanken des gesamten RAMs 	*
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+bankram:LD	A,01111111B
+bank:	OUT	(bnkprt),A
+	RET
+
+SUBTTL	Interrupt-Service 
+PAGE
+;********************************************************
+;*	Name:		Interrrupt-Service		*
+;*	Funktion:	Bedienung der Tastatur, Uhr	*
+;*			und Statuszeile via Interrupt	*
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+intser:	LD	(spsav1),SP	; Stackpointer retten. Interrupt-Service
+	LD	SP,stacki	; bekommt eigenen Stack!
+	PUSH	AF		; Register retten.
+	PUSH	HL
+	PUSH	DE
+	PUSH	BC
+	CALL	bankio		; Memory-Map-I/O aktivieren. Interrupts aus!
+	LD	A,(cmdreg)
+	LD	A,(drvsel)
+	CALL	rdclock		; Echtzeituhr bedienen.
+	CALL	servkb		; Tastatur bedienen.
+	CALL	kbbl25		; Statuszeile mit Type-Ahead-Puffer versorgen.
+	CALL	bankram		; Memory-Map 'raus, RAM 'rein!
+	POP	BC		; Register restaurieren.
+	POP	DE
+	POP	HL
+	POP	AF
+	LD	SP,$-$		; Stack restaurieren
+spsav1	EQU	$-2
+	EI			; Interrupts wieder freigeben.
+	RETI
+
+SUBTTL	Konsolglocke
+PAGE
+;********************************************************
+;*	Name:		Bell                 		*
+;*	Funktion:	Konsolglocke                	*
+;*	Input:		--				*
+;*	Ver{ndert:	AF				*
+;*	Output:		Zero-Flag, A:0			*
+;********************************************************
+
+bell:	NOP			; Hier "RET", falls CTRL-G abgeschaltet
+	PUSH	BC
+	LD	BC,0B080H	; B:Tondauer. C:Tonh|he.
+ME789:	LD	A,(belmap)	; Lesen aus belmap steuert Lautsprecher an!
+	PUSH	BC
+ME78D:	DEC	C
+	JR	NZ,ME78D	; Tonh|henschleife.
+	POP	BC
+	DJNZ	ME789		; Tondauerschleife.
+	POP	BC
+	XOR	A
+	RET
+
+SUBTTL	INT-Routine: Echtzeituhr lesen/anzeigen
+PAGE
+;********************************************************
+;*	Name:		Read Clock           		*
+;*	Funktion:	Interrupt-Routine zum Lesen 	*
+;*			der Uhrzeit und Anzeige dieser	*
+;*			in der Statuszeile		*
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+rdclock:NOP			; Hier "RET", falls Uhranzeige aus.
+	LD	A,(cicount)	; 1 Sekunde vergangen ?
+	DEC	A		; - Interrupt-Z{hler weiter -
+	JP	NZ,notime	; Nein, keine neue Uhrzeitanzeige n|tig!
+
+	LD	HL,ilatch	; Warten, bis Uhr sich via Interrupt
+cirise:	LD	A,(HL)		; gemeldet hat.
+	RLCA
+	JR	C,cirise	; Steigende Flanke?
+
+cifall:	LD	A,(HL)
+	RLCA
+	JR	NC,cifall	; Fallende Flanke?
+
+	LD	A,01000000B	; "Uhr Lesen"
+	OUT	(clockrw),a  	; w{hlen
+	LD	HL,clckbuf	; (HL):Puffer f}r Uhrzeit.
+	LD	DE,100FH	; DE:Maske RTC-Adressport, erste Adresse
+	LD	BC,06E0H	; B:Anzahl Daten, C: RTC-Datenport
+
+gettime:BIT	0,B		; Alle zwei Stellen einen Doppelpunkt
+	JR	NZ,nocolon	; in den Uhrzeitpuffer einf}gen.
+	LD	(HL),0AH	; 0A ist einer wegen folgender ASCII-Korrektur!
+	INC	HL		; Uhrzeitpufferzeiger weiterstellen.
+
+nocolon:LD	A,E		; Adresse an RTC
+	OUT	(C),A	
+	ADD	A,D		; Adresse Weiterstellen
+	LD	E,A
+	INI			; Daten - also Uhrzeit! - lesen.
+	JR	NZ,gettime	; Alle 6 Daten - HH,MM,SS - gelesen?
+
+	DEC	HL		; Zeiger zur}ck auf HH
+	RES	2,(HL)		; AM/PM-Bit l|schen
+	RES	3,(HL)		; 24/12-Stunden-Bit l|schen
+
+	LD	DE,43C8H	; (DE):Uhrzeitposition in der Satuszeile
+	LD	B,08H		; B:Anzahl Daten (HH:MM:SS)
+
+puttime:LD	A,(HL)		; A:bin{res "Zeitzeichen"
+	AND	0FH		; ASCII-Korrektur.
+	OR	0B0H		; Invers-Korrektur.
+	LD	(DE),A		; Inverses-ASCII-"Zeitzeichen" in Statuszeile.
+	INC	DE		; Zielzeiger weiter.
+	DEC	HL		; Quellzeiger weiter.
+	DJNZ	puttime		; Alle Daten anzeigen.
+
+	LD	A,40  		; 40x25 msec = 1 Sekunde!
+notime:	LD	(cicount),A	; Interrupt-Z{hler r}cksetzen bzw. r}ckz{hlen.
+	RET
+
+SUBTTL	Anzeige des Type-Ahead-Puffers
+PAGE
+;********************************************************
+;*	Name:		Keyboard Buffer to Line 25	*
+;*	Funktion:	Anzeige des Type-Ahead-Puffers	*
+;*			in der Statuszeile		*
+;*	Input:		--				*
+;*	Ver{ndert:	HL, BC, DE, AF			*
+;*	Output:		--				*
+;********************************************************
+
+kbbl25:	NOP			; Hier "RET", falls Anzeige deaktiviert
+	LD	HL,keybuf	; (HL): Type-Ahead-Puffer
+	LD	DE,line25	; (DE): Statuszeile
+	LD	A,(chrcnt)	; Sind }berhaupt Zeichen im Type-Ahead-Puffer?
+	OR	A
+	JR	Z,ME7F2		; Nein! Keine Kopie n|tig.
+	LD	C,A
+	LD	B,0  		; BC:Anzahl Zeichen im Type-Ahead-Puffer.
+	LDIR			; Puffer => Statuszeile.
+
+ME7F2:	EX	DE,HL		; (HL):Erstes Leerzeichen in Statuszeile.
+	LD	(HL),' '	; mit " " Ende des Pufferinhalts markieren.
+
+ME7F5:	INC	HL		; Rest der Statuszeile
+	LD	A,L		; - bitte nur bis vor die Uhrzeit! -
+	CP	0C8H
+	RET	Z
+	LD	(HL),0A0H	; mit inversen Blanks f}llen.
+	JR	ME7F5
+
+SUBTTL	BIOS-Funktion "Console Status"
+PAGE
+;********************************************************
+;*	Name:		Console Status            	*
+;*	Funktion:	BDOS-Funktion 11              	*
+;*	Input:		--				*
+;*	Ver{ndert:	AF				*
+;*	Output:		A :  Konsol-Status		*
+;********************************************************
+
+const:	LD	A,(chrcnt)	; Zeichen im Type-Ahead-Puffer?
+	OR	A		; Na?
+	RET	Z		; Nein, Kein Zeichen => False
+	LD	A,0FFH		; Ja, Zeichen drin => True
+	RET
+
+SUBTTL	BIOS-Funktion "Console Input"
+PAGE
+;********************************************************
+;*	Name:		Console Character in      	*
+;*	Funktion:	BDOS-Funktion 1               	*
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+conin:	LD	A,(chrcnt)	; Zeichen im Type-ahead-Puffer?
+	OR	A		; Na?
+	JR	Z,conin		; Nein, warten, bis servkb ein Zeichen liefert
+
+	LD	HL,keybuf+1	; Type-Ahead-Puffer um ein
+	LD	DE,keybuf	; Zeichen nach links
+	LD	BC,63   	; schieben.
+	LD	A,(DE)		; 1. Zeichen holen und Invers herausmaskieren.
+	RES	7,A
+	LDIR
+	LD	HL,chrcnt	; Zeichenz{hler um ein Zeichen vermindern.
+	DEC	(HL)
+	RET
+
+SUBTTL	CONIN - Int-Routine: Tastatur bedienen
+PAGE
+;********************************************************
+;*	Name:		Service Keyboard          	*
+;*	Funktion:	Interrupt-Routine zur Bedienung *
+;*			der Tastatur			*
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+servkb:	CALL	kbfunc
+	OR	A
+	JR	Z,kbrept
+	LD	C,A
+	LD	(reptchr),A
+	LD	A,(dlydflt)
+	LD	(reptdly),A
+
+SUBTTL	CONIN - Zeichen in Type-Ahead-Puffer
+PAGE
+;****************************************************************  
+;*	Name:		Put Character in Keyboard-Buffer 	*
+;*	Funktion:	Zeichen in Type-Ahead-Puffer	 	*
+;*			einf}gen. Pr}fen, ob Puffer		*
+;*			gef}llt. Wenn, dann Klingeln!		*
+;*	Input:		C : Zeichen				*
+;*	Ver{ndert:	HL, DE, AF				*
+;*	Output:		--       				*
+;****************************************************************
+
+pchrkbb:CALL	click		; Klick!
+	LD	HL,chrcnt	; (HL):Anzahl Zeichen im Type-Ahead-Puffer.
+	LD	A,(HL)		; Puffer voll?
+ 	CP	64 		; Also mehr als 64 Zeichen drin?
+	JP	NC,bell		; Ja, mit Glocke ]berlauf anzeigen!
+
+	INC	(HL)		; Kein ]berlauf: Zeichenz{hler hochz{hlen.
+	LD	HL,keybuf	; Beginn des Type-Ahead-Puffers plus
+	LD	E,A		; Zeichenz{hler =
+	LD	D,00H
+	ADD	HL,DE		; aktuelles Puffer-Ende.
+	SET	7,C		; Invers maskieren und Tastatur-Zeichen
+	LD	(HL),C		; an Pufferinhalt anh{ngen.
+	RET
+
+SUBTTL	CONIN - Wiederholfunktion
+PAGE
+;****************************************************************  
+;*	Name:		Keyboard-Repeat                  	*
+;*	Funktion:	Wiederholfunktion der Tastatur. 	*
+;*	Input:		--        	  			*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+kbrept:	NOP			; Hier "RET", falls Wiederholfunktion aus!
+	LD	HL,reptdly	; Einsatzverz|gerung abgelaufen?
+	DEC	(HL)
+	RET	NZ		; Nein, zur}ck!
+	LD	A,(381FH)	
+	OR	A
+	JR	NZ,ME85E
+	LD	A,(kbmap5)
+	OR	A
+	JR	NZ,ME85E
+	LD	A,(kbmap6)
+	OR	A
+	RET	Z
+ME85E:	LD	A,(MEAA3)
+	LD	(HL),A
+	DEC	HL
+	LD	C,(HL)
+	JR	pchrkbb
+
+SUBTTL	CONIN - Sonderfunktionen der Tastatur
+PAGE
+;****************************************************************  
+;*	Name:		Keyboard-Functions               	*
+;*	Funktion:	Behandlung spezieller Tastatur- 	*
+;*			Funktionen.                         	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+kbfunc:	LD	A,(kbmap6)	; Steuertaste gedr}ckt?
+	LD	B,A		; Bitmuster in B retten.
+	CP	11100000B	; Leertaste, Links- und Rechtspfeil?
+	JR	Z,showver	; Ja, CBIOS-Version & Serien-Nr. => Statuszeile
+
+	LD 	A,(kbmap7)	; Shift/CTRL-Matrix-Zeile
+	LD	C,A		; Bitmuster in C retten.
+	AND	00000011H
+	JP	Z,kbscan	; weder SHIFT noch CTRL gedr}ckt!
+
+	LD	A,B		; CLEAR gedr}ckt?
+	SUB	2   
+	JR	NZ,ME886	; nein!
+	BIT	0,C		; CTRL gedr}ckt?
+	JR	NZ,ME886	; nein!
+	LD	(chrcnt),A	; CTRL-CLEAR l|scht Type-Ahead-Puffer.
+no.code:JP	nocode		; Zur}ck ohne ASCII-Code.
+
+ME886:	LD	A,C		; SHIFT oder CTRL gedr}ckt?
+        AND	03H
+	JR	Z,no.code	; Weder noch!
+
+	LD	A,(kbmap9)	                     
+	OR	A		; SHIFT/CTRL und Ziffer 0...9 des Zehnerblocks?
+	JR	NZ,options	; Ja, Optionen Anzeigen/[ndern!
+
+	LD	A,(kbmapa)	; SHIFT/CTRL und 00 gedr}ckt?
+	BIT	2,A
+	JP	Z,kbscan	; Nein!
+	BIT	0,C		; Nur SHIFT 00 - aber nicht CTRL 00! -
+	JP	NZ,kbscan	; gilt:
+
+	LD	HL,3C00H 	; (HL):Beginn Videospeicher
+	LD	DE,24*line	; DE:L{nge Videospeicher
+ME8A4:	LD	B,line 		; B:Zeilenl{nge
+ME8A6:	LD	C,(HL)		; Zeichen aus Videospeicher.
+	RES	7,C		; Bit 7 l|schen.
+	CALL	lpt		; Ausdrucken!
+	INC	HL		; Zeiger in Video-RAM weiter
+	DEC	DE		; Zeichenz{hler vermindern.
+	DJNZ	ME8A6		; Zeile drucken.
+	LD	C,0DH		; Zeile mit
+	CALL	lpt		; Wagenr}cklauf und
+	LD	C,0AH		; Zeilenvorschub abschlie~en.
+	CALL	lpt
+	LD	A,D		; Gesamtes Video-RAM
+	OR	E		; ausgedruckt?
+	JR	NZ,ME8A4	; Nein, weitermachen!
+	JR	no.code
+
+PAGE
+;****************************************************************  
+;*	Name:		Show Version                     	*
+;*	Funktion:	Anzeige von CBIOS-Version und Serien-   *
+;*			Nummer in der Statuszeile.            	*
+;*	Input:		--                                      *
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+showver:CALL	putl25		; Inhalt der Statuszeile retten.
+	LD	HL,vertext	; Version und Seriennummer einblenden.
+	CALL	copl25
+ME8C9:	LD	A,(kbmap6)	; Immer noch Linkspfeil, Rechtspfeil und
+	CP	11100000B	; Leertaste gedr}ckt?
+	JR	Z,ME8C9		; Ja, weiter angezeigt lassen.
+	CALL	getl25		; Nein, Statuszeile restaurieren.
+	JR	no.code
+
+PAGE
+;****************************************************************  
+;*	Name:		Change Options                   	*
+;*	Funktion:	Anzeige/[nderung einiger BIOS-Optionen  *
+;*	Input:		--                                      *
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+; Option SHIFT-CTRL 7 : bell ein/aus
+; Option SHIFT-CTRL 6 : ???
+; Option SHIFT-CTRL 5 : Pufferanzeige in Statuszeile ein/aus
+; Option SHIFT-CTRL 4 : Lautsprecher ein/aus
+; Option SHIFT-CTRL 3 : Fehlermeldung in Statuszeile ein/aus
+; Option SHIFT-CTRL 2 : Uhrzeitanzeige in Statuszeile ein/aus
+; Option SHIFT-CTRL 1 : Wiederholfunktion ein/aus
+; Option SHIFT-CTRL 0 : Click ein/aus
+
+options:PUSH	AF		; A: Bitmuster aus kbmap9 und
+	PUSH	BC		; C: Bitmuster aus kbmap 7 retten.
+	LD	B,08H		; B: Bit-Zahl der Matrix-Zeile
+ME8D9:	RLCA			; Bit f}r gedr}ckte Taste => Carry
+	JR	C,ME8DE		; Jawoll: Taste gedr}ckt!
+	DJNZ	ME8D9		; F}r alle 8 m|glichen pr}fen.
+
+ME8DE:	PUSH	BC		; B:Options-Nummer+1 retten
+	CALL	putl25		; Inhalt der Statuszeile retten.
+	POP	BC
+	LD	HL,optntab	; (HL):	Optionstabelle
+	LD	E,B		; Aus Optionsnummer in B => Tabellenzeiger
+	LD	D,00H		; in DE
+	ADD	HL,DE		; jeder Tabelleneintrag umfa~t 
+	ADD	HL,DE		; zwei Bytepaare.
+	ADD	HL,DE	
+	ADD	HL,DE
+	LD	C,(HL)		; BC:
+	INC	HL		; Erstes Bytepaar = Zeiger auf Optionstext
+	LD	B,(HL)
+	INC	HL
+	LD	DE,line25	; Optionstext in Statuszeile
+ME8F4:	LD	A,(BC)
+	XOR	80H
+	JR	Z,ME8FE
+	LD	(DE),A
+	INC	BC
+	INC	DE
+	JR	ME8F4		; anzeigen.
+
+ME8FE:	LD	A,(HL)		; HL:
+	INC	HL		; Zweites Bytepaar = Zeiger auf
+	LD	H,(HL)		; Modifikationsstelle
+	LD	L,A
+ 	POP	BC		; C:Bitmuster in kbmap7
+	LD	A,(HL)		; (HL):Modifikationsstelle => A:NOP oder RET
+	BIT	0,C		; War's SHIFT ?
+	JR	NZ,ME90D	; Jawoll, dann nur Anzeige der Option!
+
+	XOR	0C9H		; Sonst war's CTRL => Option umkippen
+	LD	(HL),A		; dh. aus NOP => RET bzw. aus RET => NOP.
+	JR	ME915
+
+ME90D:	LD	HL,textist	; Text "IST" in Statuszeile schreiben
+	LD	BC,4      
+	LDIR
+
+ME915:	OR	A		; Wenn "NOP", also A=0
+	LD	HL,textein	; dann Text " EIN" in Statuszeile
+	JR	Z,ME91E		; schreiben;
+	LD	HL,textaus	; sonst: " AUS"!
+
+ME91E:	LD	BC,4      
+	LDIR
+
+	EX	DE,HL		; Rest der Statuszeile
+ME924:	LD	(HL),0A0H	; mit inversen Blanks
+	INC	HL		; f}llen.
+	LD	A,L
+	SUB	0D0H
+	JR	NZ,ME924
+
+	POP	BC
+ME92D:	LD	A,(kbmap9)	; gleiche Tastenkombination noch
+	XOR	B		; gedr}ckt?
+	JR	Z,ME92D		; Ja, Optionsanzeige bestehen lassen.
+	XOR	A		; Keinen ASCII-Code liefern!
+	CALL	getl25		; Statuszeile restaurieren.
+	JP	k10.end		; Nach Zeitverz|gerung zum Lesen: Zur}ck!
+
+SUBTTL	CONIN - Decodierung der Tastatur-Matrix
+PAGE
+;****************************************************************  
+;*	Name:		Keyboard-Scan                    	*
+;*	Funktion:	Abtasten der Tastatur-Matrix und   	*
+;*			Ermittlung des Tastaturcodes.       	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+kbscan:	LD	BC,kbmap0	; (BC): Tastatur-Map Matrixzeile 0.
+	LD	HL,mtrxbuf	; (HL): Tastenspeicher Matrixzeile 0.
+	LD	D,0   
+scnloop:LD	A,(BC)		; A:Bitmuster gem{~ Tastendruck
+	LD	E,A		; in E retten.  
+	XOR	(HL)		; Wenn gleiches Bitmuster gespeichert,
+	AND	E		; also selbe Taste noch gedr}ckt =>
+	LD	(HL),E		; Z                                  
+	JR	NZ,keypush	; NZ => Taste gedr}ckt!
+	INC	HL		; Zeiger Tastenspeicher-Matrixzeile weiter
+	INC	D		; Matrix-Zeilenz{hler weiter.
+	LD	A,D		; 8 Zeilen
+	CP	08H		; ge-scant?
+	JR	NC,ME954	; ja!
+	RLC	C		; Zeiger Tastatur-Memory-Map weiter
+	JR	scnloop		; Tastatur weiter scannen!
+
+ME954:	CP	0BH		; Alle 11 Zeilen ge-scant?
+	JP	Z,nocode	; Ja, keine Taste gedr}ckt!               
+	LD	A,32  		; Tastatur-Matrixzeilen kbmap8 ... kbmapa
+	ADD	A,C		; sind nur noch 32 Byte "auseinender" !
+	LD	C,A
+	JR	scnloop		; Auch diese scannen!
+
+;Taste gedr}ckt! Entprellen:
+
+keypush:LD	E,A		; E: Bitmuster gem{~ Tastendruck.
+	PUSH	BC		; Keyboard-Matrix-Zeilenzeiger retten
+	LD	BC,1F4H	 	; Zeitverz|gerung zur
+	CALL	bcdelay		; Tastaturentprellung.
+	POP	BC		; Keyboard-Matrixzeiger her!
+	LD	A,(BC)		; A:Wert jetzt vom Keyboard.
+	AND	E		; E:Wert vom Keyboard.
+	RET	Z
+
+;Errechnung eines fortlaufenden Tastencodes aus Matrix-Spalte/Zeile.
+
+	LD	B,-1   		; Wegen INC
+ME96D:	INC	B		; Aus Bitmuster in A
+	RRCA		
+	JR	NC,ME96D	; => B:Tastatur-Matrix-Spalte
+	LD	A,D		; => A:Tastatur-Matrix-Zeile
+	RLCA			; A*8
+	RLCA
+	RLCA
+	ADD	A,B		; plus B => Tastencode
+				
+;Tastencode-Umsetzung f}r Deutsche Tastaturbelegung:
+
+	LD	HL,oldkey	; (HL):Tabelle der 'alten' Codes.  
+	LD	BC,9      	; hierin 'alten' Code    
+	CPIR			; suchen.
+	JR	NZ,ME985	; Zero = Nicht drin => Keine Umsetzung.
+	LD	HL,newkey	; (HL):Tabelle der 'neuen' Codes.  
+	ADD	HL,BC		; (HL):'Neuer' Code.   
+	LD	A,(HL)		; A:'Neuer' Code.   
+
+;---------------------------------------------------------------------
+;Jetzt g}ltige Tastencodes:
+
+;00=@`	01=aA	02=bB 	03=cC	04=dD	05=eE	06=fF	07=gG
+;08=hH	09=iI	10=jJ	11=kK	12=lL	13=mM	14=nN	15=oO
+;16=pP	17=qQ	18=rR	19=sS	20=tT	21=uU	22=vV 	23=wW
+;24=xX	25=yY	26=zZ	27={[	28=|\	29=}]	30=~^	31=
+;32=0	33=1!	34=2"	35=3#	36=4$	37=5%	38=6&	39=7'
+;40=8(	41=9)	42=*:	43=+;	44=<,	45==-	46=>.	47=?/
+
+;48=NEW LINE		            
+;49=CLEAR		         Zehnerblock:
+;50=BREAK		             
+;51=hochpfeil		 64 ... 71=funktionstasten	85=-
+;52=tiefpfeil		 72 ... 81=0 ... 9		86=.
+;53=linkspfeil		 82=00			
+;54=rechtspfeil		 83=LOCK
+;55=leertaste		 84=,
+;56=SHIFT
+;57=CTRL
+;---------------------------------------------------------------------
+
+;Erkennen der Tasten-"Art". Also Ziffer, Buchstabe, Sonderfunktion, o.{.:
+
+ME985:	LD	HL,kbmap7	; (HL):SHIFT/CTRL-Matrixzeile:
+	LD	C,(HL)		; Bitmuster gem{~ gedr}ckter Taste nach C.
+	LD	B,A		; B:Tasten-Code.
+
+	CP	72          	; Tastencode ab 72 => Tasten des         
+	JR	NC,keys10	; Zehnerblocks bzw. LOCK-Taste.
+
+	CP	64 		; Tastencodes 64 ... 71 =>
+	JP	NC,funkeys	; Funktionstasten.
+ 
+	CP	32 		; Tastencodes 32 bis 63 =>
+	JR	NC,ns.keys	; Ziffern und Sonderzeichen.
+
+;Umcodierung des Tastencodes der Buchstaben in ASCII-Code unter Beachtung
+;der LOCK-, CTRL- und SHIFT-Taste:
+
+	XOR	A		; Restliche Codes sind Buchstaben!
+	BIT	1,C		; CTRL gedr}ckt?
+	JR	NZ,cvascii	; Ja, dann ASCII-Code = Tastencode!
+
+	LD	A,B		; Tastencode 0, also "Klammeraffe" ?  
+	OR	A		; Nein,
+	JR	NZ,shilock	; dann 'richtige' SHIFT-Decodierung!
+
+;Umcodierung des Klammeraffens:                                            
+
+	LD	A,40H		; Tastencode 40H = Klammeraffe.           
+	BIT	0,C		; Ohne SHIFT so OK
+	JR	Z,cvascii
+	LD	A,60H		; Tastencode 60H = SHIFT-Klammeraffe.     
+	JR	cvascii
+
+;Beachtung der SHIFT- oder LOCK-Taste:
+
+shilock:LD	A,(kbmapa)	; LOCK 
+	BIT	3,A		; gedr}ckt?
+	LD	A,40H 		; Tastencode + 40H = ASCII-Code Gro~schrift.
+	JR	NZ,cvascii	; Ja, LOCK gedr}ckt => Korrektur OK!
+	BIT	0,C		; SHIFT	gedr}ckt?
+	JR	NZ,cvascii	; Ja, ebenfalls OK!
+	LD	A,60H 		; Sonst: Tastencode + 60H = Kleinschrift.
+
+;Gem{~ Korrekturwert in A den Tastencode in ASCII-Code umsetzen. 
+
+cvascii:ADD	A,B
+	JR	k10.end
+
+;Behandlung der Ziffern- und Sondertasten:
+
+ns.keys:CP	44              ; Ziffer "0" ... "9" oder ":",";" ?
+	JR	NC,ME9C7	; Nein!
+	XOR	A		; Ja, Tastencode 32 bis 43 ist bereits
+	BIT	0,C		; ASCII-Code, falls SHIFT gedr}ckt!
+	JR	NZ,cvascii	; Also: SHIFT => So ist's ASCII!
+	JR	num.ush		; Sonst: Ungeshiftete Tasten behandeln!
+
+ME9C7:	CP	48 		; NEW LINE, CLEAR, BREAK, Pfeiltasten oder
+	JR	NC,ME9D4	; Leertaste? Wenn ja, nach ME9D4!
+
+	XOR	A		; ASCII-Korrektur mit 0 vorbelegen.
+	BIT	0,C		; Ohne SHIFT sind Tastencodes 44 ... 47 
+	JR	Z,cvascii	; bereits ASCII-Codes!
+
+num.ush:LD	A,16 		; ASCII-Korrektur f}r "0" ... ";" bzw.
+	JR	cvascii		; "-","." und "/" ohne SHIFT.
+
+ME9D4:	CP	56 		; CTRL oder SHIFT?
+	JR	C,arrows	; Nein, dann sind's Pfeile, NEW LINE, CLEAR
+				; oder BREAK!
+
+;Ende der Tastatur-Decodierung, falls kein ASCII-Code geliefert werden darf:
+
+nocode:	XOR	A		; keinen ASCII-Code, bitte!
+	RET
+
+;Tastenbehandlung f}r den Zehnerblock:
+
+keys10:	LD	A,C		; SHIFT oder CTRL gedr}ckt?
+	OR	A
+	JR	NZ,nocode	; Ja, keine Codes vom Zehnerblock!
+	LD	A,B		  
+	CP	82 		; Ziffern des Zehnerblocks?
+	JR	NC,ME9E9	; nein!
+	SUB	48  		; Aus Tastencode
+	ADD	A,'0'		; ASCII-Code der Ziffer bilden.
+	JR	k10.end
+
+ME9E9:	JR	Z,ME9F3		; Doppel-Null?
+	SUB	84 
+	JR	C,nocode	       
+	ADD	A,44  
+	JR	k10.end
+
+ME9F3:	LD	HL,doub00	; Doppel-00 wie Funktionstaste behandeln!
+	JP	MEA25
+
+arrows:	LD	HL,arkytab	; (HL):Tabelle der Pfeiltasten, usw.-Codes
+	SUB	48 		; Tastencodes 48 ... 55 => 0 ... 7
+	LD	E,A		; DE:Adresse in der
+	LD	D,00H		; Tabelle.
+	ADD	HL,DE		; Zweimal zum Tabellenanfang addiert,
+	ADD	HL,DE		; da ein Tabelleneintrag 2 Byte lang.
+	BIT	0,C		; SHIFT?
+	JR	Z,MEA08		; Nein, Tabellenzeiger OK!
+	INC	HL		; Mit SHIFT Zeiger auf's jeweils zweite Byte.
+MEA08:	LD	A,(HL)		; A:ASCII-Code der Pfeil-,usw.-Taste.
+k10.end:LD	BC,0FA0H	; Mit Entprell-Verz|gerung
+	JP	bcdelay		; 'raus!
+
+SUBTTL	CONIN - Funktionstasten 
+PAGE
+;****************************************************************
+;*	Name:		Function Keys               		*
+;*	Funktion:	Sucht den der Funktionstaste zuge-      * 
+;*			ordneten Text und kopiert diesen in 	*
+;*			den Type-Ahead-Puffer.			*
+;*	Input:		A: Tastencode				*
+;*	Ver{ndert:	--					*
+;*	Output:		--        		 		*
+;****************************************************************
+
+funkeys:LD	HL,functxt	; (HL):Funktionstasten-Texte.
+	SUB	64  		; Funktionstastencodes 64 ... 71 => 0 ... 7
+	BIT	0,C		; SHIFT?
+	JR	Z,MEA1A		; Nein, so OK!
+	ADD	A,08H		; Tasten-Nummern mit SHIFT werden 8 ... 15!
+
+MEA1A:	LD	D,A		; D:Tasten-Nummer =>
+	INC	D		; F1 = 1 bis SHIFT-F8 = 16.
+	XOR	A		; In Funktionstastenbelegungspuffer
+	LD	BC,512   	; - maximal 512 Byte gro~! -
+MEA20:	CPIR			; die entsprechnde "Trenn-Null" suchen.
+	DEC	D
+	JR	NZ,MEA20
+
+MEA25:	CALL	click		; Tastentext gefunden; Klick!
+	LD	C,L		; (BC): Nun Tastentext.
+	LD	B,H
+	LD	A,(chrcnt)	; A:Anzahl bereits im Type-Ahead-Puffer
+	LD	E,A		; vorhandener Zeichen => DE
+	LD	D,00H	
+	LD	HL,keybuf	; plus Pufferanfang=
+	ADD	HL,DE		; Erster freier Platz im Type-Ahead-Puffer.
+	EX	DE,HL		; (DE):Dieses freie Pl{tzchen!
+	LD	HL,chrcnt	; (HL):Anzahl Zeichen im Type-Ahead-Puffer.
+MEA38:	LD	A,(HL)		; 64 Zeichen im
+	CP	64  		; Puffer, also dieser voll bzw. gef}llt?
+	JP	NC,k10.end	; Ja, Funktions-Text soweit m|glich }bernommen!
+	LD	A,(BC)		; A:Zeichen aus Funktions-Text.
+	OR	A		; Trennende Null?
+	JP	Z,k10.end	; Ja, Funktionstext }bernommen!
+	SET	7,A		; Bit 7 f}r Inversdarstellung setzen
+	LD	(DE),A		; und Zeichen aus Funktionstext in Puffer.
+	INC	BC		; Funktionstext-Zeiger weiter.
+	INC	DE		; Type-Ahead-Puffer-Zeiger weiter.
+	INC	(HL)		; Zeichenz{hler weiter.
+	JR	MEA38		; Weiter }bernehmen.
+
+SUBTTL	CONIN - Zeitschleife f}r Entprellung, Repeat, usw.
+PAGE
+;****************************************************************  
+;*	Name:		BC-Delay                         	*
+;*	Funktion:	Zeitverz|gerung gem{~ Register BC       *
+;*	Input:		--                                      *
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+bcdelay:PUSH	AF
+MEA4C:	DEC	BC
+	LD	A,B
+	OR	C
+	JR	NZ,MEA4C
+	POP	AF
+	RET
+  
+SUBTTL	CONIN - Tastenklick
+PAGE
+;********************************************************
+;*	Name:		Click       		       	*
+;*	Funktion:	Tastatur-Klick              	*
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		"Klick!"			*
+;********************************************************
+
+click:	NOP			; Hier "RET", falls Tastaturklick aus.
+	PUSH	AF
+	PUSH	BC
+	LD	BC,4040H	; B:Tondauer, C:Tonh|he
+MEA59:	LD	A,(belmap)	; Lesen aus belmap steuert Lautsprecher an.
+	PUSH	BC
+MEA5D:	DEC	C
+	JR	NZ,MEA5D	; Tonh|hen-Schleife.
+	POP	BC
+	DJNZ	MEA59		; Tondauer-Schleife.
+	POP	BC
+	POP	AF
+	RET
+
+SUBTTL	CONIN - Matrix-Puffer
+PAGE
+;****************************************************************
+;*	Name:		Matrix-Buffer	       	 	 	*
+;*	Funktion:	Puffer f}r Tastaturmatrix-Zeilen	*
+;****************************************************************
+
+;Jeweils 8 Bit ...              ... f}r:
+
+mtrxbuf:NOP			; kbmap0
+	NOP			; kbmap1
+	NOP			; kbmap2
+	NOP			; kbmap3
+	NOP			; kbmap4
+	NOP			; kbmap5
+	NOP			; kbmap6
+	NOP			; kbmap7
+	NOP			; kbmap8
+	NOP			; kbmap9
+	NOP			; kbmapa
+
+SUBTTL	CONIN - Tastatur-Codier-Tabellen
+PAGE
+;****************************************************************
+;*	Name:		Oldkey/Newkey-Tables		 	*
+;*	Funktion:	Tabellen zur Anpassung an die Deutsche	*
+;*			Tastatur-Anordnung der 'alten' Tastatur	*
+;****************************************************************
+
+; @ => ]	Umcodierung bei der alten Genie-III-Tastatur
+; : => ~	notwendig, da keine Verdrahtung der Deutschen
+; ; => \	Tastur angepa~t wurde, sondern lediglich die
+; y => z	Tastenkappen ausgetauscht sind!
+; z => y
+; { => ;
+; | => {
+; } => :
+; ~ => @
+
+oldkey:	DB	00H,19H,1AH,1BH,1CH,1DH,1EH,2AH,2BH
+newkey:	DB	1CH,1EH,00H,2AH,1BH,2BH,19H,1AH,1DH
+
+PAGE
+;****************************************************************
+;*	Name:		Arrow- and other Key's Table		*
+;*	Funktion:	Tabelle der ASCII-Codes der Pfeil-      * 
+;*			Tasten, NEW LINE, CLEAR, BREAK und  	*
+;*			Leertaste.				*
+;****************************************************************
+          
+arkytab:DB	0DH	; NEW LINE
+	DB	5FH	; SHIFT-NEW LINE = Underscore
+	DB	1BH	; CLEAR
+	DB	1FH	; SHIFT-CLEAR	   
+	DB	03H	; BREAK
+	DB	7FH	; SHIFT-BREAK =	DEL
+	DB 	05H	; Hochpfeil
+	DB	12H	; SHIFT-Hochpfeil   
+	DB	18H	; Tiefpfeil
+	DB	03H	; SHIFT-Tiefpfeil
+	DB	08H  	; Linkspfeil
+	DB	01H	; SHIFT-Linkspfeil
+	DB	04H	; Rechtspfeil
+	DB	06H	; SHIFT-Rechtspfeil
+	DB	20H	; Leertaste
+	DB	09H	; SHIFT-Leertaste = TAB
+
+;****************************************************************
+;*	Name:		Double-Zero                 		*
+;*	Funktion:	Text f}r "00"-Taste des Zehnerblocks.   * 
+;*			(Da diese wie Funktionstaste behan- 	*
+;*			delt wird!)				*
+;****************************************************************
+
+doub00:	DB	'00',0	; Doppel-00
+
+;****************************************************************
+;*	Name:		Clock-Interrupt-Count, Clock-Buffer	*
+;*	Funktion:	1-Sekunden-Z{hler und Uhrzeitpuffer     * 
+;*			der Echtzeituhr.			*
+;****************************************************************
+
+cicount:DB      40 		; Clock-Interrupt-Z{hler 40*25 msec
+clckbuf:DS      8		; Uhrzeitpuffer f}r HH:MM:SS
+	NOP
+
+
+;****************************************************************
+;*	Name:		Memory-Map f}r Widerholfunktion       	*
+;****************************************************************
+
+reptchr:DB      00H		; Zwischenspeicher f}r Wiederhol-Zeichen
+reptdly:DB 	00H		; Platz f}r Einsetzverz|gerung.
+dlydflt:DB	20H      	; Default-Wert f}r Einsatzverz|gerung
+MEAA3:  DB      05H
+
+;****************************************************************
+;*	Name:		Zeichenz{hler f}r Type-Ahead-Puffer   	*
+;****************************************************************
+
+chrcnt:	DB      00H
+
+
+SUBTTL	Parameterbereich der CONOUT-Terminal-Emulation
+PAGE
+
+parsave:DB  	00H		; Zwischenspeicher f}r ESC-Parameter
+invflag:DB  	00H		; Flag f}r Inversdarstellung (80H=ein, 00H=aus)
+
+curpos:	DW 	3C00H		; Aktuelle Cursorposition.
+vid1st:	DW 	3C00H		; erste ungesch}tzte Video-Speicherstelle.
+vidend:	DW	4330H           ; Beginn der letzten ungesch}tzten Textzeile.
+vidlast:DW	437FH		; letzte ungesch}tzte Video-Speicherstelle.
+
+;****************************************************************  
+;*	Name:		Video-Control-Adress-Table             	*
+;*	Funktion:	Tabelle mit Ansprungadressen der   	*
+;*			Bedienroutinen f}r CTRL-Sequenzen.     	*
+;****************************************************************
+
+vidctrl:DW	noentry		; CTRL @
+	DW	noentry		; CTRL A
+	DW	noentry		; CTRL B
+	DW	noentry		; CTRL C
+	DW	noentry		; CTRL D
+	DW	noentry		; CTRL E
+	DW	noentry		; CTRL F
+	DW	bell		; CTRL G
+	DW	ctrl.h 		; CTRL H
+	DW	ctrl.i 		; CTRL I
+	DW	ctrl.j 		; CTRL J
+	DW	ctrl.k 		; CTRL K
+	DW 	ctrl.l 		; CTRL L
+	DW	ctrl.m 		; CTRL M
+	DW	noentry		; CTRL N
+	DW	noentry		; CTRL O
+	DW	noentry		; CTRL P
+	DW	noentry		; CTRL Q
+	DW	noentry		; CTRL R
+	DW	noentry		; CTRL S
+	DW	noentry		; CTRL T
+	DW	noentry		; CTRL U
+	DW	ctrl.v 		; CTRL V
+	DW	noentry		; CTRL W
+	DW	noentry		; CTRL X
+	DW	noentry		; CTRL Y
+	DW 	ctrl.z		; CTRL Z
+	DW 	ctrl.ae 	; CTRL [ = ESC !
+	DW	noentry		; CTRL \
+	DW	noentry		; CTRL ]
+	DW	ctrl.sz		; CTRL ^
+	DW	ctrl.dl 	; CTRL _
+
+noentry:XOR	A
+MEAF0:	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		Video-Escape-Codes & Adresses		*
+;*	Funktion:	Tabelle der ESC-Codes. Tabelle der   	*
+;*			zugeh|rigen Unterroutinen.		*
+;****************************************************************
+
+vdescc:	DB	'.=?ERQWTY)(<>Z*Gj'
+
+vdesca:	DW	cursup 		; ESC j 
+	DW	invsel		; ESC G
+	DW	cls 		; ESC *
+	DW	accl25 	 	; ESC Z
+	DW	protbot		; ESC >
+	DW	prottop 	; ESC <
+	DW	inv.off		; ESC (
+	DW	inv.on 		; ESC )
+	DW	clreos 		; ESC Y
+ 	DW	clreol 		; ESC T
+	DW	delchar		; ESC W
+	DW	inschar		; ESC Q
+	DW	delline  	; ESC R
+	DW	insline		; ESC E	
+	DW	getcur 		; ESC ?
+	DW	poscur 		; ESC =
+	DW	defcur 		; ESC .	       
+	
+PAGE
+;****************************************************************  
+;*	Name:		Cursor-Definition-Table          	*
+;*	Funktion:	Tabelle mit CRTC-Daten f}r die unter-	*
+;*			schiedlichen Cursor-Modi.           	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+cdeftab:DB	2BH	; Cursor aus
+	DB	60H	; Cursor auf blinkenden Block
+	DB	00H	; Cursor auf stehenden Block
+	DB	6BH	; Cursor auf blinkeneden Unterstrich
+	DB  	0BH     ; Cursor auf stehenden Unterstrich
+
+MEB29:	NOP
+
+SUBTTL	CONOUT - Unterprogramme zur Terminal-Emulation
+PAGE
+;********************************************************
+;*	Name:		Check for Video-Overflow  	*
+;*	Funktion:	Testet, ob angegebene Cursor-	*
+;*			position das Video-RAM }ber-	*
+;*			schreitet			*
+;*	Input:		HL: Cursorposition im V-RAM	*
+;*	Ver{ndert:	BC, AF  			*
+;*	Output:		AF: Carry = nicht ]berschritten	*
+;********************************************************
+
+vover:	LD	BC,(vidlast)	; (BC): Letzte nicht gesch}tzte Bildposition.
+	INC	BC		; (BC): Erste dahinter.
+	LD	A,H		; H:MSB der Cursorposition.
+	CP	B		; ]berschreitet MSB bereits ?
+	RET	C		; Nein, sofort mit Cy zur}ck!
+	LD	A,L		; Sonst: LSB pr}fen.
+	CP	C
+	RET
+   
+;********************************************************
+;*	Name:		Check for Video-Underflow  	*
+;*	Funktion:	Testet, ob angegebene Cuursor-	*
+;*			position das Video-RAM		*
+;*			unterschreitet.			*
+;*	Input:		HL: Cursorposition im V-RAM	*
+;*	Ver{ndert:	BC, AF 				*
+;*	Output:		AF : Carry = nicht Unter-   	*
+;*         		schritten			*
+;********************************************************
+
+vunder:	LD	BC,(vid1st)	; (BC): Erste nicht gesch}tzte Bildposition.
+MEB39:	DEC	BC		; (BC): Ein Byte davor.
+	LD	A,B		; H:MSB	der Cursorposition.
+	CP	H		; Bereits unterschritten?
+	RET	C		; Nein, sofort zur}ck!
+	LD	A,C		; Sonst:
+	CP	L		; LSB pr}fen.
+	RET
+
+PAGE
+;********************************************************
+;*	Name:		Get Cursor Line            	*
+;*	Funktion:	Liefert die Nummer der aktu-  	*
+;*			ellen Zeile.          		*
+;*	Input:		HL: Cursorposition im V-RAM	*
+;*	Ver{ndert:	AF, BC, DE, HL 			*
+;*	Output:		B  : Cursorzeile            	*
+;********************************************************
+
+curline:LD	DE,line		; DE: L{nge einer Bildschirmzeile
+	LD	B,0  		; Z{hler initialisieren.
+	OR	A		; Carry l|schen.
+MEB46:	SBC	HL,DE		; Von aktueller Cursorposition solange
+	INC	B		; eine Zeile abziehen und mitz{hlen,
+	LD	A,H		; bis Video-RAM
+  	CP	3BH		; unterschritten.
+	JR	NZ,MEB46
+	RET
+
+SUBTTL	BIOS-Funktion "Console Character Output"
+PAGE
+;****************************************************************
+;*	Name:		Console Character out     		*
+;*	Funktion:	Terminal-Emulation zur Zeichenausgabe 	*
+;*	Input:		--					*
+;*	Ver{ndert:	--					*
+;*	Output:		--					*
+;****************************************************************
+
+conout:	LD	A,(iobyte)	; Routing auf:
+	AND	00000011B	; CON:-Bits maskieren.
+	CP	00000010B	; BAT: ?
+	JP	Z,list		; Ja, Routing auf LST:-Kanal
+	CP	00000001B 	; CRT: ?
+	RET	NZ		; Nein!
+
+	CALL	ustack		; User-Stack einrichten.
+	CALL	bankio		; I/O-Map einbanken.
+	LD	HL,scp2		; R}ckkehradresse sei zun{chst
+escret	EQU	$-2		; scp2                                  
+	PUSH	HL
+ 	LD	HL,(curpos)	; Cursorposition => User-Stack
+	PUSH	HL
+	LD	A,C
+	
+	JP	esccont		; Wenn eine ESC-Sequenz aktiv, steht hier die
+esdadr	EQU	$-2		; Adresse der Behandlungsroutine, die das
+				; "CONOUT"-Zeichen als Parameter erwartet.
+
+PAGE
+;****************************************************************  
+;*	Name:		Escape Continue                 	*
+;*	Funktion:	R}ckkehradresse nach Auswertung der  	*
+;*			ESC-Parammeter.                        	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+esccont:POP	DE		; Cursorposition vom Stack => DE
+	CP	1BH		; War Steuerzeichen ESC ?
+	JR	Z,MEB77		; Ja, OK!
+	LD	HL,scp1		; F}r ESC ist R}ckkehradresse scp1
+	EX	(SP),HL
+MEB77:	PUSH	DE		; Cursorposition => Stack
+	CP	' '		; CTRL ?
+	JR	C,csdecod	; Ja!
+
+	POP	HL		; HL:Cursorposition
+	LD	A,(invflag)	; Inversdarstellung gew}nscht?
+	OR	C		; Dann A=80H sonst A=00H
+	LD	(HL),A		; Mit Zeichen oderieren und senden!
+	INC	HL		; Cursorposition weiterstellen.
+	RET			; geht }ber scp1/scp2 zur}ck (vgl. oben!)
+
+SUBTTL	CONOUT - Cursorposition => CRTC
+PAGE
+;********************************************************
+;*	Name:		Send Cursor-Position      	*
+;*	Funktion:	Cursor-Position dem CRTC     	*
+;*			}bergeben. scp1 : mit Scroll	*
+;*			scp2 : ohne Scroll		*
+;*	Input:		HL: Cursorposition im V-RAM	*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+scp1:	CALL	vover		; Video-RAM }berschritten?
+	JR	C,scp2		; Nein, so O.K.!
+	CALL	scr.up		; Sonst: Eine Zeile hochrollen.
+
+scp2:	CALL	bankram		; RAM einbanken.
+	LD	BC,-3C00H	; Cursorposition 
+	LD	(curpos),HL	; merken, minus Video-RAM-Anfang  
+	ADD	HL,BC		; => Video-Controller-RAM-Adresse.
+ 	LD	C,crtcadr	; (C):CRTC-Adressregister
+	LD	A,14 		; A:Register 14: Cursorposition MSB
+	OUT	(C),A		; Register 14 anw{hlen.
+	INC	C		; (C):CRTC-Datenregister
+	OUT	(C),H		; Cursorposition MSB senden.
+	DEC	C		; (C):CRTC-Adressregister.
+	INC	A		; A:Register 15: Cursorposition LSB.
+	OUT	(C),A		; Register 15 anw{hlen.
+	INC	C		; (C):CRTC-Datenregister.
+	OUT	(C),L		; Cursorposition MSB senden.
+	RET
+
+SUBTTL	CONOUT - CTRL-Sequenzen erkennen
+PAGE
+;****************************************************************
+;*	Name:		Control-Sequence-Decode. 	  	*
+;*	Funktion:	Auswahl einer Unterprogramm-Adresse 	*
+;*			aus dem gegebenen CTRL-Zeichen.	 	*
+;*	Input:		A : CTRL-Code				*
+;*	Ver{ndert:	--					*
+;*	Output:		--					*
+;****************************************************************
+
+csdecod:ADD	A,A		; CTRL-Code * 2, da Tabelleneintrag 2 Byte
+	LD	E,A		; lang => Zeiger in CTRL-Ansprungtabelle
+	LD	D,00H		; nach DE.
+	LD	HL,vidctrl	; Plus Tabellenanfang =>
+	ADD	HL,DE		; Ansprungadresse der CTRL-Routine.
+	LD	A,(HL)
+	INC	HL
+	LD	H,(HL)
+	LD	L,A
+	EX	(SP),HL		; CTRL-Behandlungsroutine
+	RET			; anspringen!
+
+SUBTTL	CONOUT - CTRL-Sequenzen zur Cursorsteuerung
+PAGE
+;****************************************************************  
+;*	Name:		CTRL-H			          	*
+;*	Funktion:	Cursor ein Zeichen nach links        	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+ctrl.h:	DEC	HL		; Cursorposition um ein Zeichen	zur}ck.
+	CALL	vunder		; Hierbei Video-RAM unterschritten?
+	RET	C		; Nein => OK!
+	INC	HL		; Sonst Backspace r}ckg{ngig machen!
+	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		CTRL-M			          	*
+;*	Funktion:	Cursor an Zeilenanfang.              	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+ctrl.m:	CALL	curline		; Aktuelle Cursorzeile => B
+
+;****************************************************************  
+;*	Name:		Move Cursor to Line (B)			*
+;*	Funktion:	Cursor in "B-te" Bildschirmzeile     	*
+;*	Input:		B: Gew}nschte Zeile			*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+mclineb:LD	HL,3C00H-line	; (HL):Eine Zeile vor Video-Beginn.
+MEBC2:	ADD	HL,DE		; B mal eine Zeile hinzuz{hlen.  
+	DJNZ	MEBC2           
+	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		Cursor to End of line 			*
+;*	Funktion:	Errechnet Cursorposition des Zeilen-    *
+;*			Endes					*
+;*	Input:		--                                  	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+cureol:	CALL	ctrl.m		; CTRL-M positionier Cursor an Zeilenanfang.
+	LD	DE,line-1	; Plus 79=
+	ADD	HL,DE		; Position des Zeilenendes!
+	RET
+
+
+PAGE
+;****************************************************************  
+;*	Name:		CTRL-del/CTRL-J				*
+;*	Funktion:	LF,CR/Cursor eine Zeile weiter.        	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+ctrl.dl:CALL	ctrl.m
+
+ctrl.j:	LD	DE,line		; Cursorposition in HL
+	ADD	HL,DE		; um eine Zeile erh|hen.
+	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		CTRL-I 			          	*
+;*	Funktion:	Cursor eine Tabulatorposition weiter. 	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+ctrl.i:	LD	A,' '		; Leerzeichen an Cursorposition
+	LD	(HL),A		; hinterlassen und
+	INC	HL		; Cursorposition weiterstellen.
+	CALL	vover		; Noch im Bild-RAM?
+	JR	C,MEBE2		; Ja!
+	CALL	scr.up		; Nein: Scroll-Up wird n|tig!
+MEBE2:	LD	A,L		; TAB-Position 
+	AND	07H		; maskieren.
+	JR	NZ,ctrl.i	; Wenn nicht erreicht, weiter Leerzeichen.     
+	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		CTRL-K 			          	*
+;*	Funktion:	Cursor eine Zeile nach oben.	 	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+ctrl.k:	LD	DE,-line 	; Cursorposition um eine Zeile
+	ADD	HL,DE		; vermindern.
+	CALL	vunder		; Video-RAM hierdurch unterschritten?
+	RET	C		; Nein, OK!
+	LD	DE,line		; Sonst: CTRL-K
+	ADD	HL,DE		; r}ckg{ngig machen!
+	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		CTRL-L 			          	*
+;*	Funktion:	Cursor ein Zeichen nach rechts. 	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+ctrl.l:	INC	HL		; Cursorposition erh|hen.
+	CALL	vover		; Video-RAM hierbei }berschritten?
+	RET	C		; Nein, OK!
+	DEC	HL		; Sonst: CTRL-L r}ckg{ngig machen.
+	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		CTRL-V 			          	*
+;*	Funktion:	Cursor eine Zeile nach unten.	 	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+ctrl.v:	CALL	ctrl.j		; Cursor eine Zeile tiefer
+	CALL	vover		; positionieren. Aus dem Bild-RAM?
+	RET	C		; Nein, OK!
+	SBC	HL,DE		; Sonst: CTRL-J r}ckg{ngig machen!
+	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		CTRL-~ 			          	*
+;*	Funktion:	Cursor Home.			 	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+ctrl.sz:LD	HL,(vid1st)	; Cursorposition = Erste nicht gesch}tzte
+	RET			; Bildspeicher-Position.
+
+SUBTTL	CONOUT - Erkennung der ESC-Sequenzen
+PAGE
+;****************************************************************  
+;*	Name:		CTRL-[ = ESC		        	*
+;*	Funktion:	Escape-Parameterleseroutine aktivieren	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+ctrl.ae:PUSH	HL		; HL - was auch immer drinsteht! - retten.
+	LD	HL,esdecod	; esdecod-Routine in f}r conout vorsehen:
+
+PAGE
+;****************************************************************  
+;*	Name:		Deactivate Escape-Sequence-Decode	*
+;*	Funktion:	Deaktiviert die Auswertung der ESC-  	*
+;*			Parameter und gibt die normale Zeichen-	*
+;*			annahme wieder frei			*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+deaesc:	LD	(esdadr),HL     ; Meist wird hier esccont eingetragen.
+	POP	HL		; Cursorposition vom Stack.
+	RET			; Zur}ck von der ESC-Behandlungsroutine.
+
+PAGE
+;****************************************************************  
+;*	Name:		Activate "Escape-Parameter-Get"		*
+;*	Funktion:	Modifiziert Zeichen-Annahme-Routine  	*
+;*			zur Auswertung der ESC-Parameter.    	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+       
+actesc:	LD	(esdadr),HL	; Adresse der Auswert-Routine eintragen.
+	LD	HL,scp1		; R}ckkehradresse hiervon sei scp1!
+	LD	(escret),HL
+	POP	HL		; Cursorposition vom Stack.
+	RET 
+
+PAGE
+;****************************************************************  
+;*	Name:		Escape-Sequence-Decode			*
+;*	Funktion:	Bestimmen der ESC-Behandlungsroutinen	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+ 
+esdecod:LD	BC,17    	; BC:L{nge der Steuerzeichentabelle
+	LD	HL,vdescc	; (HL):Steuerzeichentabelle
+	CPIR			; Steuerzeichen suchen.
+	JR	NZ,eoescs+1	; Zeichen nicht gefunden!
+
+      	SLA	C		; Z{hler * 2 => Zeiger in Adresstabelle.
+	LD	HL,vdesca	; (HL):zugeh|rige Adresstabelle.
+	ADD	HL,BC
+	LD	A,(HL)
+	INC	HL
+	LD	H,(HL)
+	LD	L,A
+	JP	(HL)
+
+PAGE
+;****************************************************************  
+;*	Name:		End of Escape-Sequence.			*
+;*	Funktion:	Deaktiviert die Auswertung der ESC-  	*
+;*			Parameter und gibt die normale Zeichen-	*
+;*			annahme wieder frei			*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+eoescs:	PUSH	HL		; Vorsorgliche Stack-Korrektur, da
+	LD	HL,scp2		; deaesc HL vom Stack restauriert.
+	LD	(escret),HL	; scp2 schlie~t conout ab.
+	LD	HL,esccont	; Ab hier geht's nach esccont weiter.
+	JR	deaesc		; [nderungen zur Parameter-Annahme abschalten.
+
+SUBTTL	CONOUT - Console-Out zur Annahme der ESC-Parameter vorbereiten
+PAGE
+;****************************************************************  
+;*	Name:		                       			*
+;*	Funktion:	Einbinden einiger ESC-Behandlungs-   	*
+;*			Routinen in den CONOUT-Aufruf		*
+;****************************************************************
+
+defcur:	LD	HL,def.cur
+	JR	actesc
+
+poscur:	LD	HL,pos.cur
+	JR	actesc
+
+accl25:	LD	HL,acc.l25
+	JR	actesc
+
+prottop:LD	HL,pr.top
+	JR	actesc
+
+protbot:LD	HL,pr.bot
+	JR	actesc
+
+invsel:	LD	HL,inv.sel
+	JR	actesc
+
+SUBTTL	CONOUT - ESC-Sequenzen
+PAGE
+;****************************************************************  
+;*	Name:		Cursor up              			*
+;*	Funktion:	Cursor eine Zeile h|her. Wie CTRL-K! 	*
+;*	Input:		--					*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+cursup:	POP	DE
+	LD	HL,esccont
+	LD	(esdadr),HL
+	EX	DE,HL
+	JP	ctrl.k
+
+PAGE
+;****************************************************************  
+;*	Name:		Define Cursor-Symbol  			*
+;*	Funktion:	Programmiert den CRTC f}r das           *
+;*			gew}nschte Cursor-Symbol.		*
+;*	Input:		A: Parameter des ESC . -Befehls		*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+def.cur:SUB	'0'		; ASCII-Korrektur 30H ... 34H => 0 ... 4    
+	JR	C,MEC81		; Carry = Kein Steuercode
+	CP	05H		; Gr|~er als 4?
+	JR	NC,MEC81	; auch kein Steuercode!
+
+	LD	BC,cdeftab	; (BC):Tabelle der Cursordefinitionscodes
+MEC73:	OR	A		; Z{hler A auf Null?
+	JR	Z,MEC7A		; Ja, Code gefunden!
+	INC	BC		; Sonst: Tabellenzeiger weiter,
+	DEC	A		; Z{hler 'runter!
+	JR	MEC73
+
+MEC7A:	LD	A,10  		; CRTC-Register 10 = Cursor Start
+	OUT	(crtcadr),A	; anw{hlen.
+	LD	A,(BC)		; Datum aus 
+	OUT	(crtcdat),A	; Tabelle senden. 
+MEC81:	JP	eoescs+1
+
+PAGE
+;****************************************************************  
+;*	Name:		Position Cursor       			*
+;*	Funktion:	Direkte Cursor-positionierung "ESC ="   *
+;*	Input:		A: Cursorzeile +32 C:-Spalte +32	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+pos.cur:LD	(parsave),A	; Ersten Positionsparameter (Zeile) retten
+	LD	HL,MEC8D	; F}r n{chsten CONOUT-Aufruf Behendlungs-
+	JP	actesc		; routine MEC8D vorsehen.
+
+MEC8D:	POP	HL		; (alte) Cursorposition vom Stack.
+	LD	A,(parsave)	; A:Cursor-Zeile + 32
+	SUB	32  		; A:Cursor-Zeile
+	CP	24 		; }ber Bildschirm hinaus verlangt?
+	JR	C,MEC99		; Nein!
+	LD	A,0	   	; Sonst:Cursor-Zeile Nullsetzen.
+MEC99:	LD	L,A		; HL:Cursor-Zeile
+	LD	H,00H
+	LD	E,L		; DE:ebenfalls
+	LD	D,H
+	ADD	HL,HL		; mal 2
+	ADD	HL,HL		; mal 4
+	ADD	HL,DE		; plus Zeile => mal 5
+	ADD	HL,HL		; mal 10
+	ADD	HL,HL		; mal 20
+	ADD	HL,HL		; mal 40
+	ADD	HL,HL		; mal 80    
+	LD	A,C		; A:Cursor-Spalte + 32
+	SUB	32  		; A:Cursor-Spalte
+	CP	80 		; }ber Zeile hinaus verlangt?
+	JR	C,MECAE		; Nein!
+	LD	A,0  		; Sonst:Cursor-Spalte Nullsetzen.
+MECAE:	LD	E,A		; DE:3C00H+Cursor-Spalte.
+	LD	D,3CH
+	ADD	HL,DE		; HL:neue Cursorposition aus Spalte/Zeile
+	JP	eoescs
+
+PAGE
+;****************************************************************  
+;*	Name:		Get Cursor Position   			*
+;*	Funktion:	Ermittelt aktuelle Cursorposition       *
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		E: Zeile +32, D: Spalte +32		*
+;****************************************************************
+
+getcur: POP	HL		; Cursorposition dem Stack entnehmen;
+	PUSH	HL		; jedoch dort gesichert hlten.
+	CALL	curline		; => B: Nummer der aktuellen Zeile.
+	LD	A,B
+	CALL	mclineb
+	EX	DE,HL
+	POP	HL
+	OR	A
+	SBC	HL,DE
+	ADD	A,1FH
+	LD	E,A
+	LD	A,L
+	ADD	A,' '
+	LD	D,A
+	JP	eoescs
+
+PAGE
+;****************************************************************  
+;*	Name:		Insert Line           			*
+;*	Funktion:	F}gt eine Zeile an Cursorpostion ein    *
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+insline:POP	HL
+	CALL	ctrl.m
+	LD	(curpos),HL
+	LD	DE,(vidend)
+	LD	A,H
+	CP	D
+	JR	NZ,MECE3
+	LD	A,L
+	CP	E
+	JR	NZ,MECE3
+	JP	MED66
+
+MECE3:	PUSH	HL
+	LD	DE,(vidend)
+	DEC	DE
+	EX	DE,HL
+	OR	A
+	SBC	HL,DE
+	INC	HL
+	LD	C,L
+	LD	B,H
+	LD	HL,(vidend)
+	DEC	HL
+	LD	DE,(vidlast)
+	LDDR
+	POP	HL
+	JP	MED66
+
+PAGE
+;****************************************************************  
+;*	Name:		Delete Line           			*
+;*	Funktion:	R}ckt Text um eine Bildschirmzeile      *
+;*			ein. L|scht also Cursorzeile.     	*
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+delline:POP	HL
+	CALL	cureol
+	INC	HL
+	CALL	vover
+	JR	NC,MED28
+	PUSH	HL
+	LD	DE,(vidlast)
+	EX	DE,HL
+	OR	A
+	SBC	HL,DE
+	INC	HL
+	LD	C,L
+	LD	B,H
+	POP	HL
+	PUSH	HL
+	LD	DE,0FFB0H
+	ADD	HL,DE
+	LD	(curpos),HL
+	EX	DE,HL
+	POP	HL
+	LDIR
+MED21:	LD	DE,(vidend)
+	JP	MED6E
+
+MED28:	LD	HL,(vidend)
+	LD	(curpos),HL
+	JR	MED21
+
+PAGE
+;****************************************************************  
+;*	Name:		Insert Character      			*
+;*	Funktion:	R}ckt Text der Zeile um ein Zeichen     *
+;*			aus und f}gt ein Leerzeichen ein.	*
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+inschar:POP	HL		; Cursorposition dem Stack entnehmen. (Warum
+	PUSH	HL		; immer vom Stack, Herr K{mpf, wo Sie doch 
+	CALL	cureol		; curpos mitf}hren???) Cursor an Zeilen-Ende.
+	POP	DE		; (DE):Einf}gestelle
+	PUSH	HL		; (HL):Zeilen-Ende
+	OR	A		; Carry l|schen.
+	SBC	HL,DE		; HL:Anzahl zu verschiebender Zeichen.
+	POP	DE		; (DE):Zeilen-Ende
+	JR	Z,nomove	; Zero => Am Zeilen-Ende wird nichts eingef}gt!
+	LD	B,H		; BC:
+	LD	C,L		; Anzahl zu verschiebender Zeichen.
+	LD	H,D		; (HL):
+	LD	L,E		; Zeilen-Ende
+	DEC	HL		; (HL):Ein Zeichen vor Zeilen-Ende
+	LDDR			; Zeilen-Inhalt um ein Zeichen rechtsschieben.
+	INC	HL		; (HL):Einf}gstelle.      
+	LD	(HL),' '	; Dort ein Leerzeichen hinterlassen.
+	JP	eoescs
+
+PAGE
+;****************************************************************  
+;*	Name:		Delete Character      			*
+;*	Funktion:	R}ckt Text der Zeile um ein Zeichen     *
+;*			ein. L|scht also Zeichen an Cursor	*
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+delchar:POP	HL		; Auch hier wieder: Cursorposition dem
+	PUSH	HL		; Stack entnehmen.
+	CALL	cureol		; (HL):Zeilen-Ende
+	POP	DE		; (DE):L|sch-Stelle
+	OR	A		; Carry l|schen.
+	SBC	HL,DE		; HL:Anzahl zu verschiebender Zeichen.
+	JR	Z,nomove	; Zeilen-Ende => Hier wird nichts gel|scht!
+	LD	B,H		; BC:
+	LD	C,L		; Anzahl zu verschiebender Zeichen.
+	LD	H,D		; (HL):
+	LD	L,E		; L|sch-Stelle
+	INC	HL		; (HL):Ein Zeichen hinter L|sch-Stelle
+	LDIR			; Text ein Zeichen nach links schieben.
+	DEC	HL		; Am Zeilen-Ende ein
+	LD	(HL),' '	; Leerzeichen einf}gen.
+nomove:	LD	HL,(curpos)	; (HL):Jetzt wieder Cursorposition.
+	JP	eoescs
+
+PAGE
+;****************************************************************  
+;*	Name:		Clear to End of Line  			*
+;*	Funktion:	F}llt Rest der Zeile mit Leerzeichen.   *
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+clreol:	POP	HL	 	; Aktuelle Cursorposition
+MED66:	PUSH	HL		; dem Stack entnehmen.
+	CALL	cureol		; => Cursorposition des Zeilenendes nach HL.
+	POP	DE		; (HL):Zeilen-Ende; (DE): Cursorposition
+	JR	fillvid		; diesen Bereich mit Leerzeichen f}llen.
+   
+;****************************************************************  
+;*	Name:		Clear to End of Screen			*
+;*	Funktion:	F}llt Rest des Bildschirms mit		*
+;*			Leerzeichen. 				*
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+clreos:	POP	DE		; (DE):Cursorposition
+MED6E:	LD	HL,(vidlast)	; (HL):Letze ungesch}tzte Video-Speicherstelle
+				; hiermit ... 
+
+;****************************************************************  
+;*	Name:		Fill Video             			*
+;*	Funktion:	F}llt Video-RAM von (DE) bis (HL) mit	*
+;*			Leerzeichen				*
+;*	Input:		--					*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+fillvid:OR	A		; Carry l|schen.
+	SBC	HL,DE		; Anzahl F}llzeichen berechnen.
+	JR	Z,MED7F		; Grenzen identisch => nichts wird gef}llt!
+	LD	B,H		; BC:
+	LD	C,L		; Anzahl zu f}llender Zeichen
+	LD	H,D		; (HL):
+	LD	L,E		; Erste zu f}llende Stelle
+	INC	DE		; (DE): Zweite zu f}llende Stelle
+	LD	(HL),' '	; Leerzeichen in erste Stelle laden.
+	LDIR			; Mit LDIR weiterschaufeln!
+MED7F:	JP	nomove
+
+PAGE 
+;****************************************************************  
+;*	Name:		Invers select         			*
+;*	Funktion:	W{hlt Inversdarstellung an/ab.		*
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+inv.sel:CP	'4'
+	JR	NZ,inv.off
+
+inv.on:	LD	A,80H
+	JR	MED8B
+
+inv.off:XOR	A
+MED8B:	LD	(invflag),A
+	JP	eoescs+1
+   
+;****************************************************************  
+;*	Name:		Protect Screen-Top    			*
+;*	Funktion:	Sch}tzt obere Bildschirmzeilen.		*
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+pr.top:	CP	13 		; Maximal 12 Zeilen sind sch}tzbar =>
+	JP	NC,eoescs+1	; 13 oder mehr geht nicht!
+	LD	B,A		; Zeilenz{hler nach B
+	INC	B		; wegen DJNZ, damit aus Null Zeilen keine
+	LD	HL,3C00H-line	; 256 werden! "-line", da Z{hler um 1 zu hoch!
+	LD	DE,line		; Anzahl zu sch}tzender
+MED9E:	ADD	HL,DE		; Zeilen in	
+	DJNZ	MED9E		  
+	LD	(vid1st),HL	; "erste nicht gesch}tzte Bildposition"
+	JP	eoescs+1	; schreiben.
+   
+;****************************************************************  
+;*	Name:		Protect Screen-Bottom.			*
+;*	Funktion:	Sch}tzt untere Bildschirmzeilen.	*
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+pr.bot:	CP	13 		; Max 12 Zeilen!
+	JP	NC,eoescs+1	; (vgl. oben!)
+	LD	B,A
+	INC	B
+	LD	HL,line25
+	LD	DE,-line 
+MEDB4:	ADD	HL,DE
+	DJNZ	MEDB4
+	LD	(vidend),HL
+	LD	DE,line-1
+	ADD	HL,DE
+	LD	(vidlast),HL
+	JP	eoescs+1
+
+PAGE
+;****************************************************************  
+;*	Name:		Access Line 25.        			*
+;*	Funktion:	Schreibt Statuszeile.           	*
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+acc.l25:CP	line
+	JP	NC,eoescs+1
+MEDC9:	LD	(MEB29),A
+MEDCC:	LD	HL,MEDD2
+	JP	actesc
+
+MEDD2:	CP	03H
+	JP	Z,eoescs+1
+	XOR	80H
+	LD	C,A
+	LD	HL,line25
+	LD	A,(MEB29)
+	LD	E,A
+	LD	D,00H
+	ADD	HL,DE
+	LD	(HL),C
+	INC	A
+	CP	line
+	JR	NC,MEDCC
+	JR	MEDC9
+
+PAGE
+;****************************************************************  
+;*	Name:		Clear Screen           			*
+;*	Funktion:	Wie CTRL-Z.                     	*
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+cls:	POP	HL
+	CALL	ctrl.z
+	JP	eoescs
+
+PAGE
+;****************************************************************
+;*	Name:		Scroll Up           	 	  	*
+;*	Funktion:	Inhalt des ungesch}tzten Video-RAMs 	*
+;*			um eine Textzeile nach oben rollen.	*
+;*	Input:		--           				*
+;*	Ver{ndert:	--					*
+;*	Output:		--					*
+;****************************************************************
+
+scr.up:	PUSH	DE		; DE retten.
+	LD	HL,(vidend)	; HL: Video-End-Adresse
+	PUSH	HL
+	LD	DE,(vid1st)	; DE: Video-Anfangs-Adresse = LDIR-Ziel  
+	OR	A
+	SBC	HL,DE		; HL: Gr|~e des Video-RAMs
+	LD	C,L		; => LDIR-Z{hler BC.
+	LD	B,H
+	LD	HL,line		; LDIR-Ziel plus eine Textzeile =>
+	ADD	HL,DE		; LDIR-Quelle
+	LDIR			; Video-RAM um eine Zeile nach oben kopieren.
+	LD	BC,line-1	; unterste Text-Zeile ...
+MEE0A:	POP	HL
+	PUSH	HL
+	LD	E,L
+	LD	D,H
+	INC	DE	
+	LD	(HL),' '	; ... mit Leerzeichen f}llen.
+	LDIR
+	POP	HL
+	POP	DE
+	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		CTRL-Z                			*
+;*	Funktion:	Bildschirm l|schen                      *
+;*	Input:		--                              	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+ctrl.z:	PUSH	DE
+	LD	DE,(vid1st)
+	PUSH	DE
+	LD	HL,(vidlast)
+	OR	A
+	SBC	HL,DE
+	LD	C,L
+	LD	B,H
+	JR	MEE0A
+
+SUBTTL	"LST:"-Routinen' 
+PAGE
+;********************************************************
+;*	Name:		List Character out     		*
+;*	Funktion:	BDOS-Funktion 5               	*
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+list:	LD	A,(iobyte)	; Dem LST: -Kanal ist zugeordnet:
+	AND	11000000B
+	RET	Z		; Nichts!
+   	CP	01000000B	; CRT: ?
+	JP	Z,conout	; Ja, dann Routing auf CON: -Kanal
+	CP	11000000B	; UL1: ?
+	JR	Z,ul1		; Ja, dann sedezimale Druckerausgabe
+   
+;****************************************************************  
+;*	Name:		LPT: -Device                     	*
+;*	Funktion:	Druckerausgabe.                 	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+lpt:	CALL	listst		; Warten, bis LST: -Device
+	JR	Z,lpt		; bereit!
+	LD	A,C		; Zeichen an den Druckerport
+	OUT	(priprt),A	; ausgeben.
+	RET			; Fertig!
+   
+;****************************************************************  
+;*	Name:		UL1: -Device                     	*
+;*	Funktion:	Druckerausgabe sedezimal.       	*
+;*	Input:		A : sedezimal darzustellendes Zeichen	*
+;*	Ver{ndert:	AF        				*
+;*	Output:		Zeichen an LPT:				*
+;****************************************************************
+
+ul1:	LD	A,C		; Zeichen => A
+	PUSH	AF		; Low-Nibble retten
+	RRCA			; High-Nibble
+	RRCA			; ins Lo-Nibble schieben
+	RRCA
+	RRCA
+	CALL	ul1con		; Sedezimal konvertieren.
+	POP	AF		; Low-Nibble her!
+	CALL	ul1con		; Sedezimal konvertieren.
+	LD	C,' '		; Trennendes Leerzeichen
+	JR	lpt		; an LPT: ausgeben.
+
+ul1con:	AND	0FH		; Lo-Nibble maskieren.
+	CP	0AH		; kleiner 10?
+	JR	C,MEE57		; => keine ASCII-Korrektur.
+	ADD	A,07H		; ASCII-Korrektur f}r A ... F
+MEE57:	ADD	A,'0'		; => ASCII
+	LD	C,A		; ASCII-Nibble an   
+	JR	lpt		; LPT: ausgeben.
+
+PAGE
+;********************************************************
+;*	Name:		Return List Status     		*
+;*	Funktion:	Kontrolle, ob LST:-Kanal bereit *
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+listst:	IN	A,(priprt)	; A:Drucker-Status
+	AND	11110000B	; "Busy, No Paper, Deselect, No Fault"-Maske
+	CP	00110000B
+	LD	A,0  
+	JR	NZ,MEE67
+	DEC	A
+MEE67:	OR	A
+	RET
+
+SUBTTL	Floppy-Routinen. Logischer Zugriff.
+PAGE
+;****************************************************************  
+;*	Name:		CLOSE-Patch            			*
+;*	Funktion:	CP/M 2.2-Patch zum kompletten Zur}ck-	*
+;*			schreiben des Datei-Inhalts nach CLOSE	*
+;*	Input:		--					*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+clpatch:PUSH	BC		; Register
+	PUSH	DE		; retten.
+	CALL	chekhst		; wenn Host-Puffer 'active', ----> Disk
+	POP	DE		; Register
+	POP	BC		; her!
+	JP	0E551H		; Zur}ck ins BDOS.
+
+PAGE
+;********************************************************
+;*	Name:		Select Disk            		*
+;*	Funktion:	BDOS-Funktion 14                *
+;*	Input:		C : Disk-Nummer (0 ... 3)	*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+seldsk:	CALL	ustack		; User-Stack einrichten.
+	CALL	bankio		; I/O-Map einbanken.
+	LD	A,C		; Disk-Nummer => A
+	CP	4  		; 0 ... 3 ?
+	JR	NC,selerr	; Nein, mag die Hardware nicht!
+
+;Aus Drive-Nummer in A => Drive-Select-Code in B
+
+	AND	00000011B	; Kommentier' ich erst gar nicht. Vorschlag:
+	INC	A		; CP	3
+	LD	B,10000000B	; CCF
+MEE83:	RLC	B		; ADC	A,0
+	DEC	A		
+	JR	NZ,MEE83
+
+	BIT	0,E		; Was kommt denn im Register E an ???
+	JR	NZ,MEEB1
+
+	LD	A,B		; Drive-Select ausgeben.
+	LD	(drvsel),A
+	LD	A,0D0H		; FDC reset!
+	LD	(cmdreg),A
+
+;****************************************************************  
+;*	Name:		Disk Rotating?         			*
+;*	Funktion:	Dreht sich eine Disk im Laufwerk?    	*
+;****************************************************************
+
+	LD	A,(cmdreg)	; A: Statusregister
+	AND	02H		; Index-Bit maskieren.
+	LD	E,A		; In E merken.
+	LD	HL,0
+MEE9E:	LD	A,(cmdreg)	; A:wieder Status
+	AND	02H		; wieder Index-Bit maskieren.
+	XOR	E		; Ist Index-Bit gekippt?
+	JR	NZ,MEEB1	; Ja, dann rotiert die Scheibe.
+	DEC	HL
+	LD	A,H
+	OR	L
+	JR	NZ,MEE9E	; Immer noch kein Index? Dann stimmt was nicht!
+selerr:	LD	HL,0
+sel.ok:	JP	bankram
+
+MEEB1:	LD	A,B		; Drive-Select-Code          
+	LD	(seeksel),A	; merken.
+
+;****************************************************************  
+;*	Name:		Track Mapping.         			*
+;*	Funktion:	Zum schnelleren Spurpositionierung   	*
+;*			die zuletzt aktuelle Spur des gew{hlten *
+;*			Laufwerks feststellen, des aktuellen	*
+;*			f}r n{chsten Zugriff merken.		*
+;*	Input:		--					*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+;Warum kopiert K{mpff hier, statt nur einen Zeiger -> trmapp umzustellen?
+
+	LD	A,(hstdsk)	; A:Aktuelle Disk
+	LD	HL,trmapp	; (HL):Track-Map
+	LD	E,A
+	LD	D,00H
+	ADD	HL,DE		; (HL):Track-Map f}r aktuelle Disk.
+	LD	A,(seekmap)	; Spurnummer aus seekmap
+	LD	(HL),A		; dort sichern.
+	LD	A,C		; A:
+	LD	(seekdsk),A	; Neu zu selektierende Disk. (f}r deblock!)
+	LD	HL,trmapp		
+	LD	E,A		; Aus Track-Map die f}r diese Disk
+	LD	D,00H		; letzte Spurnummer
+	ADD	HL,DE		; holen.
+	LD	A,(HL)
+	LD	(seekmap),A
+
+;****************************************************************  
+;*	Name:		Get Disk-Parameter-Header		*
+;*	Funktion:	Dem selektierten Laufwerk zugeh|renden 	*
+;*			dph adressieren. 			*
+;*	Input:		--					*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+	LD	L,C
+	LD	H,00H		; HL:Laufwerksnummer
+	ADD	HL,HL		; mal 2
+	ADD	HL,HL		; mal 4
+	ADD	HL,HL		; mal 8
+	ADD	HL,HL		; mal 16 = Zeiger in dph
+	PUSH	HL		; retten
+
+;****************************************************************  
+;*	Name:		Copy Disk-Parameter-Block 		*
+;*	Funktion:	Dem selektierten Laufwerk zugeh|renden 	*
+;*			dpb in den unidpb kopieren		*
+;*	Input:		Bl|dsinn!				*
+;*	Ver{ndert:	Bl|dsinn! 				*
+;*	Output:		Bl|dsinn!				*
+;****************************************************************
+
+;Wieso besitzt Ihr BIOS eigentlich einen dph mit vier dpb-Zeigern, Herr K{mpf?
+
+	LD	DE,dpblks	; (DE): 4 Disk-Parameter-Bl|cke
+	ADD	HL,DE		; plus vorher errechnetem Zeiger = gew}nschter
+	LD	DE,unidpb	; Block, diesen in den
+	LD	BC,16    	; allen Disks identischen unidpb
+	LDIR			; kopieren.
+	POP	HL		; Zeiger her!
+	LD	DE,dpbase	; dpbase plus Zeiger = Aktueller dph
+	ADD	HL,DE
+	JR	sel.ok		; Hiermit zur}ck!
+
+PAGE
+;********************************************************
+;*	Name:		Set Track              		*
+;*	Funktion:	Spur f}r deblock vorgeben       *
+;*	Input:		C 				*
+;*	Ver{ndert:	A 				*
+;*	Output:		seektrk f}r deblock		*
+;********************************************************
+
+settrk:	LD	A,C
+	LD	(seektrk),A
+	RET
+
+;********************************************************
+;*	Name:		Set Sector             		*
+;*	Funktion:	Sektor f}r deblock vorgeben     *
+;*	Input:		C : Sektornummer		*
+;*	Ver{ndert:	A 				*
+;*	Output:		seeksec f}r deblock		*
+;********************************************************
+
+setsec:	LD	A,C
+	LD	(seeksec),A
+	RET
+
+;****************************************************************
+;*	Name:		Set DMA                		 	*
+;*	Funktion:	Logischen Sektorpuffer definieren	*
+;*	Input:		BC : DMA-Puffer			 	*
+;*	Ver{ndert:	--				 	*
+;*	Output:		dmaadr   				*
+;****************************************************************
+
+setdma:	LD	(dmaadr),BC
+	RET
+
+PAGE
+;********************************************************
+;*	Name:		write disk             		*
+;*	Funktion:	dma-Puffer schreiben.           *
+;*	Input:		C: 0 Write to allocated		*
+;*			   1 Write to directory		*
+;*			   2 Write to unallocated	*
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+write:	LD	A,C		; Art des Schreibzugriffs
+	LD	(wrtype),A	; retten.
+	CALL	ustack		; User-Stack einrichten.
+	CALL	comphs		; Host-Sektor errechnen, wenn n|tig: Lesen.
+	CALL	putrhb		; Record => Host-Buffer schreiben.
+	LD	A,$-$ 
+wrtype	EQU	$-1
+	CP	1   		; DIR-Schreibzugriff?
+	RET	NZ		; Nein, alles OK!
+	JP	writehst	; Sonst: Ohne R}cksicht auf deblock Directory
+				; sofort aktualisieren.
+
+PAGE
+;********************************************************
+;*	Name:		Sector translate       		*
+;*	Funktion:	Skew-Faktor beachten.		*
+;*	Input:		C : Sektornummer		*
+;*			DE : Skew-Faktor-Tabelle	*
+;*	Ver{ndert:	BC, HL 				*
+;*	Output:		HL : Neue Sektornummer		*
+;*			Bit 7,(HL) : R}ckseitenflag	*
+;********************************************************
+
+sectran:EX	DE,HL	      	; (HL):Jetzt Skew-Faktor-Tabelle
+	LD	B,00H		; BC: Sektor
+	ADD	HL,BC		; (HL):Zeiger f}r Sektor C 
+	LD	C,(HL)		; C:Neue Sektornummer aus Tabelle
+	EX	DE,HL		; (DE):Jetzt wieder Skew-Faktor-Tabelle
+	LD	H,B		; HL:
+	LD	L,C		; Neue Sektor-Nummer.
+	RET
+
+PAGE
+;********************************************************
+;*	Name:		Move head to home position	*
+;*	Funktion:	Spur 0 f}r deblock vorgeben     *
+;*	Input:		--				*
+;*	Ver{ndert:	AF				*
+;*	Output:		seektrk f}r deblock		*
+;********************************************************
+
+home:	XOR	A
+	LD	(seektrk),A
+	RET
+
+MEF1F:	LD	A,$-$
+rwen	EQU	$-1
+	OR	A
+	RET
+
+SUBTTL	Floppy-Routinen. Physikalischer Zugriff.
+PAGE
+;****************************************************************  
+;*	Name:		Compute and read Host-Sector		*
+;*	Funktion:	Je nach Format aus seeksec den zuge-   	*
+;*			h|rigen hstsec errechnen und lesen	*
+;*	Input:		--       				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+comphs:	LD	HL,MEF1F	; MEF1F zus{tzlich einbinden, bevor
+	EX	(SP),HL		; endg}ltig "RET"
+	PUSH	HL
+	XOR	A		; Lesen/Schreiben
+	LD	(rwen),A	; erlauben.
+	LD	HL,seeksel	; (HL):Drive/Side-Select-Code
+	LD	BC,(seeksec)	; C:seeksec (wie vom BDOS }bergeben!)
+	RES	4,(HL)		; Side-Select l|schen.
+	XOR	A		; "Seek-Side" sei zun{chst auch Null.
+	BIT	7,C		; R}ckseitenbit in Sektornummer?
+	JR	Z,MEF3D		; Nein!
+	SET	4,(HL)		; Sonst:Side-Select wieder setzen.
+	INC	A		; "Seek-Side" ebenfalls gleich Eins.
+MEF3D:	DEC	HL		; (HL):seekpar     
+	LD	(seeksid),A	; 1 oder 0 nach seeksid laden.
+	RES	7,C		; R}ckseiten-Kennzeichnung l|schen.
+	LD	A,(HL)		; A:Physikalische Parameter
+	RRCA			; Sektorl{nge
+	RRCA			; aus Bits 2 und 3 herausschieben
+	AND	03H		; und maskieren.
+MEF48:	JR	Z,MEF4F		; 128 Byte/Sektor = Okay.
+	SRL	C		; Sonst soweit halbieren, bis aus logischem
+	DEC	A		; Sektor physikalischer Sektor
+	JR	MEF48		; bestimmt ist.
+
+
+;****************************************************************
+;*	Name:		Same disk, track, side, sector ?	*
+;*	Funktion:	Pr}ft seek-Parameter, ob Zugriff auf	*
+;*			gleichen Host-Sektor und liest diesen,	*
+;*			falls nicht identisch			*
+;*	Input:		--				 	*
+;*	Ver{ndert:	--				  	*
+;*	Output:		--				 	*
+;****************************************************************
+
+MEF4F:	LD	HL,seeksek	; (HL):seeksid,-sek,-trk,-dsk
+	LD	DE,hstsec	; (DE):hstside,-sec,-trk,-dsk
+	LD	(HL),C		; Je nach Sektorl{nge umgerecheten  
+				; Seek-Sector eintragen.
+	LD	B,4   		; 4 Werte sind zu }berpr}fen:
+MEF58:	LD	A,(DE)		; Alle 4 - Sektor, Spur, Seite, Disk -
+	CP	(HL)		; identisch?
+	JP	NZ,readhst	; Nein, => Host-Sektor lesen.
+	DEC	HL
+	DEC	DE
+	DJNZ	MEF58
+	RET
+
+PAGE
+;********************************************************
+;*	Name:		read disk                  	*
+;*	Funktion:	dma-Puffer lesen                *
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+read:	CALL	ustack		; User-Stack einrichten.
+	CALL	comphs		; Host-Sektor bestimmen. Wenn n|tig: Lesen
+
+;****************************************************************  
+;*	Name:		Get Record from Host-Buffer      	*    
+;*	Funktion:	Deblock-UP. Liest einen Record aus	*
+;*			hostbuf.                		*
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                         		*
+;****************************************************************
+
+getrhb:	CALL	gethba		; Host-Puffer-Adresse des Records bestimmen.
+
+;****************************************************************  
+;*	Name:		Read/Write Move                  	*    
+;*	Funktion:	Deblock-UP. Kopiert einen Record in/aus *
+;*			hostbuf.                		*
+;*	Input:		(HL):Quelle, (DE):Ziel			*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                         		*
+;****************************************************************
+
+;Herr K{mpf haben hier offensichtlich ein LDIR umgeschrieben, um das
+;CPL einf}gen zu k|nnen: Warum blieben Er hier beim 16-Bit-Z{hler BC ???
+
+rwmove:	LD	BC,128    	; Ein Record sind immer 128 Byte!
+rwmloop:LD	A,(HL)		; Quellbyte lesen.
+invdata:DS      1		; hier CPL, falls Diskdaten invertiert!
+	LD	(DE),A		; Zielbyte schreiben.
+	INC	HL		; Quellzeiger weiter.
+	INC	DE		; Zielzeicher weiter.
+	DEC	BC		; Bytez{hler 'runter.
+	LD	A,B		; Record
+	OR	C		; }bertragen?
+ 	JR	NZ,rwmloop	; Nein!
+	RET
+
+;****************************************************************  
+;*	Name:		Put Record into Host-Buffer      	*    
+;*	Funktion:	Deblock-UP. Schreibt einen Record in	*
+;*			hostbuf.                		*
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                         		*
+;****************************************************************
+
+putrhb:	CALL	gethba		; Aus seeksec Host-Puffer Relativadresse
+	EX	DE,HL		; errechnen. Quelle/Ziel tauschen, da
+	CALL	rwmove		; rwmove DMA-Puffer => hostbuf
+     
+;****************************************************************  
+;*	Name:		Mark Host-Buffer active/inactive	*
+;*	Funktion:	Deblock-UP. Setzt/L|scht hstact-Flag.  	*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+mhbact:	 LD	A,0AFH
+mhbiact	 EQU	$-1
+	 LD	(hstact),A	; Host-Puffer ist 'active', dh. ein
+	 RET			; Record drin, aber noch nicht auf Disk.
+
+;mhbact: DB	3EH
+;mhbiact:XOR	A		; Host-Puffer ins 'inactive', dh. der
+;	 LD	(hstact),A	; Puffer-Inhalt ist auf Disk gesichert.
+;	 RET
+
+;****************************************************************  
+;*	Name:		Get relative Host-Buffer-Address  	*    
+;*	Funktion:	Errechnet Zeiger in Host-Puffer         *
+;*			f}r den aktuellen Record		*
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		(DE):dma-Puffer (HL):Record		*
+;****************************************************************
+
+gethba:	LD	BC,(seeksec)	; C:Record-Nummer,        
+	LD	A,(hstpar)
+	RRCA
+	RRCA
+	AND	03H		; Sektorl{ngenbits maskieren:
+	LD	B,A		; 0=128, 1=256, 2=512 und 3=1024
+	INC	B		; ====================================
+	XOR	A		; Was soll das alles, Herr K{mpf?
+MEF94:	SCF			; Wie w{r's statt der Rechnerei mit:
+	ADC	A,A		; CP 	3
+	DJNZ	MEF94		; CCF
+	SRL	A		; ADC	A,0
+	AND	C		; ====================================
+	LD	L,A
+	LD	H,0   
+	LD	B,7    
+MEFA0:	ADD	HL,HL
+	DJNZ	MEFA0
+	LD	BC,hstbuf
+	ADD	HL,BC
+	LD	DE,(dmaadr)
+	RET
+     
+;****************************************************************  
+;*	Name:		Read Host-Buffer.			*
+;*	Funktion:	Deblock-UP. Liest Host-Puffer von   	*
+;*			Diskette.				*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+readhst:
+	CALL	chekhst		; Falls Host-Puffer aktiv, auf Disk schreiben!
+	LD	HL,seekpar	; Seek-Parameter in
+	LD	DE,hstpar	; Host-Parameter
+	LD	BC,6		; kopieren.
+	LDIR
+	LD	A,88H		; FDC-Befehl "Read"
+	LD	DE,021AH	; LD A,(DE) und LD (BC),A
+	JP	fdcrw		; => eigentlicher Disk-Zugriff.
+
+PAGE
+;****************************************************************  
+;*	Name:		Check Host-Buffer for pending write	*
+;*	Funktion:	Deblock-UP. Pr}ft, ob Host-Puffer aktiv *
+;*			und sichert ihn, falls ja!		*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+chekhst:LD	A,(hstact)	; Host-Puffer aktiv?
+	OR	A		; na?
+	RET	Z		; Nein! Andernfalls:
+     
+;****************************************************************  
+;*	Name:		Write Host-Buffer.			*
+;*	Funktion:	Deblock-UP. Schreibt Host-Puffer auf   	*
+;*			Diskette.				*
+;*	Input:		--         				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+writehst:
+	LD	A,0A8H		; FDC-Befehl "Write"
+	LD	DE,0A12H	; LD (DE),A und LD A,(BC)
+	CALL	fdcrw		; => eigentlicher Diskzugriff.
+	JP	Z,mhbiact	; Write fehlerfrei => Puffer inaktiv, fertig.
+	RET			; Sonst so zur}ck!
+
+PAGE
+;****************************************************************  
+;*	Name:		Size & Density Select.           	*    
+;*	Funktion:	W{hlt je nach Schreibdichte den FDC	*
+;*			aus und teilt ihm die Diskettengr|~e    *
+;*			mit.                              	*
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--               		  	*
+;****************************************************************
+
+sizdns:	LD	A,(hstpar)	; A: Drive-Paramter-Byte (16. Byte des dpb's)
+	LD	B,A		; in B retten.
+	LD	HL,cmdreg	; (HL):FDC-Befehlsregister
+	AND	00000001B	; Schreibdichte-Bit maskieren.
+	OR	11111110B	; Damit  n i c h t  der FDC angesprochen wird!
+	LD	(HL),A		; 1771 oder 1791 anw{hlen.
+	LD	(HL),0D0H	; Anschlie~end FDC-Reset.
+	LD	A,B
+	AND	01000000B	; Diskettengr|~e maskieren.
+	OR	10000000B	; Damit  n i c h t  der FDC angesprochen wird!
+	LD	(secreg),A	; 0 => 5.25-Zoll-, 1 => 8-Zoll-Diskette.
+	LD	(HL),0D0H	; Und wieder FDC-Reset.
+MEFEB:	XOR	A		; Disketten-
+	BIT	7,B		; Daten invertiert lesen/schreiben?
+	JR	Z,MEFF2		; Nein!
+	LD	A,2FH    	; Sonst "CPL" in
+MEFF2:	LD	(invdata),A	; rwmove einf}gen.
+
+PAGE
+;****************************************************************  
+;*	Name:		Power up Drive                   	*
+;*	Funktion:	W{hlt Laufwerk - erneut - an durch      *
+;*			Aussenden des Drive/Side-Selects     	*
+;*	Input:		--                                      *
+;*	Ver{ndert:	A         				*
+;*	Output:		--                          		*
+;****************************************************************
+
+powup:	LD	A,(hstsel)
+	LD	(drvsel),A
+	RET
+
+;****************************************************************  
+;*	Name:		Restore.                         	*    
+;*	Funktion:	Kopf auf Spur Null. Vorher Step-In (???)*
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--               		  	*
+;****************************************************************
+
+restore:LD	C,50H		; Step-In -----> FDC
+	CALL	fdccmd
+	LD	C,00H		; Restore-Befehl vorgeben.
+	XOR	A		; Track-Map f}r Seek
+	LD	(seekmap),A	; nullsetzen.
+
+PAGE
+;****************************************************************  
+;*	Name:		Send FDC-Command                 	*
+;*	Funktion:	Komplettiert FDC-Befehl mit Steprate    *
+;*			und sendet diesen Befehl.            	*
+;*	Input:		C : FDC-Befehl, (hstpar) AND 2: Steprate*
+;*	Ver{ndert:	--        				*
+;*	Output:		--                          		*
+;****************************************************************
+
+fdccmd:	CALL	powup		; Drive - erneut - anw{hlen.
+	LD	A,(hstpar)	; Aus Drive-Parametern Step-Rate
+	AND	02H		; maskieren.
+	OR	C		; FDC-Befehl hinzuf}gen.
+	LD	(cmdreg),A	; ====> FDC
+
+;****************************************************************  
+;*	Name:		FDC busy?                   		*
+;*	Funktion:	Warteschleife, bis                     	*
+;*			a) FDC Befehl erkannt haben kann  	*
+;*			b) FDC Befehl ausgef}hrt hat.           *
+;*	Input:		--       				*
+;*	Ver{ndert:	--        				*
+;*	Output:		--       				*
+;****************************************************************
+
+fdcbusy:CALL	waitst		; warten, bis FDC reagiert.
+	BIT	0,A		; FDC noch busy?
+	RET	Z		; Nein. OK!
+	CALL	powup		; F}r alle F{lle!
+	JR	fdcbusy		; Warten, bis FDC Befehl ausgef}hrt!
+
+;****************************************************************  
+;*	Name:		FDC Read/Write .                 	*    
+;*	Funktion:	Host-Sektor lesen/schreiben.       	*
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--               		  	*
+;****************************************************************
+
+fdcrw:	LD	(befehl),A	; Schreib-/Lesebefehl in rdorwr einsetzen.
+	LD	A,(rwen)	; Physikalisches Lesen/schreiben
+	OR	A		; erlaubt?
+	RET	NZ		; Nein! (Was soll das???)       
+	LD	B,1CH		; Lesefehler-Maske => B
+	BIT	5,A		; Ist's Sektor-Lesen?
+	JR	Z,MF02E		; Ja, Fehlermaske OK!
+	LD	B,7CH		; Sonst: Schreibfehler-Maske =>	B
+MF02E:	LD	A,B
+	LD	(errmask),A	; Schreib/Lese-Fehler-Maske und  
+	LD	(rdorwr),DE	; Schreib/Lese-Richtung festelegen
+	CALL	bankio		; I/O-Map aktivieren.
+	CALL	sizdns		; FDC ausw{hlen. Disk-Gr|~e mitteilen.
+rwtry:	LD	B,2   		; Fehlversuchsz{hler initialisieren.
+tryloop:PUSH	BC
+	LD	A,(hstsec)	; Host-Sektor-Nummer f}r den FDC
+	LD	(physec),A	; vorgeben.
+	LD	HL,hstpar	; (HL): Drive-Parameter
+	LD	A,(hsttrk)	; A: Spur.
+	PUSH	HL
+	BIT	4,(HL)		; Sonderformat: "Ungerade Spuren auf Disk-
+	JR	Z,MF059		; R}ckseite"? Nein!
+	SRL	A		; sonst:
+	JR	NC,MF059	; f}r ungerade Spurnummern
+	LD	HL,hstsel	; Side Select
+	SET	4,(HL)		; hinzuf}gen.
+MF059:	LD	(phytrk),A	; Spur f}r den FDC vorgeben.
+	POP	HL		; Nur f}r Seek:
+	BIT	5,(HL)		; Doppelstep?
+	JR	Z,sndtrak	; Nein!
+	SLA	A		; Sonst: Track = Track * 2
+
+PAGE
+;****************************************************************  
+;*	Name:		Send Track-# to FDC.             	*    
+;*	Funktion:	Kopf auf gew}nschte Spur fahren         *
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--               		  	*
+;****************************************************************
+
+sndtrak:LD	(datreg),A	; F}r Seek-Befehl: Spur => Datenregister
+	LD	HL,seekmap	; Derzeit noch aktuelle Spur
+	LD	B,(HL)		; => B,
+	LD	(HL),A		; neue Spur f}r n{chsten SEEK merken.
+	LD	A,B
+	LD	(trkreg),A	; Alte Spur => Track-Register.
+	LD	C,18H		; SEEK-Befehl
+	CALL	fdccmd		; an FDC senden.
+	LD	HL,$-$
+phytrk	EQU	$-2
+physec	EQU	$-1		; Phys-Sektor => Sektor-Register
+	LD	(trkreg),HL	; Phys-Track => Track-Register
+
+SUBTTL	FDC-Access
+PAGE
+;****************************************************************
+;*	Name:		FDC-Acces                       	*
+;*	Funktion:	Eigentlicher physikalischer Diskzugriff *
+;*	Input:		--				 	*
+;*	Ver{ndert:	--				  	*
+;*	Output:		--				 	*
+;****************************************************************
+
+	LD	HL,cmdreg	; FDC-Memory-Map
+	LD	DE,datreg	; und
+	LD	BC,hstbuf	; Sektorpuffer definieren.
+	CALL	powup		; Drive anw{hlen
+	LD	(HL),88H	; "Read Sector" ist fest vorgegeben, wird
+befehl	EQU	$-1		; f}r "Sektor lesen" jedoch ersetzt!
+	CALL	waitst		; Befehl angekommen?
+	BIT	0,A		; Befehl zwar am FDC angekommen, der meldet
+	JR	Z,fdcerr	; sich aber nicht mit busy!
+	LD	A,(befehl)	; A:gesendeter Befehl
+	BIT	5,A		; Read oder Write?
+	JR	Z,readdrq	; Read => Warten auf Read-DRQ
+
+PAGE
+;****************************************************************  
+;*	Name:		Wait for Write-DRQ.              	*    
+;*	Funktion:	Warten, bis FDC einen DRQ liefert,      *
+;*			dann Sektor-Byte schreiben.		*
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--               		  	*
+;****************************************************************
+
+writdrq:LD	A,10000011B	; Ready/DRQ/Busy maskieren
+	AND	(HL)		; mit Status undieren.
+	JP	PO,writdrq	; Auf Ready, DRQ und nicht busy warten!
+
+	LD	A,(BC)		; A:Byte aus Sektorpuffer
+	LD	(DE),A		; => FDC
+	INC	BC		; Pufferzeiger weiterstellen und n{chstes
+	LD	A,(BC)		; Byte schonmal 'rausholen und
+	LD	(MF0AA),A	; ablegen.
+	INC	BC		; Auch hierf}r nat}rlich: Pufferzeiger weiter!
+	LD	A,00000001B	; A:Busy-Maske
+MF0A6:	CP	(HL)		; Busy?
+	JR	Z,MF0A6		; Ja, warten, bis nicht mehr!
+	LD	A,$-$ 		; Wenn nicht mehr, vorher gemerktes Byte
+MF0AA	EQU	$-1
+	LD	(DE),A		; => FDC und
+	LD	A,(BC)		; n{chstes holen.
+	INC	BC		; Zeiger weiter, nicht vergessen!
+
+	BIT	1,(HL)		; DRQ?
+	JR	NZ,rdorwr	; Ja, weiter schreiben/lesen
+	BIT	1,(HL)		; Jetzt aber DRQ?
+	JR	NZ,rdorwr	; Ja, sicher, schreiben/lesen!
+	JR	MF0C1		; Kommt jetzt endlich ein DRQ?!
+
+PAGE
+;****************************************************************  
+;*	Name:		Wait for Read-DRQ.              	*    
+;*	Funktion:	Warten, bis FDC einen DRQ liefert,      *
+;*			dann Sektor-Byte lesen.     		*
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--               		  	*
+;****************************************************************
+
+readdrq:LD	A,10000011B	; Ready/DRQ/Busy-Maske
+	AND	(HL)		; Warten (s.o.)
+	JP	PO,readdrq
+
+PAGE
+;****************************************************************  
+;*	Name:		Read or Write Sector.           	*    
+;*	Funktion:	Je nach Vordefinition im Aufruf         *
+;*			Sektor-Bytes lesen/schreiben.  		*
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--               		  	*
+;****************************************************************
+
+rdorwr:	LD	A,(DE)		; Byte aus FDC-Datenregister lesen,
+	LD	(BC),A		; in den Sektorpuffer schreiben.
+
+;rdorwr:LD	A,(BC)		; Byte aus Sektorpuffer lesen,
+;	LD	(DE),A		; in das FDC-Datenregister schreiben.
+
+	INC	BC		; Pufferzeiger weiterstellen.
+MF0C1:	BIT	1,(HL)		; DRQ? Ja, weiter }bertragen!
+	JR	NZ,rdorwr
+	BIT	1,(HL)		; Jetzt DRQ? Ja, weiter }bertragen!
+	JR	NZ,rdorwr
+	BIT	1,(HL)		; Jetzt endlich DRQ?  
+	JR	NZ,rdorwr	; Ja, weiter }bertragen!
+	BIT	0,(HL)		; FDC }berhaupt noch busy?
+	JR	Z,fdcerr	; Nein => Sektor ist }bertragen, Fehler pr}fen!
+	BIT	1,(HL)		; Gibt's jetzt endlich einen DRQ???
+	JR	NZ,rdorwr	; Ja, na also!
+	BIT	7,(HL)		; Wenn immer noch kein DRQ: Ist FDC }berhaupt
+	JR	Z,MF0C1		; Ready? Nein, Warten bis FDC Ready!
+
+SUBTTL	Fehlerbehandlung FDC
+PAGE
+;****************************************************************
+;*	Name:		FDC Error                       	*
+;*	Funktion:	Fehlerbehandlung der FDC-Fehlerbits 	*
+;*			aus dem Status-Register.		*
+;*	Input:		--				 	*
+;*	Ver{ndert:	--				  	*
+;*	Output:		--				 	*
+;****************************************************************
+
+fdcerr:	LD	A,(HL)		; A: Fehlerflags
+	LD	(HL),0D0H	; FDC-Reset.
+	POP	BC		; Versuchsz{hler restaurieren.
+	AND	$-$		; Fehlermaske:               
+errmask	EQU	$-1		; Schreiben: 01111100B , Lesen : 00011100B
+	JP	Z,nfdcerr	; Zero => Kein Fehler!
+	PUSH	AF		; Fehlerbits retten.
+	BIT	4,A		; "Record not found" ?
+	CALL	NZ,restore	; Dann: Kopf zur}ck
+	POP	AF		; Fehlerflags her.
+	DEC	B		; Fehlerversuchsz{hler 'runter!
+	JP	NZ,tryloop	; Wenn noch'n Versuch }brig: da capo!
+
+	LD	B,A		; B:Fehlerbits.
+	LD	A,1   
+	CALL	errmsg		; Fehler melden und fragen
+	JP	NZ,rwtry	; NZ: CLEAR = Wiederholen. Z: BREAK = Abbruch.
+	LD	A,01H
+nfdcerr:LD	HL,rwen
+	OR	(HL)
+	LD	(HL),A
+	JP	bankram		; Via "Aktiviere gesamtes RAM" zur}ck.
+
+PAGE
+;****************************************************************  
+;*	Name:		Wait and return FDC-Status       	*
+;*	Funktion:	Wartet, bis Befehl am FDC angekommen    *
+;*			Liefert dann FDC-Status in A zur}ck	*
+;*	Input:		--                                   	*
+;*	Ver{ndert:	AF        				*
+;*	Output:		A : FDC-Statusregister 			*
+;****************************************************************
+
+waitst:	LD	A,14H		; A:Warteschleifenz{hler.
+MF102:	DEC	A		; FDC braucht etws Zeit, bis er merkt, da~
+	JR	NZ,MF102	; ein Befehl f}r ihn kam. Warten wir also!
+	LD	A,(cmdreg)	; Lesenderweis' ist im "cmdreg" der Status.
+	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		Error Message                    	*
+;*	Funktion:	F{ngt FDC-Fehler ab und zeigt Fehler-   *
+;*			Art, Disk, Spur, Sektor an.            	*
+;*	Input:		--                                      *
+;*	Ver{ndert:	AF        				*
+;*	Output:		AF : Z = Abbruch, NZ = Wiederholen	*
+;****************************************************************
+
+errmsg:	NOP			; Hier "RET", falls Fehlermeldung aus!
+	PUSH	BC		; Fehlerbits aus B retten.
+	CALL	putl25		; Statuszeile retten.
+	LD	A,(errmask)	; Schreib- oder Lesefehler?
+	LD	HL,rdertxt	; "Read Error"-Text vorgeben.
+	BIT	5,A		; Zero =
+	JR	Z,MF11B		; Lesefehler => Textzeiger OK!
+	LD	HL,wrertxt	; Sonst: "Write Error"-Text vorgeben
+MF11B:	LD	DE,line25	; Fehlertext
+	LD	BC,13   	; in Statuszeile kopieren.
+	LDIR
+	POP	AF		; A:Fehlerbits
+	LD	B,6  		; maximal 6 verschiedene!
+
+MF126:	RLCA			; Fehlerbit ins Carry schieben.
+	JR	C,MF12B		; gesetzt => Fehler melden.
+	DJNZ	MF126		; Alle 6 m|gliche Bits pr}fen.
+
+MF12B:	LD	A,B		; Ein Fehlerbit gesetzt:
+	LD	HL,errtxts-16	; (HL):16 Byte vor Fehlertexten
+	LD	BC,16    	; BC:L{nge eines Fehlertextes
+MF132:	ADD	HL,BC		; HL je nach Fehlerbit                
+	DEC	A		; auf zugeh|rigen Fehlertext      
+	JR	NZ,MF132	; stellen.
+	LDIR			; Diesen ebenfalls in Statuszeile kopieren.
+	LD	BC,hstdsk	; Disk-Nummer
+	LD	A,(BC)		; ASCII und
+	ADD	A,0C1H		; Invers korrigieren =>
+	LD	(dsk.spc),A	; Fehlermeldetext.
+    	INC	BC		; dto. Diskseite                 
+	LD	A,(BC)
+	RLCA
+	RLCA
+	LD	D,A
+	LD	A,0D6H
+	SUB	D
+	LD	(sid.spc),A
+	INC	BC		; dto. Spur                             
+	LD	A,(BC)
+	LD	HL,trk.spc+2
+	CALL	decout
+	INC	BC		; dto. Sektor
+	LD	A,(BC)
+	LD	HL,sec.spc+2
+	CALL	decout
+	CALL	bell		; Klingeln und
+	LD	HL,dststxt	; komplette Fehlermeldung
+	LD	DE,439DH	; in 
+	LD	BC,52    	; Statuszeile
+	LDIR			; kopieren.
+MF16A:	LD	A,(kbmap6)	; CLEAR oder BREAK
+	AND	06H		; gedr}ckt?
+	JR	Z,MF16A		; Nein, auf genau diese Tasten warten!
+	CALL	getl25		; Statuszeile restaurieren.
+	AND	02H		; NZ = CLEAR, Z = BREAK
+	RET
+
+PAGE
+;****************************************************************  
+;*	Name:		Decimal Output                   	*
+;*	Funktion:	Dezimal-Ausgabe von Spur-, Sektornummer *
+;*			f}r die erweiterte Fehlermeldung.	*
+;*	Input:		A : Spur, Sektornummer               	*
+;*	Ver{ndert:	--        				*
+;*	Output:		(HL) ... (HL)-2 : Spur, Sektornummer	*
+;****************************************************************
+
+decout:	LD	DE,0AFAFH
+MF17A:	INC	E
+	SUB	100
+	JR	NC,MF17A
+	ADD	A,100
+MF181:	INC	D
+	SUB	10  
+	JR	NC,MF181
+	ADD	A,0BAH
+	LD	(HL),A
+	DEC	HL
+	LD	(HL),D
+	DEC	HL
+	LD	(HL),E
+	RET
+
+SUBTTL	Deblock-Datenbereiche
+PAGE
+;****************************************************************  
+;*	Name:		Datenbereich f}r deblock, u.a    	*
+;*	Funktion:	                                    	*
+;****************************************************************
+
+dmaadr:	DW	0080H	; Zeiger auf FDC-Sektorpuffer-Adresse
+trmapp:	DS      4	; Platz f}r Track-Mapping Laufwerk A: ... D:
+hstact:	DS 	1	; Host-Active-Flag
+seeksec:DS 	1	; Seek-Sektor, wie vom BDOS }bergeben!
+
+;****************************************************************  
+;*	Name:		Disk-Parameter-Block             	*
+;*	Funktion:	K{mpff's Spezialversion: Ist f}r alle	*
+;*			Laufwerke derselbe. Daten werden        *
+;*			bei seldsk und boot hereinkopiert!	*
+;****************************************************************
+
+dpb00	EQU	unidpb
+dpb01	EQU	unidpb
+dpb02	EQU	unidpb
+dpb03	EQU	unidpb
+
+unidpb:	DS 	16     
+
+;****************************************************************  
+;*	Name:		Seek-Parameter                   	*
+;*	Funktion:	Parameterbereich der logischen Disk 	*
+;****************************************************************
+
+seekpar EQU   	unidpb+15	; physikalische DRIVE-Parameter:
+				;------------------------------------------
+				; Bit 0   : Schreibdichte
+				; Bit 1   : Step-Rate
+				; Bits 2,3: Sektorl{nge
+				; Bit 4   : Side-Select f}r ungerade Spuren
+				; Bit 5   : Step-Impuls
+				; Bit 6   : Disk-Gr|~e (1=8 Zoll)
+				; Bit 7   : Invertierte Daten
+				;-------------------------------------------
+seeksel:DS 	1		; Drive-/Side-Select-Code
+seekdsk:DS  	1		; Disk-Nummer
+seeksid:DS  	1		; Disk-Seite
+seektrk:DS  	1		; Disk-Spur
+seeksek:DS  	1		; Disk-Sektor (umgerechneter seeksec, je nach
+				;	       Sektorl{nge!)
+
+;****************************************************************  
+;*	Name:		Host-Parameter                   	*
+;*	Funktion:	Datenbereich der physikalischen Disk	*
+;****************************************************************
+
+hstpar:	DS 	1
+hstsel:	DS   	1    
+hstdsk:	DS      1
+hstside:DS      1
+hsttrk:	DS      1
+hstsec:	DS 	1 
+
+PAGE
+;****************************************************************  
+;*	Name:		Seek-Map                         	*
+;*	Funktion:	Aktuelle Spur f}r den FDC-Seek-Befehl	*
+;****************************************************************
+
+seekmap:DS  	1
+
+SUBTTL	Hilfsroutinen zur Bedienung der Statuszeile
+PAGE
+;********************************************************
+;*	Name:		Put Line 25 in Buffer      	*
+;*	Funktion:	Retten der Statuszeile          *
+;*	Input:		--				*
+;*	Ver{ndert:	HL,DE,BC			*
+;*	Output:		--				*
+;********************************************************
+
+putl25:	LD	HL,line25
+	LD	DE,l25buf
+MF1B8:	LD	BC,line
+	LDIR
+	RET
+
+;********************************************************
+;*	Name:		Get Line 25 from Buffer      	*
+;*	Funktion:	Restaurieren der Statuszeile    *
+;*	Input:		--				*
+;*	Ver{ndert:	HL,DE,BC	 		*
+;*	Output:		--				*
+;********************************************************
+
+getl25:	LD	HL,l25buf
+copl25:	LD	DE,line25
+	JR	MF1B8
+
+SUBTTL	Boot
+PAGE
+;********************************************************
+;*	Name:		Cold Start = Boot         	*
+;*	Funktion:	                                *
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+boot:	LD	HL,dpblks	; dpb0 in den "universal"-dpb
+	LD	DE,unidpb
+	LD	BC,16    
+	LDIR			; kopieren.
+	LD	SP,0     	; Stack ans RAM-Ende
+	LD	A,0C3H		; Interrupt-
+	LD	HL,intser	; Service-
+	LD	(intrst),A	; Routinen
+	LD	(intrst+1),HL	; einbinden.
+	LD	A,1   		; Drive 0 Vorderseite
+	LD	(hstsel),A	; vordefinieren.
+	LD	A,81H		; IOBYTE
+	LD	(iobyte),A	; vordefinieren.
+	XOR	A
+	LD	(cdisk),A	; Drive A: User 0 vordefinieren. 
+	LD	(chrcnt),A	; Type-Ahead-Puffer als "leer" markieren.
+	LD	(hstdsk),A	; Host-Disk sei A:
+	LD	(hstact),A	; Host-Buffer als "nicht aktiv" markieren.
+	CALL	bankio		; Puffer der Statuszeile in derselben 
+	CALL	getl25		; anzeigen. Hier: Copyright-Vermerk einblenden.
+	CALL	bankram
+	LD	HL,cpmlogo
+MF202:	LD	A,(HL)		; CP/M-Logo ausgeben.
+	LD	C,A
+	OR	A
+	JR	Z,sysinit
+	PUSH	HL
+	CALL	conout
+	POP	HL
+	INC	HL
+	JR	MF202
+
+PAGE
+;********************************************************
+;*	Name:		Warm Start                	*
+;*	Funktion:	                                *
+;*	Input:		--				*
+;*	Ver{ndert:	--				*
+;*	Output:		--				*
+;********************************************************
+
+wboot:	LD	SP,0    	; Stack ans RAM-Ende
+	CALL	chekhst		; evtl. aktiven Hostbuffer zur}ckschreiben!
+	LD	A,(0F2FDH)	; Drive-Parameter-Byte des ersten dpb's
+	LD	(hstpar),A	; als Host-Parameter vorsehen.
+	LD	A,1 		; Host-Track sei 1
+	LD	(hsttrk),A
+	XOR	A		; Physikalisches Lesen/Schreiben
+	LD	(rwen),A	; erlauben.
+	CALL	bankio		; Memory-Map-I/O aktivieren.
+	LD	HL,cmdreg	; (HL):FDC-Befehlsregister
+	LD	(HL),0D0H	; FDC-Reset
+	LD	(HL),0FFH	; 1791-Controller anw{hlen.
+	LD	(HL),0D0H	; Nochmal FDC-Reset.
+	INC	HL
+	INC	HL		; (HL):Jetzt Sektor-Register.
+	LD	(HL),80H	; 5.25-Zoll anw{hlen.
+	LD	DE,ccp
+	LD	BC,0501H	; 5 Sektoren von Drive 0 Vorderseite
+	CALL	bootrd		; lesen.
+	LD	BC,0111H	; 1 Sektor von Drive 0 R}ckseite
+	CALL	bootrd		; lesen.
+	JR	sysinit
+
+PAGE
+;****************************************************************  
+;*	Name:		BOOT-Read                        	*
+;*	Funktion:	Einlesen der 5 System-Sektoren von 	*
+;*			Spur 1 der Diskvorderseite sowie der	*
+;*			Funktionstastenbelegung von Sektor 1	*
+;*			der Diskr}ckseite.			*
+;*	Input:		DE:Leseziel, B:Sektorz{hler, C:Drive-/ 	*
+;*			   Side-Select-Code			*
+;*	Ver{ndert:	--        				*
+;*	Output:		--               		  	*
+;****************************************************************
+
+bootrd:	LD	A,C		; Drive/Side-Select aus C => Floppy
+	LD	(hstsel),A
+	XOR	A		; 1. Sektor sei 0         
+MF24A:	LD	(hstsec),A
+	PUSH	BC		; hstsel und Sektorzahl retten.
+	PUSH	DE		; Ziel retten.
+MF24F:	LD	A,88H		; fdcrw f}r "Sektor lesen"
+	LD	DE,021AH	; einrichten.
+	CALL	fdcrw		; Sektor lesen.
+	JR	NZ,MF24F	; ging nicht? Dann nochmal und nochmal und ...
+	POP	DE		; Ziel her!
+	LD	HL,hstbuf	; Sektor wurde in Hostbuf gelesen;
+	LD	BC,512   	; von dort ins System      
+	LDIR			; kopieren.
+	LD	A,(hstsel)	; War's Diskvorderseite, also System-Sektor?
+	AND	10H		; Nein, dann war's der Funktionstastensektor
+	JR	NZ,MF271	; mit nur 512 Byte => So O.K.!
+	LD	HL,hstbuf+512	; Sonst: Zweite H{lfte des 1024-Byte 
+	LD	BC,512   	; Hostbuffers
+	LDIR			; ins System kopieren.
+MF271:	POP	BC		; Sektorz{hler restaurieren.
+	LD	A,(hstsec)	; Sektor-Nummer weiterstellen      
+	INC	A
+	DJNZ	MF24A		; Alle System- und F-Sektoren lesen.
+	RET	
+
+PAGE
+;****************************************************************  
+;*	Name:		System Initialisation            	*
+;*	Funktion:	Festlegung der Defaultwerte, etc.       *
+;*	Input:		--                                   	*
+;*	Ver{ndert:	--        				*
+;*	Output:		--               		  	*
+;****************************************************************
+
+sysinit:LD	HL,wboote	; Warm-Boot-
+	LD	A,0C3H		; Vektor
+	LD	(0),A		; festlegen.
+	LD	(1),HL
+
+	LD	HL,0D906H	; BDOS-
+	LD	(5),A		; Vektor
+	LD	(6),HL		; festlegen.
+
+	LD	HL,intser
+	LD	(intrst),A	; Interrupt-Service-Routinen
+	LD	(intrst+1),HL   ; einbinden.
+
+	LD	BC,80H   
+	CALL	setdma		; DMA-Puffer festlegen.
+
+	LD	A,1   		; Inversdarstellung
+	OUT	(invprt),A	; vorw{hlen.
+
+	LD	A,00001010B	; Nicht blinkender Unterstrich
+	OUT	(crtcadr),A	; wird
+	INC	A		; Cursor-Default.
+	OUT	(crtcdat),A
+
+	LD	A,(cdisk)	; mit
+	LD	C,A		; aktueller Disk/User-Nummer
+	JP	ccp		; ab in den CCP!
+
+SUBTTL	CP/M-Disk-Parameter-Bereich (dpb, dph, Skew-Tabellen)
+PAGE
+;****************************************************************  
+;*	Name:		Disk-Parameter-Headers	     		*
+;*	Funktion:	4 dph's                                 *
+;****************************************************************
+
+dpbase:	
+	.SALL
+	IRPC	X,<0123>
+dph0&X:	 DW	trans&X,0
+	 DW	0,0  
+	 DW	dirbuf,dpb0&X  
+	 DW	chk0&X,all0&X
+	ENDM
+	.LALL
+
+PAGE
+;****************************************************************  
+;*	Name:		Disk-Parameter-Blocks            	*
+;*	Funktion:	4 dpb's . Werden bei Bedarf in den 	*
+;*			f}r alle Laufwerke identischen unidpb   *
+;*			(z.B.: bei seldsk!) hereinkopiert!	*
+;****************************************************************
+
+dpblks:	
+	.SALL            
+	IRPC    X,<0123>   
+SPT&X:	 DW	80
+BSH&X:	 DB	5
+BLM&X:	 DB	31
+EXM&X:	 DB	3
+DSM&X:	 DW	0C2H
+DRM&X:	 DW	255
+AL0&X:	 DB	11000000B
+AL1&X:	 DB	00000000B
+CKS&X: 	 DW	64
+OFF&X:	 DW	2
+	 DB	00001101B
+	ENDM
+	.LALL
+
+PAGE
+;****************************************************************  
+;*	Name:		Sector-Translate-Tables          	*
+;*	Funktion:	4 Skew-Faktor-Tabellen erzeugen:   	*
+;*			trans0 ... trans3			*
+;*			R}ckseitensektoren sind durch gesetztes	*
+;*			Bit 7 gekennzeichnet.			*
+;****************************************************************
+
+	.8080
+	.SALL
+	IRPC	X,<0123>
+trans&X:
+Y        SET 	0
+	 REPT	40
+	  DB	Y
+Y     	  SET	Y+1     
+	 ENDM
+Y        SET	0
+	 REPT	40
+	  DB	Y+80H
+Y     	  SET 	Y+1
+	 ENDM
+	ENDM
+	.LALL
+	.Z80
+
+SUBTTL	Texte und Puffer
+PAGE
+;****************************************************************
+;*	Name:		Function-Texts                  	*
+;*	Funktion:	Pufferbereich f}r Funktionstasten       * 
+;****************************************************************
+
+	DB	1,1,0,0,0  		; ???
+
+functxt:DB      'DIR',13,0			; F1
+	DB	'PD',13,0			; F2
+	DB	'FKEY',13,0			; F3
+	DB	'FORMAT',13,0			; F4
+	DB	'STAT',13,0			; F5
+	DB	'PIP',13,0			; F6
+	DB	'PD B:S80 DSDD',13,0		; F7
+	DB	'PD B:D80 DSDD',13,0		; F8
+	DB	'BASIC',13,0		; shift	  F1
+	DB	'AUTO 10',13,0		; shift   F2
+	DB	'EDIT ',0		; shift   F3
+	DB	'RUN',13,0		; shift	  F4
+	DB	'LIST',13,0		; shift	  F5
+	DB	'SAVE "',0		; shift	  F6
+	DB	'LOAD "',0		; shift	  F7
+	DB	'SYSTEM',13,0		; shift   F8
+
+	DS	512-($-functxt)		; maximal 512 Byte
+
+;****************************************************************  
+;*	Name:		Line 25-Buffer                   	*
+;*	Funktion:	Puffer f}r Statuszeile              	*
+;****************************************************************
+
+l25buf: 
+	.SALL
+	INVDB	'CP/M 2.2X'         
+	REPT	8
+	 INVDB	' '
+	ENDM
+	INVDB	'GENIE III CBIOS (c),(p) Klaus K{mpf 1984'
+	REPT    21
+	 INVDB	' '
+	ENDM
+	.LALL
+
+;****************************************************************  
+;*	Name:		Version-Text                     	*
+;*	Funktion:	Version und Serien-Nr. f}r       	*
+;*			Links-/Rechtspfeil-Leertaste-Option	*
+;****************************************************************
+
+vertext:
+	.SALL
+	INVDB	'  CP/M 2.2X    CBIOS Version 2.1 vom 17.10.84'
+	INVDB	'      '
+	INVDB	'Seriennummer:'
+	REPT 	18
+	 INVDB	' '
+	ENDM
+ 	.LALL
+
+PAGE
+;****************************************************************  
+;*	Name:		Option-Table                     	*
+;*	Funktion:	Zeiger auf Options-Texte sowie zu  	*
+;*			modifizierende Adressen (RET <-> NOP)	*
+;****************************************************************
+	
+optntab:DW 	cl.txt   
+	DW	click
+	DW	kb.txt
+	DW	kbrept
+	DW	rd.txt
+	DW	rdclock
+	DW	er.txt
+	DW	errmsg
+	DW 	sp.txt
+	DW 	bell   
+	DW 	kbl.txt
+	DW 	kbbl25
+	DW	ct6.txt
+	DW	MF84C 
+	DW	ct7.txt
+	DW 	bell
+
+cpmlogo:DB	1BH,'*','64K Genie III CP/M 2.2X',07,0DH,0AH,00
+
+PAGE
+;****************************************************************  
+;*	Name:		Option-Texts                     	*
+;*	Funktion:	Options-Texte 				*
+;****************************************************************
+
+cl.txt: DB	'Tastenklick',80H
+kb.txt: DB	'Wiederholung',80H
+rd.txt: DB	'Uhr',80H
+er.txt: DB	'Fehlermeldung',80H
+sp.txt:	DB	'Lautsprecher',80H
+kbl.txt:DB	'Pufferanzeige',80H
+ct6.txt:DB	'ctrl-6',80H
+ct7.txt:DB	'ctrl-7',80H
+   
+textist:
+	.SALL
+ 	INVDB	' ist'
+	.LALL
+
+textein:DB	' EIN'
+textaus:DB	' AUS'
+
+PAGE
+;****************************************************************  
+;*	Name:		Disk-Error-Texts                 	*
+;*	Funktion:	Fehlermelde-Texte des errmsg-UP's	*
+;****************************************************************
+                                  
+rdertxt:
+	.SALL
+	INVDB	'Read Error:  '
+wrertxt:INVDB	'Write Error: '
+errtxts:INVDB	'Lost Data       '
+      	INVDB	'CRC Error       '
+      	INVDB	'Record not found'
+      	INVDB	'Write fault     '
+      	INVDB	'Write protect   '
+dststxt:INVDB	'  Disk: '
+dsk.spc:INVDB	'X  '
+      	INVDB	'Seite: '
+sid.spc:INVDB	'X  '
+	INVDB	'Spur: '
+trk.spc:INVDB	'XXX  '
+	INVDB	'Sektor: '
+sec.spc:INVDB	'XXX        '
+	.LALL
+
+SUBTTL	[u~erst wichtiger Vermerk !!!
+PAGE
+;****************************************************************  
+;*	Name:		Copyright-Vermerk.               	*
+;*	Funktion:	Der mu~ sein!!! Eine Bedienung der      *
+;*			RS-232 enf{llt, da sonst das BIOS zu	*
+;*			lang wird, meint das Handbuch.		*
+;****************************************************************
+
+MF84C:	DB	0
+
+	DB	'.Genie III CP/M CBIOS Copyright (c) '
+	DB	'1984  Klaus K{mpf, Jakobstr 236/38'
+	DB	', 51 Aachen'
+
+SUBTTL	Scratch-Pad-Area
+PAGE
+;****************************************************************  
+;*	Name:		User-Stack                       	*
+;*	Funktion:	Extra-Stack f}r einige BIOS-Funktionen, *
+;*			um den CP/M-Stack "sauber" zu halten.   *
+;****************************************************************
+
+stacku  EQU	$+40
+	DS	41
+
+;****************************************************************  
+;*	Name:		Interrupt-Stack                       	*
+;*	Funktion:	Extra-Stack f}r Interrupt-Service,      *
+;*			um den CP/M-Stack "sauber" zu halten.   *
+;****************************************************************
+
+stacki	EQU	$+31
+       	DS	31
+
+;****************************************************************  
+;*	Name:		Key-Buffer                            	*
+;*	Funktion:	Platz f}r Type-Ahead-Puffer	        *
+;****************************************************************
+
+keybuf: DS	64
+
+;****************************************************************  
+;*	Name:		Host-Buffer                      	*
+;*	Funktion:	Physikalischer Sektorpuffer    		*
+;****************************************************************
+
+hstbuf:	DS	1024 
+
+;****************************************************************  
+;*	Name:		Allocation-Tables                     	*
+;*	Funktion:	Blockbelegungstabellen all00 ... all03  *
+;****************************************************************
+
+all00:	DS	64
+all01:	DS	64
+all02:	DS	64
+all03:	DS	64
+
+;****************************************************************  
+;*	Name:		Check-Tables                     	*
+;*	Funktion:	DIR-Belegungstabellen chk00 ... chk03   *
+;****************************************************************
+
+chk00:	DS	64
+chk01:	DS	64
+chk02:	DS	64
+chk03:	DS	64
+
+;****************************************************************  
+;*	Name:		Directory-Buffer                 	*
+;*	Funktion:	Puffer f}rs Inhaltsverzeichnis          *
+;****************************************************************
+
+dirbuf	EQU	$
+
+SUBTTL	Symbol-Tabelle
+	END
+
+ 

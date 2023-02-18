@@ -1,0 +1,18 @@
+[.]             [..]            -dir036.txt     auto.cpm        banner        
+basic.cpm       bdos3.spr       bioskrnl.asm    bnkbdos3.spr    bnkbios3.spr  
+boot.asm        boot.cpm        callvers.asm    ccp.cpm         chario.asm    
+config.cpm      config.sys      cpm3.lib        cpm3.sys        cpmldr.rel    
+cpmplus.txt     datum.cpm       default.ndr     dir.cpm         dirlbl.rsx    
+drvtbl.asm      dump.asm        echovers.asm    erase.cpm       fd1797sd.asm  
+fkey.cpm        format.cpm      help.cpm        help.hlp        hist.utl      
+id.cpm          index.html      info.cpm        info.html       info.txt      
+initdir.cpm     lib.cpm         link.cpm        mac.cpm         modebaud.lib  
+move.asm        names.sub       patch.cpm       pd.cpm          pdrive.cpm    
+pdrive.sys      pip.cpm         ports.lib       profile.old     put.cpm       
+random.asm      rename.cpm      resbdos3.spr    rmac.cpm        save.cpm      
+scb.asm         set.cpm         setdef.cpm      show.cpm        sid.cpm       
+sio.cpm         sub.cpm         submit.cpm      sysin59.$$$     tasten.cpm    
+trace.utl       type.cpm        uhr.cpm         wninit.cpm      xref.cpm      
+z80.lib         zeit.cpm        
+       77 file(s)     666.449 bytes used
+                   27.582.070 K bytes free

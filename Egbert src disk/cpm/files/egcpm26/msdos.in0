@@ -1,0 +1,267 @@
+(***********************************************************
+**   MSDOS.IN0 :  U T I L I T I E S                       **
+***********************************************************)
+
+(* Direkter BIOS-Aufruf ueber BDOS-Funktion 50 *)
+
+function UBIOS(fn,pa,pbc,pde,phl:integer):integer;
+var biospb : record
+               func,a   : byte;
+               bc,de,hl : integer;
+               end;
+    result : integer;
+begin
+  with biospb do begin
+    func:=fn; a:=pa;
+    bc:=pbc; de:=pde; hl:=phl;
+    end;
+  result:=0;
+  case fn of
+    2,3,7,13..15,17..19,24 : result:=BDOS(50,addr(biospb));
+    9,16,20,22,25          : result:=BDOSHL(50,addr(biospb));
+    else                     BDOS(50,addr(biospb));
+    end;
+  ubios:=result;
+  end;
+
+(* RWSECTOR liest/schreibt phys. Sektor auf ang. Drive *)
+(* Absolute Sektorangabe, Sektoren ab 1 gezaehlt !!    *)
+
+procedure rwsector(dr,abssec:integer; wflag:boolean;
+                                               buf:integer);
+var trk,sec,k : integer;
+    dph       : ^integer absolute k;
+begin
+  if abssec>sektoren then
+    writeln('Fehler ! Sektor : ',abssec)
+  else begin
+    abssec:=pred(abssec);                 (* zaehlt ab 0 *)
+    trk:=abssec div secptrk;
+    sec:=abssec mod secptrk;
+    k:=ubios(9,0,dr,1,0);                 (* SELDSK *)
+    sec:=ubios(16,0,sec,dph^,0);          (* SECTRN *)
+    k:=ubios(23,0,1,0,0);                 (* MULTIO *)
+    k:=ubios(10,0,trk,0,0);               (* SETTRK *)
+    k:=ubios(11,0,sec,0,0);               (* SETSEC *)
+    k:=ubios(12,0,buf,0,0);               (* SETDMA *)
+    k:=ubios(28,1,0,0,0);                 (* SETBNK *)
+    if wflag then k:=ubios(14,0,0,0,0)    (* WRITE  *)
+      else k:=ubios(13,0,0,0,0);          (* READ   *)
+    end;
+  end;
+
+(* RWCLUSTER liest/schreibt 1 Cluster der MS-DOS-Diskette *)
+
+procedure rwcluster(cl:integer; wflag:boolean; buf:integer);
+var k : integer;
+begin;
+  cl:=(cl-2)*secpcl+datstart;
+  for k:=0 to pred(secpcl) do
+    rwsector(msdrive,cl+k,wflag,buf+k*psize);
+  end;
+
+(* MSLOGIN schaltet BDOS und BIOS 'kalt' auf angegebenes *)
+(* MS-Drive um. Zum Einloggen der MS-DOS-Diskette werden *)
+(* Boot-Record gelesen und die entsprechenden Parameter  *)
+(* gesetzt. Die gesamte FAT wird nach FATBUF gelesen.    *)
+(* Groesse der FAT max. 2048 Byte.                       *)
+
+procedure mslogin;
+type dpb = record
+             spt         : integer;
+             bsh,blm,exm : byte;
+             dsm,drm     : integer;
+             al0,al1     : byte;
+             cks,off     : integer;
+             psh,phm     : byte;
+             end;
+var  k,secsize : integer;
+     ptr       : ^dpb absolute k;
+begin
+  k:=ubios(9,0,msdrive,0,0);               (* SELDSK kalt *)
+  bdos(14,msdrive);                       (* Select Drive *)
+  k:=bdoshl(31);                               (* Get DPB *)
+  psize:=128 shl ptr^.psh;                 (* Byte/Sektor *)
+  sektoren:=1; secptrk:=2;    (* vorbelegen fuer RWSECTOR *)
+  rwsector(msdrive,1,false,addr(dirbuf));  (* Boot-Record *)
+  secsize:=dirbuf[$0B]+dirbuf[$0C] shl 8;  (* Byte/Sektor *)
+  if psize<>secsize then
+    writeln(^G^M^J'Boot-Record defekt !')
+  else begin
+    secpcl:=dirbuf[$0D];
+    reservsec:=dirbuf[$0E]+dirbuf[$0F] shl 8;
+    fatzahl:=dirbuf[$10];
+    eintraege:=dirbuf[$11]+dirbuf[$12] shl 8;
+    sektoren:=dirbuf[$13]+dirbuf[$14] shl 8;
+    medium:=dirbuf[$15];
+    fatsecs:=dirbuf[$16];
+    heads:=dirbuf[$1A];
+    secptrk:=dirbuf[$18]*heads;
+    dirstart:=reservsec+fatsecs*fatzahl+1;
+    datstart:=dirstart+(32*eintraege div psize);
+    maxclnum:=(sektoren-pred(datstart)) div secpcl +1;
+    clsize:=secpcl*psize;
+    bufcl:=trunc((1.0+bufgr)/clsize);
+    if psize*fatsecs>succ(fatgr) then
+      writeln(^G^M^J'FAT zu gro~ !')
+    else for k:=1 to fatsecs do
+      rwsector(msdrive,reservsec+k,false,
+               addr(fatbuf[psize*pred(k)]));
+    end;
+  end;
+
+(* RELOG schaltet 'warm' auf angegebenes Drive um. *)
+
+procedure relog(drive:byte);
+var k : integer;
+begin
+  k:=ubios(9,0,drive,1,0);              (* SELDSK *)
+  bdos(14,drive);                       (* Select Drive *)
+  end;
+
+(* FAT-Eintrag lesen *)
+
+function fat_eintrag(agr:integer):integer;
+var offset : integer;
+begin
+  offset:=trunc(agr*1.5);
+  offset:=fatbuf[offset]+fatbuf[succ(offset)] shl 8;
+  if odd(agr) then fat_eintrag:=offset shr 4
+  else fat_eintrag:=offset and $0FFF;
+  end;
+
+(* Wert in FAT einsetzen *)
+
+procedure fat_setzen(gruppe,wert:integer);
+var offset,hilf : integer;
+begin
+  offset:=trunc(gruppe*1.5);
+  hilf:=fatbuf[offset]+fatbuf[succ(offset)] shl 8;
+  if odd(gruppe) then begin
+    hilf:=hilf and $000F;
+    wert:=wert shl 4;
+    end
+  else
+    hilf:=hilf and $F000;
+  hilf:=hilf or wert;
+  fatbuf[offset]:=lo(hilf);
+  fatbuf[succ(offset)]:=hi(hilf);
+  end;
+
+(* Ersten leeren Block in FAT suchen. Suche beginnt ab *)
+(* Cluster hinter START. Keine Endepruefung.           *)
+
+function firstfreecluster(start:integer):integer;
+begin
+  repeat
+    start:=succ(start)
+  until fat_eintrag(start)=0;
+  firstfreecluster:=start;
+  end;
+
+(* FAT auf Diskette schreiben *)
+
+procedure writefat;
+var i,j,sec : integer;
+begin
+  for i:=1 to fatzahl do begin
+    sec:=reservsec+pred(i)*fatsecs;
+    for j:=1 to fatsecs do
+      rwsector(msdrive,sec+j,true,
+               addr(fatbuf[psize*pred(j)]));
+    end;
+  end;
+
+(* Freien Speicherplatz der MS-DOS-Diskette berechnen *)
+(* (aus FAT). Angegeben wird Speicherplatz in Bytes.  *)
+
+function msspace:real;
+var i : integer;
+    s : real;
+begin
+  s:=0.0;
+  for i:=2 to maxclnum do
+    if fat_eintrag(i)=0 then s:=s+clsize;
+  msspace:=s;
+  end;
+
+(* Freier Speicherplatz der CP/M-Diskette (in Bytes) *)
+
+function cpmspace:real;
+var buf : array[0..2] of byte;
+begin
+  BDOS(26,addr(buf));      (* Set DMA *)
+  BDOS(46,cpmdrive);       (* Get Disk Free Space *)
+  relog(msdrive);          (* zur Sicherheit *)
+  cpmspace:=128.0*(65536.0*buf[2]+256.0*buf[1]+buf[0]);
+  end;
+
+(* Dateinamen SUCHNAME aus BEFEHL extrahieren *)
+
+procedure generate_suchname;
+begin
+  suchname:=copy(befehl,1,14);
+  i:=pos(' ',suchname);
+  if i>0 then delete(suchname,i,14);
+  end;
+
+(* String auf Wildcards pruefen *)
+
+function wildcard(name:string14):boolean;
+begin
+  wildcard:=(pos('?',name)>0) or (pos('*',name)>0);
+  end;
+
+(* Datei-Namens-String in Character-Array (11 Buchstaben) *)
+(* umsetzen. Wildcards: '?' unveraendert, '*' expandiert. *)
+
+function expand(name:string14):string14;
+var i,j  : byte;
+    hilf : string14;
+begin
+  hilf:='           '; j:=1;
+  for i:=1 to length(name) do
+    case name[i] of
+      '.' : j:=9;
+      '*' : repeat
+              hilf[j]:='?';
+              j:=succ(j);
+            until j in [9,12];
+       else begin
+              hilf[j]:=upcase(name[i]);
+              j:=succ(j);
+              end;
+      end;
+  expand:=hilf;
+  end;
+
+(* Datei-Namen aus Array-Form in String-Form wandeln *)
+
+function compress(name:string14):string14;
+var i : integer;
+begin
+  for i:=11 downto 9 do
+    if name[i]=' ' then delete(name,i,1);
+  if length(name)>8 then insert('.',name,9);
+  for i:=8 downto 2 do
+    if name[i]=' ' then delete(name,i,1);
+  compress:=name;
+  end;
+
+(* Namen, evtl. mit Wildcards, vergleichen; beide in *)
+(* Array-Form! NAM1 kann Wildcards enthalten, NAM2   *)
+(* kommt von Diskette(MSDOS).                        *)
+
+function gleichheit(nam1,nam2:string14):boolean;
+var i    : byte;
+    flag : boolean;
+begin
+  flag:=true;
+  for i:=1 to 11 do
+    if (nam1[i]<>'?') and (nam1[i]<>nam2[i]) then
+      flag:=false;
+  if ord(nam2[1]) in [$E5,0] then flag:=false;
+  gleichheit:=flag;
+  end;
+
+

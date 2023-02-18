@@ -1,0 +1,10 @@
+%print
+%print -n "reset bit7 - wait "
+pip help.$$$=$1[z]
+era $1 <TTY:
+ren $1=help.$$$
+%print
+%print -n "printing file $1  "
+list $1
+%print done
+

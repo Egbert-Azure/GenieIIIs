@@ -1,0 +1,61 @@
+Z3PLUS FIRST-AID LETTER          5.10.1991
+
+
+Liebe Z3PLUS Anwender!
+
+Die Datei Z3PLUS.LBR enth{lt die folgenden Dateien:
+DEFAULT.Z3T    die Standard-Terminal-Datei
+DEFAULT.Z3P    die Standard-Environment-Beschreibung 
+DEFAULT.NDR    die Standard-Named-Directory-Liste
+und andere.
+
+Machen Sie sich als erstes bitte eine Kopie und arbeiten Sie stets mit 
+dieser! Originaldiskette in den Schrank!
+
+Jetzt hei~t es, Z3PLUS starten. Achtung, das Terminal ist vielleicht nicht 
+installiert! Mit LGET Z3PLUS DEFAULT.Z3P entpackt man die Environment-Datei aus der Library.
+Dieses ASCII-File kann mit einem ASCII-Editor auf das eigene System zurecht 
+geschnitten werden. Zuerst m}ssen die g}ltigen Laufwerke eingetragen werden,
+bzw. die ung}ltigen durch 0 ersetzt werden. Dann kann man das meiste eigent-
+lich so lassen.
+
+Ein Aufruf TCSELECT DEFAULT.Z3T bringt ein Installationsmen}, aus dem in den
+meisten F{llen das gew}nschte Terminal ausgew{hlt werden kann. Beim Verlassen
+wird dann das DEFAULT.Z3T abgespeichert.
+
+Editiert man jetzt noch das default.ndr, dann hat man fast alles getan.
+Sp{ter kann man das noch verfeinern, aber f}r den Anfang reichts.
+
+Jetzt ben}tzt man das LPUT um die Dateien DEFAULT.Z3T, DEFAULT.Z3P und 
+DEFAULT.NDR in die Library Z3PLUS.LBR abzulegen. Dort wird sie gesucht und
+gefunden. 
+
+Man sollte jetzt einen Test machen und Z3PLUS neu starten mit:
+Z3PLUS Z3PLUS
+
+Verlassen des Z3PLUS geschieht mit Z3PLUS OFF
+
+Die Datei ARUNZ.COM wurde bereits in CMDRUN.COM umbenannt, daher kann ein 
+Alias (sprich: EILI-ESS) aus der ALIAS.CMD-Liste bereits interpretiert werden. 
+
+Mit Z3PLUS SMALL erh{lt man eine minimale Z3PLUS-Umgebung mit maximaler TPA.
+Wird diese Datei editiert, so m}ssen alle Library-Files vorhanden sein, auch 
+wenn es nur ein 0-k gro~es File ist.
+
+So, und jetzt, toi, toi, toi.
+
+Im Notfall kann man Hilfe hier erhalten:
+
+Helmut Jungkunz, Zacherlstr. 14, 8045 Ismaning, 089/969374 (max 22 Uhr!)
+
+Nachricht kann man an mich schicken }ber Mailboxen und UUCP:
+
+FIDONET:    2:246/13  Helmut Jungkunz  (Node of Confusion)
+NBBS   :    Ruf: 08165 / 600041   300/1200/2400 8 N 1 ==> User: Helmut
+UUCP   :    unido!tmpmbx!doitcr!floenz1!jungkunz  oder jungkunz@doitcr
+
+Sollte sich eine andere Konfiguration ergeben, mu~ manchmal ein Eingriff 
+direkt in Z3PLUS.COM erfolgen, siehe RELEASE.NOT.
+
+Helmut Jungkunz
+

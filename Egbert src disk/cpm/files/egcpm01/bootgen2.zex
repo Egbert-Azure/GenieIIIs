@@ -1,0 +1,19 @@
+|quiet|
+era $$TEMP$$
+t80
+<LOAD BOOTER 1000
+<LOAD DRIVER 1200
+<LOAD CPMLDR 4900
+<A 49A8
+<JR 49A8
+<
+<A 4C23
+<JR 4C23
+<
+<SAVE $$TEMP$$. 100 557F
+<BYE
+copysys $$temp$$
+<B
+<N
+
+

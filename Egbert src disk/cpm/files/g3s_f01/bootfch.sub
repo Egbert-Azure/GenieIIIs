@@ -1,0 +1,40 @@
+c:
+patè c° a0
+cls
+RMAÃ BOOTEÒ ¤ PÚ SÃ RC
+RMAÃ DRIVEÒ ¤ PÚ SÃ RC
+RMAÃ LDRBIOÓ ¤ PÚ SÃ RC
+<
+
+L8° BOOTER/N,BOOTER/E
+<N
+L8° DRIVER/N,DRIVER/E
+<N
+
+LINË CPMLDR[L4400,NR]=CPMLDR,LDRBIOS
+
+ERÁ BOOTER.REL
+ERÁ DRIVER.REL
+ERÁ LDRBIOS.REL
+ERÁ $$TEMP$$
+
+T80
+<LOAÄ BOOTEÒ 1000
+<LOAÄ DRIVEÒ 1200
+<LOAÄ CPMLDÒ 4900
+<Á 49A8
+<JÒ 49A8
+<
+<Á 4C23
+<JÒ 4C23
+<
+<SAVÅ $$TEMP$$® 10° 557F
+<BYE
+
+ERÁ BOOTER.COM
+ERÁ DRIVER.COM
+ERÁ CPMLDR.COM
+
+COPYSYÓ $$TEMP$$
+<B
+<N

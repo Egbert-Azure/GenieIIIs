@@ -1,0 +1,93 @@
+.PL 68
+.LH 12
+.OP
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      G E N I E - I I I - C P / M   V e r s i o n   2 . 2 d
+
+
+
+                       Autor: Thomas Holte
+
+
+
+
+
+
+
+
+
+
+
+
+
+     HJS Computersysteme                  Nachdruck, auch
+     B{renschanzstr.131                   auszugsweise, verboten! 
+8500 N}rnberg 80
+     Tel. 0911 / 32 95 71Š               I N H A L T S V E R Z E I C H N I S               ___________________________________
+
+
+Kapitel                                                Seite
+
+1         Einleitung                                     1
+
+2         Mini Disk Operation                            1
+2.1       Funktionsweise                                 2
+2.1.1     Funktionsweise der Diskette                    2
+2.1.2     Einf}hren der Diskette in das Laufwerk         3
+2.1.3     Einschalten des Ger{tes                        4
+2.2       Pflege der Disketten                           4
+2.2.1     Sie haben Probleme ...                         5
+2.3       Technische Daten                               6
+2.4       Anfertigen einer Sicherungskopie               7
+
+3         Genie-III-CP/M-Dienstprogramme                 9
+3.1       AUTO                                           9
+3.2       FORMAT                                         9
+3.3       FTASTEN                                       10
+3.4       INHALT                                        10
+3.5       KONFIG                                        11
+3.6       KOPIER                                        16
+3.7       UHR                                           17
+
+4         Technische Informationen                      18
+4.1       Speicheraufteilung                            18
+4.2       Ger{tezuordnung                               19
+4.3       Tastatur                                      19
+4.3.1     WordStar Tastatur                             22
+4.4       Bildschirm                                    24
+4.5       Serielle Schnittstelle                        26
+4.5.1     ]bertragung digitaler Daten                   26
+4.5.2     Signalpegel                                   28
+4.5.3     Anschlu~bezeichnungen und                     29
+          Signalbeschreibungen
+4.5.4     Anschlu~belegung                              31ŠKapitel                                                Seite
+
+4.6       Acht-Zoll-Laufwerke                           33
+
+5         EPROM-Treiberroutinen                         34
+
+6         Genieplus Karte                               40
+6.1       KONFIG                                        40
+6.2       Speicheraufteilung                            41
+6.3       Ger{tezuordnung                               41
+6.4       Treiberroutinen                               42
+
+7         Sonstiges                                     43
+
+Anlage:   Diskettenformate
+

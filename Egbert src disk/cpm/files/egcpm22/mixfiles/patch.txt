@@ -1,0 +1,44 @@
+Patcheó  zuò Beseitigunç voî Fehlerî iî CP/Í ³ Systeí unä Dienst
+programmen®  Voraussetzunç  isô diå Verf}gbarkeiô  deó  Debuggeró 
+Trace-80.
+
+
+Korrektur von DIRLBL.RSX:
+
+T80 DIRLBL.RSX
+  MOVE 61E 6FF 625
+  P 101   1E -> 25
+  A 375   CALL 51E
+  A 61E   CALL 459
+          LD   (4AD),HL
+          RET
+  P 6A9   1A -> 90
+  SAVE DIRLBL.RSX 100 6FF
+
+
+Korrektur von SET.COM:
+
+GENCOM SET
+GENCOM SET DIRLBL
+
+
+Korrektur von DATE.COM:
+
+T80 DATE
+  A 2E8   CALL BD8
+  A BD8   LD   DE,1C0
+          LD   C,32
+          CALL 5
+          LD   HL,(BC8)
+          RET
+  SAVE DATE 100 BFF
+
+
+Korrektur von GENCPM.COM:
+
+T80 GENCPM
+  P 785   42 -> 52
+          4E -> 45
+          4B -> 53
+  SAVE GENCPM 100 54FF
+

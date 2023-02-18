@@ -1,0 +1,224 @@
+Abridged information about the CPU280-operatingsystem / TR 231090
+Translateä bù Leø deGroot
+
+
+1. General
+
+
+Thå presenô versioî oæ thå operatingsysteí ió á fullù functionaì betá-
+version¬  buô noô entirelù completeä anä extended® Iî thå evenô oæ  aî 
+erroò  occurring¬  onå shoulä thereforå trù tï determinå aó  exacô  aó 
+possiblå  whaô  ió  causinç thå probleí anä reporô  oî  iô  foò  lateò 
+eliminatioî iî aî updateä version® Ideaó anä morå concretå suggestionó 
+foò improvemenô arå welcome.
+Thå  operatingsysteí  ió  builô froí modules¬  sï  thaô  alterinç  thå 
+existinç  environmenô involveó nï morå thaî changeó tï onå oò  twï  oæ 
+theí  (thå oneó servicinç portó oò drives)® Iî thaô respecô  ­  futurå 
+updateó  ­ everyonå ió adviseä tï avoiä aó mucè aó  possiblå  changinç 
+thå sourceó aó madå availablå bù må anä keeğ recorä oæ thå alterationó 
+onå makes® Extensionó tï mù programó shoulä bå iî thå forí oæ  moduleó 
+toï oò iî thå forí oæ Includå-files.
+Globaì  declarationó  arå containeä iî twï LIÂ-files¬  tï  distinguisè 
+betweeî   processoò  (Z280EQU.LIB©  anä  CPU28°-boarä  resp®   -systeí 
+(CPU280.LIB)®  Theså  twï  fileó arå referenceä tï bù  alì  thå  BIOÓ-
+modules.
+
+Thå softwarå ió adapteä tï thå configuratioî oæ mù system¬ i.e®  aparô 
+froí  thå  functionó  oî  thå CPÕ-carä  iô  alsï  supportó  thå  otheò 
+interfacå-cardó  present®  Theiò driverroutineó sho÷  ho÷  tï  addresó 
+them»  iæ  necessarù theù caî bå useä foò differenô cardó  witè  minoò 
+changes.
+
+
+2. Bootloader
+
+Followinç  á  reseô thå clockfrequencù oæ thå  processoò  ió  resolveä 
+firsô  bù meanó oæ thå realtimå-clock® Iæ iô ió impossiblå tï  addresó 
+thå  realtimå-clocë  á frequencù oæ 12.28¸ MHú ió  assumed®  Nexô  thå 
+consolå-interfacå-initialisatioî ió performeä (accordinç tï thå valueó 
+iî  Setup»  initiaì startuğ ió 8+n+± aô 960° Bd¬ nï handshake©  anä  á 
+Starô-messagå  displayed®  Theî  followó thå  RAÍ-test¬  whicè  checkó 
+whetheò  alì oæ availablå memorù caî bå writteî tï  (noî-destructive)® 
+Simultaneouó  thå availablå RAÍ ió determined® Iæ nï erroró arå  founä 
+iî  thå RAÍ-tesô thå Bootloadeò ió copieä intï RAÍ anä starteä  there® 
+Thå  LED'ó oî thå boarä indicatå thå machinå-statuó alì througè  theså 
+operations®  Afteò reseô alì LED'ó arå oî aô firsô (bù thå  hardware)® 
+Immediatelù afteò thaô onå LEÄ ió switcheä off¬ thå nexô onå wheî  thå 
+clockratå ió founä anä thå thirä afteò á successfuì completioî oæ  thå 
+RAÍ-test®  Furtheò hardwarå tesô arå planned¬ buô noô yeô  implementeä 
+aô thió time.
+Normallù  (i.e®  nï interventioî iî thå booô-uğ-procedure©  thå  wholå 
+operatinç-systeí  ió loadeä froí EPROÍ aô booô-time¬ usinç thå  setuğ-
+valueó froí thå NVRAM.
+Iæ aî EPROÍ-checksuí ió founä tï diffeò froí thå onå iî thå  precedinç 
+booô-uğ oò iæ onå actuateó thå DEÌ-keù durinç thå RAÍ-test¬ theî Setuğ 
+ió calleä beforå thå bootoperatioî ió started¬ enablinç alteratioî  oæ 
+thå configuratioî iî NVRAM® Amongsô witè e.g® thå installeä diskdriveó 
+anä  -type¬ thå initialisatioî-valueó foò botè thå seriaì  interfaces¬ 
+thå Booô-drivå anä thå 'Drivå-Searcè-Chain'.
+Pressinç  thå  Spacå-baò durinç thå RAÍ-tesô preventó erasurå  oæ  thå 
+RAÍ-disk(s)¬  pressinç  ESÃ causeó bootinç froí  diskettå  insteaä  oæ 
+EPROÍ (Booô-drivå froí Setup¬ defaulô ió A:).
+ŠBecauså  oæ thå differenô consolå-interfaceó whicè caî bå iî  uså  anä 
+thå facô thaô thå booô-loadeò cannoô uså RAÍ (noô testeä yet© foò  itó 
+firsô   messageó   (anä  foò  initializing)¬  thå   needeä   functionó 
+initialize¬  characterinpuô  anä  -outpuô arå placeä aó  macroó  iî  á 
+separatå  Includå-filå (LDRIO.LIB)® Thå macroó provideä bù må uså  thå 
+seriaì-porô iî thå MPÕ-chip® Tï makå uså oæ differenô portó onå haó tï 
+writå  thå appropriatå macroó oneself¬ onlù employinç registeró  whicè 
+arå expliciô markeä availablå iî thå sourcå-code.
+
+
+3. Autoformat-system
+
+Botè  thå  booô-loadeò anä thå operatinç-systeí  havå  aî  autoformaô-
+ability¬ i.e® theù adapô tï thå currenô disë-format® Tï thaô enä therå 
+ió  á  12¸-bytå parameterblocë iî tracë 0¬ sectoò ± oî  thå  diskette¬ 
+fullù describinç thå physicaì anä logicaì diskformat.
+Wheî á disë-changå ió signalleä therå wilì bå aî attempô tï reaä  thió 
+parameterblocë  firsô  durinç  thå nexô access® Iî caså  oæ  aî  erroò 
+occurrinç  oò  oæ  á  disë-parameterblocë  beinç  absenô  thå   valueó 
+belonginç  tï  thå  previouó  processeä formaô  arå  useä  again®  Thå 
+defaultó arå defineä iî thå loadeò-bioó resp® iî thå TABLES-modulå anä 
+theù  shoulä  makå  aî allowancå foò thå  maximuí  formaô  tï  handle¬ 
+becauså  GENCPÍ  useó  theså  diskparameteró  wheî  iô   automaticallù 
+determineó  thå  sizå  oæ thå directorù-bufferó  anä  thå  allocatioî-
+vectoró  aô systeí-generatioî-time® Iî thå versioî supplieä bù må  onå 
+findó  herå thå formaô 'Reè-CP/Í ³ V2.1§ inserted¬ blocksizå 400¬  25¶ 
+directorù-entrieó   anä   102´  bytå  sectoò-size®  Aô   presenô   thå 
+autoformaô-routineó dï noô checë whetheò thå allocateä buffeò-spacå ió 
+sufficienô foò thå choseî format» sï erroró herå wilì leaä irrevocablù 
+tï crashing.
+
+Thå parameterblocë oî thå diskettå haó thå followinç structure:
+
+		xxxx					xxxx
+
+		xxxx					xxxx
+
+Decomposition of position 1Eh in bit-flags:
+Bit 7,6 : density	00 = FM, 01 = MFM, 11 = HD
+Bit 5,4 : reserved
+Bit 3   : inverted data
+Bit 2   : optional multi-sector-I/O
+Bit 1,0 : overrun	00 = none (single-sided)
+			01 = sector, 10 = track, 11 = halftrack
+
+Thå  contentó  oæ  thå  ´-bytå-fieldó 'tk°  sk÷  ofæ  tl§  detaiì  thå 
+tracksequencå  resp® tracktransposition® Sincå thió seô oæ  parameteró 
+wilì noô delineatå eacè anä everù tracë-transformation¬ otheò  methodó 
+arå  undeò investigation¬ probablù resultinç iî aî altereä  definitioî 
+oæ  thå parameterblocë here® Proposaló concerninç thió matteò wilì  bå 
+appreciated.
+
+
+4. System-generation
+
+Firsô oæ alì thå BIOÓ-sourcecodå ió assembled® Becauså thió ió genuinå 
+Z28°-codå iô haó tï bå preprocesseä bù PRE280® Thió prograí createó  á 
+intermediarù sourcå-filå (.MAC© anä substituteó herå thå Z28°-codå  bù 
+Z8°-instructionó  anä DB/D×-pseudï-operations® Thå temporarù filå  caî 
+no÷  bå useä bù á regulaò Z8°-assembleò (anä deleteä afterwards)®  Thå 
+Submiô-filå ASÍ calló thå twï programs® PRE28° ió á freå prograí  froí 
+Axeì 'Fifi§ Zinseò anä ió enclosed® But¬ oæ course¬ nï onå shoulä makå Šalterationó tï iô anä pasó thå modifieä prograí oî withouô hió expresó 
+permission.
+
+Nexô iî producinç á ne÷ systeí (CPM3.SYS© comeó linkinç thå  differenô 
+moduleó   oæ  thå  BIOÓ  intï  á  'SPR§-typå  oæ  filå  (Systeí   Pagå 
+Relocatible)® Herå onå useó thå DRÉ-linkeò LINK¬ iô beinç thå onlù onå 
+tï  creatå  thå  righô  SPÒ-format®  Afteò  thaô  thå  systeí-filå  ió 
+generateä froí thió anä thå BDOÓ-SPÒ-fileó usinç GENCPM® GENCPÍ referó 
+iî  firsô  instancå tï thå valueó froí GENCPM.DAT¬ bù  whicè  onå  caî 
+changå thå selecteä buffeò-sizeó tï one'ó liking.
+Oî accounô oæ aî ilì-programmeä parô oæ thå residenô BDOÓ aó tï  wherå 
+iô  accesseó  thå  Hasè-tableó onå shoulä undeò  nï  conditioî  enablå 
+hashinç  foò  whateveò drive¡ Thå banë-switchinç iî mù BIOÓ  doeó  noô 
+supporô  thió  kinä  oæ  accesseó anä iô  inevitablù  wilì  resulô  iî 
+crashinç thå system® 
+Lateò oî É wilì makå availablå aî altereä residenô BDOS¬ alllowinç foò 
+hashinç and¬ whaô ió more¬ offerinç aî abouô 1ë largeò TPA.
+Linkinç  thå  BIOÓ anä callinç GENCPÍ ió combineä iî  thå  Submiô-filå 
+GEN® Alsï thå ordeò iî whicè tï linë thå moduleó caî bå founä here.
+
+Thå booô-loadeò ió linkeä onlù froí thå partó BIOÓ-loader¬  DOÓ-loadeò 
+anä  Setup® Aó á resulô onå obtainó á normaì objectcodå-filå  (COÍ  oò 
+CIM)®  Thió  linë-commanä (É aí usinç SLRNË myself© ió placeä  iî  thå 
+Submiô-filå GENL.
+
+Iæ  thå  produceä  systeí  haó tï booô froí  thå  EPROÍ  theî  á  filå 
+SYSTEM.EPÒ  caî  bå  createä froí thå fileó  LOADER.CIM¬  CCP.COÍ  anä 
+CPM3.SYÓ  witè thå aiä oæ thå GENEPÒ-programm® Thió wilì theî  contaiî 
+thå  previouslù  mentioneä  threå fileó  oæ  thå  operatinç-systeí  aô 
+specifiã addresses¬ appropriatå foò thå booô-loader® Programminç iô iî 
+thå EPROM'ó yeô requireó á divisioî iî eveî (EVN© anä odä (ODD© halveó 
+bù SPLIT16® Thå Pascaì-sourcecodå foò GENEPÒ anä SPLIT1¶ ió enclosed.
+
+
+5. Errorhandling
+
+Iî thå evenô oæ erroró iî disë-operationó (timå-out¬ write/reaä-erroró 
+oò  crã-error©  aî errormessagå ió displayeä similaò tï  MSDOÓ  anä  á 
+keyboarä-entrù  awaited¬  wherå onå selectó eitheò  Abort¬  Ignorå  oò 
+Retry®  Unfortunatelù  thå Retrù-functioî doeó noô yeô  worë  completå 
+withouô erroró undeò alì circumstances¬ becauså oæ thaô á 'hard§ erroò 
+ió  possiblå  witè thå FDÃ-handler® Oî theså occasionó  (messagå  DIÏ-
+erroò 2© onlù á reseô ió left® I'í workinç oî a solutioî.
+Wheî  aî erroò occuró withiî thå CPÕ (Traps¬ e.g® divisioî bù zerï  oò 
+tryinç   tï   executå  á  privilegeä  instruction)¬   aî   appropriatå 
+errormessagå ió giveî anä thå commmanä-processoò ió started® Thå  useò 
+ió returneä tï commanä-level.
+Iô  ió  alsï easù enougè tï aborô programs¬ ouô oæ endlesó  loopó  foò 
+instance¬  witè  NMI¬ herå toï thå commanä-processoò  ió  starteä  (nï 
+messagå yet).
+
+
+6.Format-manager
+
+Thå  Formaô-manageò ió therå tï helğ thå useò iî handlinç thå  variouó 
+formató  iî connectioî witè thå Autoformaô-system® Likewise¬ iô ió  oæ 
+modulaò  construction¬ buô programmeä iî Turbï-Pascal® Iô ió  á  menõ-
+controlleä  programm¬ sï therå ió nï neeä foò á detaileä  explanation® 
+Completå  informatioî concerninç thå formató ió containeä iî thå  filå 
+FORMAT.DAT¬  whicè is¬ afteò loadinç thå programm¬ firsô searcheä  foò 
+oî   thå   defaulô-drive¬   nexô   oî  drivå   A:®   Iæ   changeó   tï 
+formatdefinitionó  arå madå oò ne÷ oneó addeä theî thå filå ió  closeä Šonlù oî exitinç thå Formaô-manager® Thå diskettå witè thå  formatdatá-
+filå oî iô shoulä thereforå neveò bå changeä iî thå process.
+Thå  managemenô oæ thå formatdatá ió limiteä tï á reasonablå  minimum® 
+Becauså  oæ  thaô onå cannoô eraså formató oò shufflå theí  arounä  aô 
+will¬  onå caî onlù alteò existinç formatdefinitionó oò jusô  adä  ne÷ 
+ones® Thereforå iô ió sensiblå tï uså alwayó thå samå formaô-iteí wheî 
+experimentinç  witè  unknowî formats¬ sï  avoidinç  unnecessarù  largå 
+files.
+Á formatteä tablå witè alì thå defineä formató caî bå listeä froí  thå 
+Formaô-manager®  Thå  printeò shoulä bå seô foò  smalì-pitch¬  becauså 
+arounä 12° characteró arå printeä oî á line® Thå Formaô-manageò cannoô 
+givå  ouô thió setuğ-commanä itselæ oî accounô oæ thå  differenceó  iî 
+thå diversitù oæ printeò-standards.
+
+
+7.Preferred formats
+
+Preferablå  arå  alì  thå  formató  attaininç  aî  optimaì   diskettå-
+performancå  iî  á  legaì  anä aó  simplå  aó  possiblå  manner®  Thió 
+implicateó thå followinç foò thå individuaì parameters:
+- sectorsize favourably 1k, maximum number of sectors,
+- physical skew 1
+- logical skew 1 for multi-sector-I/O, otherwise 2
+- zero track-offset
+- if two-sided: sector- or halftrack-alternate-pass
+- blocksize a preferential 2k, evtl. 4k (for larger capacity's)
+Iî  unresolveä caseó onå shoulä consulô Uwå Herczeç oò me¬ please¬  iî 
+ordeò tï avoiä aî absurä pluré-formaô-ivitù betweeî ourselveó too.
+
+
+
+
+
+
+Proposaló  regardinç thå forí iî whicè thå designateä  Softwarå-manuaì 
+coulä  bå casô (aó welì aó evtl® amendmentó tï  thå  Hardwarå-manual)¬ 
+direcô theí tï må aó (in)formaì aó yoõ like.
+
+
+TR 231090
+

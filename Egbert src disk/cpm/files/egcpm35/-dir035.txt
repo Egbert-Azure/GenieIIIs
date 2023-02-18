@@ -1,0 +1,10 @@
+
+[.]             [..]            -dir035.txt     asm.cpm         auto.cpm      
+banner          boot.cpm        config.cpm      cpmgen.cpm      datum.cpm     
+ddt.cpm         dump.asm        dump.cpm        ed.cpm          fkey.cpm      
+format.cpm      index.html      info.cpm        info.html       load.cpm      
+pd.cpm          pdrive.sys      pip.cpm         readme.cpm      sio.cpm       
+stat.cpm        submit.cpm      tasten.cpm      term.cpm        uhr.cpm       
+wnformat.cpm    xsub.cpm        zeit.cpm        zl.cpm          
+       34 file(s)     141.023 bytes used
+                   27.582.066 K bytes free

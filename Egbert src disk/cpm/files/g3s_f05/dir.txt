@@ -1,0 +1,30 @@
+Datendisk - kein Boot
+
+Directory of E:\oldcomputers\www\public\pub\rechner\eaca\genie_3s\my_genie_3s\image\fritz\cpm\files\g3s_f05
+
+[.]            [..]           banner         dir.txt        hi-tec.lbr   
+index.html     sources.lbr    [u1]           [u2]           
+        9 file(s)     461.169 bytes used
+
+Directory of E:\oldcomputers\www\public\pub\rechner\eaca\genie_3s\my_genie_3s\image\fritz\cpm\files\g3s_f05\u1
+
+[.]             [..]            $exec.com       ackerman.h      an.h          
+assert.h        banner          c.com           cflow.doc       cgen.com      
+conio.h         cpm.h           cpm.huf         cpp.com         cref.com      
+crtcpm.obj      ctype.h         debug.com       dehuff.com      environ       
+exec.h          fcntl.h         fib.h           float.h         float.huf     
+gen.huf         hitech.h        index.html      libc.lib        libf.lib      
+libr.com        limits.h        link.com        math.h          objtohex.com  
+optim.com       p1.com          rrtcpm.obj      setjmp.h        signal.h      
+stat.h          stdarg.h        stddef.h        stdio.h         stdio.huf     
+stdlib.h        string.h        sys.h           time.h          unixio.h      
+zas.com         
+       51 file(s)     574.720 bytes used
+
+Directory of E:\oldcomputers\www\public\pub\rechner\eaca\genie_3s\my_genie_3s\image\fritz\cpm\files\g3s_f05\u2
+
+[.]             [..]            ackerman.c      ackerman.com    an.c          
+banner          bench.c         cflow.c         cflow.com       environ       
+erato.c         fib.c           hanoi.bak       hanoi.c         hanoi.com     
+index.html      test1.c         test2.c         unsoft.c        zylinder.c    
+       20 file(s)      60.817 bytes used

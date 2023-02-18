@@ -1,0 +1,309 @@
+;******************************************************************************
+;*  F O R M T R K * U T I L S 0 0 6 b * T h o m a s   H o l t e * 8 5 0 7 2 4 *
+;******************************************************************************
+;*									      *
+;*     T R A C K   F O R M A T T E R   F O R   T H E   G E N I E   I I I s    *
+;*     ===================================================================    *
+;*									      *
+;*  		    M I C R O C O M P U T E R   S Y S T E M 		      *
+;*		    =======================================		      *
+;*									      *
+;*									      *
+;*  Thomas Holte			                         Version 1.0  *
+;*									      *
+;******************************************************************************
+
+;C calling sequence:
+
+;char formtrk (drive, side, track, buffer)
+;  char drive, side, track, *buffer;
+
+
+	.Z80
+
+	GLOBAL FORMTRK
+	EXTERNAL DCT
+
+;FDC registers:
+$FDSEL  EQU  0E0H               ;FDC select  register
+$FDCMD  EQU  0ECH               ;FDC command register
+$FDSTAT EQU  0ECH               ;FDC status  register
+$FDTRK  EQU  0EDH               ;FDC track   register
+$FDSIZ  EQU  0EEH               ;FDC size    register
+$FDDATA EQU  0EFH               ;FDC data    register
+
+;FDC commands:
+$SEEK   EQU  10H                ;seek
+$SET8   EQU  0C0H               ;set disk size to 8 inch
+$FCINT  EQU  0D0H               ;force interrupt
+$WRTRK  EQU  0F4H               ;write track
+$DDDEN  EQU  0FFH               ;set double density
+
+;entry: A  = drive  number
+;       C  = side   number
+;       E  = track  number
+;       HL = buffer pointer
+
+;exit : HL = error code
+;       0  = NO ERROR
+;       1  = ILLEGAL DRIVE #
+;       2  = TRACK # TOO HIGH
+;       3  = SIDE # TOO HIGH
+;       4  = DEVICE NOT AVAILABLE
+;       5  = WRITE PROTECTED DISKETTE
+;       6  = WRITE FAULT ON DISK DRIVE
+;       9  = LOST DATA DURING WRITE
+
+
+FORMTRK:POP  IX
+	POP  BC			;get drive #
+	LD   A,C	
+	POP  BC			;get side #
+	POP  DE			;get track #
+	POP  HL			;get buffer address
+	PUSH HL	
+	PUSH DE
+	PUSH BC
+	PUSH BC
+	PUSH IX
+
+;dominant controller:
+	LD   IX,DCT		;get drive control table ptr
+        CP   8                  ;legal drive # ?
+        JR   C,SIDENO           ;jump if yes
+        LD   HL,1               ;error code 1 --> reg. HL
+        RET
+SIDENO: LD   (DRIVE),A          ;store drive #
+        LD   A,C                ;side # --> accu
+	OR   A			;side # = 0 ?
+	JR   Z,TRKNO		;jump if yes
+	DEC  C			;side # = 1 ?
+	JR   Z,SIDEN2		;jump if yes
+SIDEN1: LD   HL,3		;error code 3 --> reg. HL
+	RET
+SIDEN2:	BIT  6,(IX)		;double sided ?
+	JR   Z,SIDEN1		;jump to error exit if not
+TRKNO:	LD   (SIDE),A		;store side #
+        LD   A,E                ;track # --> accu
+        CP   (IX+4)             ;legal track # ?
+        JR   C,TRYNO            ;jump if yes
+        LD   HL,2               ;error code 2 --> reg. HL
+        RET
+TRYNO:	LD   (TRACK),A		;store track #
+        LD   A,11               ;number of err tries + 1
+        LD   (TRIES),A          ;store in counter
+        LD   (BUFFER),HL        ;store buffer pointer
+
+;set density & disk size:
+        LD   A,$DDDEN           ;set double density command
+	BIT  5,(IX)		;density ?
+	JR   NZ,SETDEN		;jump if double density
+	DEC  A			;set single density
+SETDEN: OUT  ($FDCMD),A         ;set density
+        LD   C,$SET8            ;set 8 inch command
+	LD   A,(DRIVE)		;drive # --> accu
+	CP   4			;disk size ?
+	JR   NC,SETSIZ		;jump if 8 inch
+	RES  6,C		;set 5 inch command
+SETSIZ:	LD   A,C
+        OUT  ($FDSIZ),A         ;set disk size
+
+;actual I/O handler:
+INIT:   LD   HL,0               ;clear wait counter
+        LD   (WAIT),HL
+        LD   A,$FCINT           ;force interrupt
+        OUT  ($FDCMD),A         ;reset FDC
+        IN   A,($FDCMD)         ;get FDC status
+        LD   (OLDSTAT),A        ;save drive status
+        CALL SELECT             ;select drive
+        BIT  0,(IX+1)           ;is drive initialized ?
+        JR   NZ,TRKSEC          ;yes skip init process
+
+;restore drive head:
+        SET  0,(IX+1)           ;set init bit in DCT
+        LD   A,255              ;max possible track # --> accu
+        LD   (IX+5),A           ;make current track # to 255
+        XOR  A                  ;desired track # = 0
+        JR   TRKSE6
+
+;set track:
+TRKSEC: LD   A,(TRACK)          ;track # --> accu
+        BIT  5,(IX)             ;disk density ?
+        JR   Z,TRKSE1           ;jump if single density
+        BIT  4,(IX)             ;density of first track ?
+        JR   NZ,TRKSE1          ;jump if double density
+        INC  A                  ;increment track #
+TRKSE1: BIT  2,(IX)             ;step count from track to track
+        JR   Z,TRKSE2           ;jump if step count = 1
+        ADD  A,A                ;track # * 2
+TRKSE2: CP   (IX+5)             ;same as current track
+        JR   NZ,TRKSE4          ;jump to SEEK cmd if not
+	LD   C,A		;save track #
+	LD   A,$FCINT		;force interrupt
+	OUT  ($FDCMD),A
+	LD   A,C		;restore track #
+        BIT  2,(IX)             ;step count from track to track
+        JR   Z,TRKSE3           ;jump if step count = 1
+        SRL  A                  ;track # / 2
+TRKSE3: OUT  ($FDTRK),A         ;adjust current track #
+        JR   WAITEN             ;no SEEK
+TRKSE4: LD   C,A                ;save track #
+        SUB  (IX+5)             ;subtract current track #
+        JR   NC,TRKSE5
+        NEG                     ;make result positive
+TRKSE5: LD   (WAIT),A           ;store calculated step count
+        LD   A,C                ;restore track #
+TRKSE6: OUT  ($FDDATA),A        ;store track # in FDC reg
+	LD   A,$FCINT
+        OUT  ($FDCMD),A         ;reset FDC
+        LD   A,(IX+5)           ;current track from DCT
+        OUT  ($FDTRK),A         ;FDC track register
+        LD   A,(IX)
+        AND  3                  ;step rate --> accu
+	PUSH AF			;save it
+        LD   HL,(WAIT)          ;get step count
+        JR   Z,TRKSE8           ;jump if step rate = 3 msec
+        LD   D,H                ;step count --> reg. DE
+        LD   E,L
+        LD   B,A                ;step rate --> reg. B
+TRKSE7: ADD  HL,DE              ;counter = step count * step rate
+        DJNZ TRKSE7
+TRKSE8: LD   B,H                ;counter --> reg. BC
+        LD   C,L
+        ADD  HL,HL              ;counter * 2
+        ADD  HL,BC              ;counter * 3
+	LD   A,(DRIVE)		;drive # --> accu
+	CP   4			;disk size ?
+	JR   NC,TRKSE9		;jump if 8 inch
+	ADD  HL,HL		;counter * 6
+TRKSE9: LD   BC,15              ;adjust value for delay loop --> reg. BC
+        ADD  HL,BC              ;adjust wait counter
+        LD   (WAIT),HL          ;store wait counter (msecs of passed time)
+        POP  AF                 ;restore step rate
+        OR   $SEEK              ;or step rate with "seek" command
+        OUT  ($FDCMD),A         ;issue seek command
+TRKS10: CALL SELECT             ;select drive
+	IN   A,($FDSTAT)	;get disk status
+        BIT  7,A                ;drive not ready ?
+        JR   NZ,WRITE1          ;jump to error exit
+        BIT  0,A                ;seek done ?
+        JR   NZ,TRKS10          ;no, loop
+        LD   BC,4000            ;load delay counter
+        CALL DELAY              ;15 msec head settle delay
+        IN   A,($FDTRK)         ;get current track
+        LD   (IX+5),A           ;store in drive's DCT
+        JP   TRKSEC             ;check track # again
+
+;motor on / head load time:
+WAITEN: LD   A,(DRIVE)          ;get drive #
+        LD   HL,OLDDRV          ;^previous drive # --> reg. HL
+        CP   (HL)               ;new drive # same as old drive # ?
+        LD   (HL),A             ;store new drive #
+        LD   A,(OLDSTAT)        ;get old FDC status
+        RLCA                    ;drive rotating already
+        JR   C,WAITE2           ;jump to motor on delay loop, if not
+        JR   Z,WAITE6           ;jump if same drive #
+WAITE1: LD   HL,50              ;50 msec head load time
+        JR   WAITE3
+WAITE2: BIT  7,(IX)             ;8 inch drive
+        JR   NZ,WAITE1          ;jump if 8 inch drive
+        LD   HL,500             ;500 msec delay after motor on
+WAITE3: LD   BC,(WAIT)          ;msecs of passed time --> reg. BC
+        OR   A                  ;clear carry bit
+        SBC  HL,BC              ;calculate remaining wait time
+        JR   C,WAITE6           ;no further time to wait
+        JR   Z,WAITE6
+WAITE5: LD   BC,253             ;1 msec delay
+        CALL DELAY
+        DEC  HL
+        LD   A,H
+        OR   L
+        JR   NZ,WAITE5          ;loop HL times
+WAITE6: IN   A,($FDSTAT)        ;get FDC status
+        RLCA                    ;drive rotating already ?
+        JR   C,WRITE1           ;jump if not
+
+;init WRITE:
+        CALL SELECT             ;select drive
+        LD   HL,(BUFFER)        ;get buffer pointer
+        LD   A,$WRTRK           ;issue "write track" command
+	DI			;disable interrupts
+	OUT  ($FDCMD),A 
+        LD   BC,12              ;56 usec delay
+        CALL DELAY
+        LD   C,$FDDATA          ;data register
+WRITE:  IN   A,($FDSTAT)	;get FDC status
+	BIT  1,A                ;data request ?
+        JR   NZ,WRITE2          ;yes, get byte
+        BIT  0,A                ;full sector transferred ?
+        JR   Z,STATUS           ;yes, go end process
+	IN   A,($FDSTAT)	;get FDC status
+        BIT  1,A                ;data request ?
+        JR   NZ,WRITE2          ;yes, get byte
+        BIT  7,A                ;drive not ready ?
+        JR   Z,WRITE            ;no loop
+WRITE1: LD   HL,4               ;error code 4 --> reg. HL
+	EI			;enable interrupts
+	RET
+WRITE2: OUTI                    ;write char
+        JR   WRITE              ;put next byte
+
+;test controller status:
+STATUS: EI			;enable interrupts
+	IN   A,($FDSTAT)        ;get FDC status
+        BIT  6,A                ;write protect ?
+        JR   Z,STATU1           ;jump if not
+        LD   HL,5               ;error code 5 --> reg. HL
+        RET
+STATU1: BIT  5,A                ;hardware fault (WRITE) ?
+        JR   Z,STATU2           ;jump if no
+        LD   HL,6               ;error code 6 --> reg. HL
+        RET
+STATU2: AND  4                  ;any errors ?
+	LD   H,A 		;error code 0 --> reg. HL
+	LD   L,A
+        RET  Z
+        RES  0,(IX+1)           ;clear init bit in DCT
+        LD   HL,TRIES           ;get tries counter
+        DEC  (HL)               ;dec value
+        JP   NZ,INIT            ;try again, reseek
+STATU4: LD   HL,9               ;error code 9 --> reg. HL
+        RET
+
+;select drive:
+SELECT: LD   A,(DRIVE)          ;get drive #
+	AND  3			;force # between 0 and 3
+        OR   A                  ;drive # zero ?
+        LD   B,A                ;drive # --> reg. B
+        LD   A,1                ;select code for drive zero
+        JR   Z,SELEC1           ;jump if drive # zero
+        RLCA                    ;rotate left accu
+        DJNZ $-1                ;decrement drive #
+SELEC1:	LD   C,A		;save select code
+        LD   A,(SIDE)           ;side # --> accu
+        OR   A			;side # = 0 ?
+	LD   A,C		;restore select code
+        JR   Z,SELEC2           ;jump if yes
+        SET  4,A                ;set side select bit
+SELEC2: OUT  ($FDSEL),A         ;select drive and side
+        RET                     ;return to caller
+
+DRIVE:  DEFS 1                  ;drive
+SIDE:	DEFS 1			;side
+TRACK:  DEFS 1                  ;track
+BUFFER: DEFS 2                  ;I/O buffer
+OLDDRV: DEFB 0FFH               ;contains # of previous selected disk
+OLDSTAT:DEFS 1			;contains drive status
+TRIES:  DEFS 1                  ;counter for counting # of times to try I/O
+                                ;after error occurs
+WAIT:   DEFS 2                  ;counter for passed time
+
+;delay routine:
+DELAY:	DEC  BC			;decrement cycle count
+	LD   A,B		;test if count zero
+	OR   C			;combine LSB/MSB of count
+	JR   NZ,DELAY		;loop until delay count exhausted
+	RET			;rtn to caller
+
+	END
+

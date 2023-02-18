@@ -1,0 +1,207 @@
+; Testprogramm um die Grafik des Genie IIIs anzutesten. Verschiedene
+;Unterroutinen des BIOS werden angesprungen.
+;wie z.B. Kres, Linie, Bogen usw.
+;Die Koordinaten der Grafikseiten entsprechen dem ersten Quadranten, also
+;Nullpunkt in der linken unteren Ecke !
+;Bei Systemaufrufen bleiben die Parameter erhalten, man mu~ bei Folgeoperationen
+;nicht alle Register neu laden, sondern nur die ben|tigten
+;
+; ACHTUNG !  Es erfolgt keine Kontrolle auf richtige Koordinatenangaben.
+; Das hei~t, bei falscher Eingabe st}rzt der Rechner ab !!!!
+
+ 
+cr	equ	0dh
+lf	equ	0ah
+end	equ	'$'
+
+grafik	equ	25
+gracls	equ	26
+bdos	equ	 5
+wboot	equ   0000h
+userf	equ	30
+prtstr	equ	 9
+
+	org	100h
+start
+
+graan	ld	b,0			;HRG-Seite, welche angezeigt wird = B
+	ld	c,grafik		;Nummer der USERFunktion = C
+	ld	a,0ffh			;true/false(f}r an/aus) = A
+	call	system			;USERFunktion anspringen und zur}ck
+	
+hrgcls	ld	a,1			;'Farbe' mit der HRG gef}llt wird = A
+	ld	b,0			;Seitennummer = B
+	ld	c,gracls		;Nummer der USERFunktion = C
+	call	system			;USERFunktion aufrufen und retour
+
+hrginv	ld	a,0			;Farbe ist jetzt 0=schwarz, also HRGCLS
+	ld	b,0			;Seite 0
+	ld      c,gracls		;Nummer der USERFunktion
+	call	system			;USERFunktion aufrufen und retour
+
+punkt	ld	a,11h			;oberes nibble = Normierte Ausgabe
+					;unteres nibble = Farbe wei~
+	ld	b,0			;Seite 0
+	ld	de,00			;xkoordinate
+	ld	hl,00			;ykoordinate( normiert, 0 <x< 449
+	ld	c,27			;USERFunkt. setze Punkt
+	call	system
+
+kreuz	ld	de,300			;ruft Unterprogramm SETKREUZ auf
+	ld	hl,200			;siehe Ende des Programms
+	call	setkreuz
+							
+
+kreis	ld	a,1			;Farbe ist 1 also wei~ !
+	ld	b,0			;Seite 0
+	ld	hl,krkoor		;HL zeigt auf 6 Bytes, xkoor,ykoor,radius
+	ld	c,30			;USERFunktionsnummer nach C
+	call	system			;und aufrufen
+	ld	hl,krkoor1		;anderer Parameterblock
+	call	system
+	ld	hl,krkoor2		;dritter Parameterblock
+	call	system
+
+linien	ld	a,11h			;ausgabe normiert, Farbe wei~
+	ld	b,0			;seite 0
+	ld	c,29			;USERFunktion Gerade zeichnen
+	ld	hl,likoor		;Zeiger auf Koordinatenblock
+	call	system
+	ld	hl,likoor1
+	call	system
+	ld	hl,likoor2
+	call	system
+	ld	hl,likoor3
+	call	system
+	
+bogen	ld	a,1			;farbe wei~
+	ld	b,0			;Seite 0
+	ld	c,31			;USERFunktion Kreisbogen zeichen
+	ld	hl,bokoor		;Zeiger auf Koordinatenblock
+	call	system
+
+block	ld	a,00h			;oberes nibble  = Quellseite
+					;unteres nibble = Zielseite
+	ld	hl,blkoor		;Zeiger auf koordinaten des zu
+					;kopierenden Bereiches
+	ld	c,33			;USERFunktion Bereich kopieren
+	call	system			;und ab damit				
+
+
+;R}cksprung ins Betriebssystem
+
+	ret
+
+
+
+
+
+
+
+
+
+
+;UNTERROUTINEN
+	
+	
+setkreuz				;setzt ein Kreuz, mit dem Mittelpunkt
+	push	hl			;auf die Stelle, deren Parameter mit
+	push	de			;}bergeben wurden	 
+	ld	a,11h			;oberes nibble=normiert, unt.=Farbe
+	ld	b,0			;Seite 0
+	ld	c,27			;USERFunktion 27
+	call	system			;ausf}hren
+	pop	de			;das war der Mittelpunkt
+	pop	hl			;die alten Parameter werden wiedergeholt
+	push	hl			
+	push	de
+	inc	hl			;jetzt der punkt oberhalb der mitte
+	inc	hl
+	call	system
+	pop	de
+	pop	hl
+	push	hl
+	push	de
+	dec	hl			;jetzt der punkt unrehalb der mitte
+	call	system
+	pop 	de
+	pop 	hl
+	push	hl
+	push	de
+	inc	de			;jetzt der punkt recht von der Mitte
+	call	system
+	pop	de
+	pop	hl
+	push	hl
+	push	de
+	dec 	de			;jetzt der Punkt links der mitte
+	call	system
+	pop	de
+	pop	hl
+	ret
+	
+	
+	
+	
+system	push	bc
+	ld	ix,(wboot+1)
+	ld	bc,3*(userf-1)
+	add	ix,bc
+	pop	bc
+	jp	(ix)
+	
+
+krkoor	dw	300		;xkoordinate des Mittelpunktes
+	dw	200		;ykoordinate des       "
+	dw	80		;Radius	
+
+krkoor1	dw	400
+	dw	100
+	dw	40
+
+krkoor2	dw	90
+	dw	300
+	dw	78	
+	
+likoor	dw	2		;xkoordinate des Ursprungs	
+	dw	2		;ykoordinate des Ursprungs
+	dw	400		;xkoordinate des Endpunktes
+	dw	400		;ykoordinate des Endpunktes
+	
+likoor1	dw	500
+	dw	23
+	dw	0
+	dw	378
+
+likoor2	dw	0
+	dw	378
+	dw	200
+	dw	0
+	
+likoor3	dw	200
+	dw	0
+	dw	639
+	dw	449
+					
+bokoor	dw	0			;xkoor des Mittelpunktes
+	dw	0			;ykoor des       "
+	dw	449			;xkoor des Startpunktes
+	dw	0			;ykoor des       "
+	dw	0			;xkoor des Endpunktes
+	dw	449			;ykoor des	"
+					;alle Angabe normiert
+
+blkoor	dw	200			;xkoor der linken unteren Ecke Quelle
+	dw	50			;ykoor der    "      "      "     "
+	dw	500			;xkoor linke untere Ecke Ziel
+	dw	70			;ykoor   "      "     "    "
+	dw	140			;horizontale Kantenl{nge
+	dw	120			;vertikale Kantenl{nge
+	  
+
+
+	end	start
+
+
+
+				 

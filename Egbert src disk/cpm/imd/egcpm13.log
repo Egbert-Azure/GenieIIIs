@@ -1,0 +1,9 @@
+IMageDisk Utility 1.18 / Mar 07 2012
+IMD 1.18:  4/10/2021 10:33:27
+Genie IIIs Egbert Schroer 
+CP/M Holte  Sources fuer Egbert Z80; 
+110 MB ramdisk, harddisk laufwerk 1 partition a 20,4MB
+# egcpm13
+Assuming 1:1 for Binary output
+ 0/0 300 kbps DD  10x512
+160 tracks(80/80), 1600 sectors (343 Compressed)

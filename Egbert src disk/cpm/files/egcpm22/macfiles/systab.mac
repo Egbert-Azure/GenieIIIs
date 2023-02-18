@@ -1,0 +1,565 @@
+;******************************************************************************
+;*  S Y S T A B  *  C P M S Y S 1 a  *  T h o m a s   H o l t e * 8 4 1 2 1 5 *
+;******************************************************************************
+;*									      *
+;*  	S Y S T E M   C O N S T A N T S   F O R   R O M R E S I D E N T	      *
+;*      ===============================================================       *
+;*									      *
+;*                         I / O - D R I V E R S 			      *
+;*                         =====================                              *
+;*									      *
+;*									      *
+;*  Thomas Holte			                         Version 1.0  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	ASEG
+	ORG  0100H
+	.PHASE 0F800H
+
+;ASCII control codes:
+NUL	EQU  00H		;null
+SOH	EQU  01H		;start of heading
+STX	EQU  02H		;start of text
+ETX	EQU  03H		;end of text
+EOT	EQU  04H		;end of transmission
+ENQ	EQU  05H		;enquiry
+ACK	EQU  06H		;acknowledge
+BEL	EQU  07H		;bell
+BS	EQU  08H		;backspace
+HT	EQU  09H		;horizontal tabulation
+LF	EQU  0AH		;line feed
+VT	EQU  0BH		;vertical tabulation
+FF	EQU  0CH		;form feed
+CR	EQU  0DH		;carriage return
+SO	EQU  0EH		;shift out
+SI	EQU  0FH		;shift in
+DLE	EQU  10H		;data link escape
+DC1	EQU  11H		;device control 1
+DC2	EQU  12H		;device control 2
+DC3	EQU  13H		;device control 3
+DC4	EQU  14H		;device control 4
+NAK	EQU  15H		;negative acknowledge
+SYN	EQU  16H		;synchronous idle
+ETB	EQU  17H		;end of transmission block
+CAN	EQU  18H		;cancel
+EM	EQU  19H		;end of medium
+SUB	EQU  1AH		;substitute
+ESC	EQU  1BH		;escape
+FS	EQU  1CH		;file separator
+GS	EQU  1DH		;group separator
+RS	EQU  1EH		;record separator
+DEL	EQU  7FH		;delete
+
+	
+DELAY1: DEFW 150   		;determines debounce time (start of key press)
+DELAY2: DEFW 1500  		;determines debounce time (end   of key press)
+DELAY3: DEFW 1750  		;determines wait time until key autorepeats
+DELAY4:	DEFW 125		;determines frequency of auto repeat
+KEYTAB:	DEFW NBOARD		;contains ^(keyboard table)
+
+;table contains codes for all caps (may be altered by user):
+NBOARD:
+
+;address 3801H (letter keys):
+	DEFB '@','`',NUL	;@, SHIFT-@, CTRL-@
+	DEFB 'a','A',SOH	;A, SHIFT-A, CTRL-A
+	DEFB 'b','B',STX	;B, SHIFT-B, CTRL-B
+	DEFB 'c','C',ETX	;C, SHIFT-C, CTRL-C
+	DEFB 'd','D',EOT	;D, SHIFT-D, CTRL-D
+	DEFB 'e','E',ENQ	;E, SHIFT-E, CTRL-E
+	DEFB 'f','F',ACK	;F, SHIFT-F, CTRL-F
+	DEFB 'g','G',BEL	;G, SHIFT-G, CTRL-G
+
+;address 3802H (letter keys):
+	DEFB 'h','H',BS 	;H, SHIFT-H, CTRL-H
+	DEFB 'i','I',HT 	;I, SHIFT-I, CTRL-I
+	DEFB 'j','J',LF 	;J, SHIFT-J, CTRL-J
+	DEFB 'k','K',VT 	;K, SHIFT-K, CTRL-K
+	DEFB 'l','L',FF 	;L, SHIFT-L, CTRL-L
+	DEFB 'm','M',CR 	;M, SHIFT-M, CTRL-M
+	DEFB 'n','N',SO 	;N, SHIFT-N, CTRL-N
+	DEFB 'o','O',SI 	;O, SHIFT-O, CTRL-O
+
+;address 3804H (letter keys):
+	DEFB 'p','P',DLE	;P, SHIFT-P, CTRL-P
+	DEFB 'q','Q',DC1	;Q, SHIFT-Q, CTRL-Q
+	DEFB 'r','R',DC2	;R, SHIFT-R, CTRL-R
+	DEFB 's','S',DC3	;S, SHIFT-S, CTRL-S
+	DEFB 't','T',DC4	;T, SHIFT-T, CTRL-T
+	DEFB 'u','U',NAK	;U, SHIFT-U, CTRL-U
+	DEFB 'v','V',SYN	;V, SHIFT-V, CTRL-V
+	DEFB 'w','W',ETB	;W, SHIFT-W, CTRL-W
+
+;address 3808H (letter keys):
+	DEFB 'x','X',CAN	;X, SHIFT-X, CTRL-X
+	DEFB 'y','Y',EM 	;Y, SHIFT-Y, CTRL-Y
+	DEFB 'z','Z',SUB	;Z, SHIFT-Z, CTRL-Z
+	DEFB '[','{',ESC	;[, SHIFT-[, CTRL-[
+	DEFB '\','|',FS 	;\, SHIFT-\, CTRL-\
+	DEFB ']','}',GS 	;], SHIFT-], CTRL-]
+	DEFB '^','~',RS 	;^, SHIFT-^, CTRL-^
+	DEFB '_','^',RS 	;_, SHIFT-_, CTRL-_
+
+;address 3810H (number keys):
+	DEFB '0','0',0  	;0, SHIFT-0, CTRL-0
+	DEFB '1','!',0  	;1, SHIFT-1, CTRL-1
+	DEFB '2','"',0  	;2, SHIFT-2, CTRL-2
+	DEFB '3','#',0  	;3, SHIFT-3, CTRL-3
+	DEFB '4','$',0  	;4, SHIFT-4, CTRL-4
+	DEFB '5','%',0  	;5, SHIFT-5, CTRL-5
+	DEFB '6','&',0  	;6, SHIFT-6, CTRL-6
+	DEFB '7','''',0 	;7, SHIFT-7, CTRL-7
+
+;address 3820H (number & special keys):
+	DEFB '8','(',0  	;8, SHIFT-8, CTRL-8
+	DEFB '9',')',0  	;9, SHIFT-9, CTRL-9
+	DEFB ':','*',0  	;:, SHIFT-:, CTRL-:
+	DEFB ';','+',0  	;;, SHIFT-;, CTRL-;
+	DEFB ',','<',0  	;,, SHIFT-,, CTRL-,
+	DEFB '-','=',0  	;-, SHIFT--, CTRL--
+	DEFB '.','>',0  	;., SHIFT-., CTRL-.
+	DEFB '/','?',0 		;/, SHIFT-/, CTRL-/
+
+;address 3840H (special keys):	
+	DEFB CR,CR,0    	;NEWLINE   , SHIFT-NEWLINE   , CTRL-NEWLINE
+	DEFB DEL,0FCH,0 	;CLEAR     , SHIFT-CLEAR     , CTRL-CLEAR
+	DEFB ESC,0FDH,0 	;BREAK     , SHIFT-BREAK     , CTRL-BREAK
+	DEFB VT,DC2,ETB 	;UP-ARROW  , SHIFT-UP-ARROW  , CTRL-UP-ARROW
+	DEFB LF,ETX,SUB 	;DOWN-ARROW, SHIFT-DOWN-ARROW, CTRL-DOWN-ARROW
+	DEFB BS,CAN,BEL 	;LEFT-ARROW, SHIFT-LEFT-ARROW, CTRL-LEFT-ARROW
+	DEFB FF,HT,ACK  	;RGHT-ARROW, SHIFT-RGHT-ARROW, CTRL-RGHT-ARROW
+	DEFB ' ',' ',0 		;SPACE     , SHIFT-SPACE     , CTRL-SPACE
+
+;address 38A0H (function keys)8	
+	DEFB 80H,80H,0  	;F1, SHIFT-F1, CTRL-F1
+	DEFB 81H,81H,0  	;F2, SHIFT-F2, CTRL-F2
+	DEFB 82H,82H,0  	;F3, SHIFT-F3, CTRL-F3
+	DEFB 83H,83H,0  	;F4, SHIFT-F4, CTRL-F4
+	DEFB 84H,84H,0  	;F5, SHIFT-F5, CTRL-F5
+	DEFB 85H,85H,0  	;F6, SHIFT-F6, CTRL-F6
+	DEFB 86H,86H,0  	;F7, SHIFT-F7, CTRL-F7
+	DEFB 87H,87H,0 		;F8, SHIFT-F8, CTRL-F8
+
+;address 38C0H (number keys [numeric keypad]):	
+	DEFB '0','0',0  	;1, SHIFT-1, CTRL-1
+	DEFB '1','1',0  	;2, SHIFT-2, CTRL-2
+	DEFB '2','3',0  	;3, SHIFT-3, CTRL-3
+	DEFB '3','3',0  	;4, SHIFT-4, CTPL-4
+	DEFB '4','4',0  	;5, SHIFT-5, CTRL-5
+	DEFB '5','5',0  	;6, SHIFT-6, CTRL-6
+	DEFB '6','6',0  	;7, SHIFT-7, CTRL-7
+	DEFB '7','7',0 		;8, SHIFT-8, CTRL-8
+
+;address 3880H (function keys & escape key):
+	DEFB 0,0,0      	;SHIFT
+	DEFB 0,0,0      	;CTRL
+	DEFB ESC,ESC,0  	;ESC
+	DEFB 8CH,8CH,0  	;P5, SHIFT-P5, CTRL-P5
+	DEFB 8BH,8BH,0  	;P4, SHIFT-P4, CTRL-P4
+	DEFB 8AH,8AH,0  	;P3, SHIFT-P3, CTRL-P3
+	DEFB 89H,89H,0  	;P2, SHIFT-P2, CTRL-P2
+	DEFB 88H,88H,0 		;P1, SHIFT-P1, CTRL-P1
+
+;address 38E0H (number & special keys [numeric keypad]):	
+	DEFB '8','8',0  	;8 , SHIFT-8 , CTRL-8
+	DEFB '9','9',0  	;9 , SHIFT-9 , CTRL-9
+	DEFB 0FEH,0FEH,0	;00, SHIFT-00, CTRL-00
+	DEFB 0,0,0      	;LOCK
+	DEFB ',',',',0  	;, , SHIFT-, , CTRL-,
+	DEFB '-','-',0  	;- , SHIFT-- , CTRL--
+	DEFB '.','.',0  	;. , SHIFT-. , CTRL-.
+	DEFB 0FBH,0FBH,0	;PRINT
+
+
+*EJECT
+;table contains codes for all caps (special WordStar version):
+WBOARD:
+
+;address 3801H (letter keys):
+	DEFB '@','`',NUL	;@, SHIFT-@, CTRL-@
+	DEFB 'a','A',SOH	;A, SHIFT-A, CTRL-A
+	DEFB 'b','B',STX	;B, SHIFT-B, CTRL-B
+	DEFB 'c','C',ETX	;C, SHIFT-C, CTRL-C
+	DEFB 'd','D',EOT	;D, SHIFT-D, CTRL-D
+	DEFB 'e','E',ENQ	;E, SHIFT-E, CTRL-E
+	DEFB 'f','F',ACK	;F, SHIFT-F, CTRL-F
+	DEFB 'g','G',BEL	;G, SHIFT-G, CTRL-G
+
+;address 3802H (letter keys):
+	DEFB 'h','H',BS 	;H, SHIFT-H, CTRL-H
+	DEFB 'i','I',HT 	;I, SHIFT-I, CTRL-I
+	DEFB 'j','J',LF 	;J, SHIFT-J, CTRL-J
+	DEFB 'k','K',VT 	;K, SHIFT-K, CTRL-K
+	DEFB 'l','L',FF 	;L, SHIFT-L, CTRL-L
+	DEFB 'm','M',CR 	;M, SHIFT-M, CTRL-M
+	DEFB 'n','N',SO 	;N, SHIFT-N, CTRL-N
+	DEFB 'o','O',SI 	;O, SHIFT-O, CTRL-O
+
+;address 3804H (letter keys):
+	DEFB 'p','P',DLE	;P, SHIFT-P, CTRL-P
+	DEFB 'q','Q',DC1	;Q, SHIFT-Q, CTRL-Q
+	DEFB 'r','R',DC2	;R, SHIFT-R, CTRL-R
+	DEFB 's','S',DC3	;S, SHIFT-S, CTRL-S
+	DEFB 't','T',DC4	;T, SHIFT-T, CTRL-T
+	DEFB 'u','U',NAK	;U, SHIFT-U, CTRL-U
+	DEFB 'v','V',SYN	;V, SHIFT-V, CTRL-V
+	DEFB 'w','W',ETB	;W, SHIFT-W, CTRL-W
+
+;address 3808H (letter keys):
+	DEFB 'x','X',CAN	;X, SHIFT-X, CTRL-X
+	DEFB 'y','Y',EM 	;Y, SHIFT-Y, CTRL-Y
+	DEFB 'z','Z',SUB	;Z, SHIFT-Z, CTRL-Z
+	DEFB '[','{',ESC	;[, SHIFT-[, CTRL-[
+	DEFB '\','|',FS 	;\, SHIFT-\, CTRL-\
+	DEFB ']','}',GS 	;], SHIFT-], CTRL-]
+	DEFB '^','~',RS 	;^, SHIFT-^, CTRL-^
+	DEFB '_','^',RS 	;_, SHIFT-_, CTRL-_
+
+;address 3810H (number keys):
+	DEFB '0','0',0  	;0, SHIFT-0, CTRL-0
+	DEFB '1','!',0  	;1, SHIFT-1, CTRL-1
+	DEFB '2','"',0  	;2, SHIFT-2, CTRL-2
+	DEFB '3','#',0  	;3, SHIFT-3, CTRL-3
+	DEFB '4','$',0  	;4, SHIFT-4, CTRL-4
+	DEFB '5','%',0  	;5, SHIFT-5, CTRL-5
+	DEFB '6','&',0  	;6, SHIFT-6, CTRL-6
+	DEFB '7','''',0 	;7, SHIFT-7, CTRL-7
+
+;address 3820H (number & special keys):
+	DEFB '8','(',0  	;8, SHIFT-8, CTRL-8
+	DEFB '9',')',0  	;9, SHIFT-9, CTRL-9
+	DEFB ':','*',0  	;:, SHIFT-:, CTRL-:
+	DEFB ';','+',0  	;;, SHIFT-;, CTRL-;
+	DEFB ',','<',0  	;,, SHIFT-,, CTRL-,
+	DEFB '-','=',0  	;-, SHIFT--, CTRL--
+	DEFB '.','>',0  	;., SHIFT-., CTRL-.
+	DEFB '/','?',0 		;/, SHIFT-/, CTRL-/
+
+;address 3840H (special keys):	
+	DEFB CR,CR,0    	;NEWLINE   , SHIFT-NEWLINE   , CTRL-NEWLINE
+	DEFB 8DH,8EH,DEL	;CLEAR     , SHIFT-CLEAR     , CTRL-CLEAR
+				;CLEAR 	     = erase to end of line
+				;SHIFT-CLEAR = erase to start of line
+				;CTRL -CLEAR = erase previous character
+	DEFB NAK,0FDH,0  	;BREAK     , SHIFT-BREAK     , CTRL-BREAK
+				;BREAK = abort current operation
+	DEFB ENQ,8FH,90H 	;UP-ARROW  , SHIFT-UP-ARROW  , CTRL-UP-ARROW
+				;      UP-ARROW = cursor up
+				;SHIFT-UP-ARROW = start of text
+				;CTRL -UP-ARROW = start of screen
+	DEFB CAN,91H,92H 	;DOWN-ARROW, SHIFT-DOWN-ARROW, CTRL-DOWN-ARROW
+				;      DOWN-ARROW = cursor down
+				;SHIFT-DOWN-ARROW = end of text
+				;CTRL -DOWN-ARROW = end of screen
+	DEFB BS,93H,SOH 	;LEFT-ARROW, SHIFT-LEFT-ARROW, CTRL-LEFT-ARROW
+				;      LEFT-ARROW = cursor left
+				;SHIFT-LEFT-ARROW = start of line
+				;CTRL -LEFT-ARROW = word left
+	DEFB EOT,94H,ACK  	;RGHT-ARROW, SHIFT-RGHT-ARROW, CTRL-RGHT-ARROW
+				;      RIGHT-ARROW = cursor right
+				;SHIFT-RIGHT-ARROW = end of line
+				;CTRL -RIGHT-ARROW = word right
+	DEFB ' ',' ',95H	;SPACE     , SHIFT-SPACE     , CTRL-SPACE
+				;CTRL-SPACE = hard space
+
+;address 38A0H (function keys):	
+	DEFB SYN,SYN,0  	;F1, SHIFT-F1, CTRL-F1
+				;F1 = toggle insert mode
+	DEFB SO,SO,0    	;F2, SHIFT-F2, CTRL-F2
+				;F2 = insert line
+	DEFB BEL,BEL,0  	;F3, SHIFT-F3, CTRL-F3
+				;F3 = delete character
+	DEFB DC4,DC4,0  	;F4, SHIFT-F4, CTRL-F4
+				;F4 = delete word
+	DEFB EM,EM,0   		;F5, SHIFT-F5, CTRL-F5
+				;F5 = delete line
+	DEFB STX,STX,0  	;F6, SHIFT-F6, CTRL-F6
+				;F6 = reformat paragraph
+	DEFB 96H,96H,0  	;F7, SHIFT-F7, CTRL-F7
+				;F7 = toggle hyphen help
+	DEFB 97H,97H,0  	;F8, SHIFT-F8, CTRL-F8
+				;F8 = toggle right justifying
+
+;address 38C0H (number keys [numeric keypad]):	
+	DEFB '0','0',0  	;1, SHIFT-1, CTRL-1
+	DEFB '1','1',0  	;2, SHIFT-2, CTRL-2
+	DEFB '2','3',0  	;3, SHIFT-3, CTRL-3
+	DEFB '3','3',0  	;4, SHIFT-4, CTRL-4
+	DEFB '4','4',0  	;5, SHIFT-5, CTRL-5
+	DEFB '5','5',0  	;6, SHIFT-6, CTRL-6
+	DEFB '6','6',0  	;7, SHIFT-7, CTRL-7
+	DEFB '7','7',0 		;8, SHIFT-8, CTRL-8
+
+;address 3880H (function keys & escape key):
+	DEFB 0,0,0      	;SHIFT
+	DEFB 0,0,0      	;CTRL
+	DEFB ESC,ESC,0  	;ESC
+	DEFB ETX,ETX,0 		;P5, SHIFT-P5, CTRL-P5
+				;P5 = page down
+	DEFB DC2,DC2,0  	;P4, SHIFT-P4, CTRL-P4
+				;P4 = page up	
+	DEFB SUB,SUB,0  	;P3, SHIFT-P3, CTRL-P3
+				;P3 = line down
+	DEFB ETB,ETB,0  	;P2, SHIFT-P2, CTRL-P2
+				;P2 = line up
+	DEFB HT,HT,0    	;P1, SHIFT-P1, CTRL-P1
+				;P1 = TAB
+
+;address 38E0H (number & special keys [numeric keypad]):	
+	DEFB '8','8',0  	;8 , SHIFT-8 , CTRL-8
+	DEFB '9','9',0  	;9 , SHIFT-9 , CTRL-9
+	DEFB 0FEH,0FEH,0	;00, SHIFT-00, CTRL-00
+	DEFB 0,0,0      	;LOCK
+	DEFB ',',',',0  	;, , SHIFT-, , CTRL-,
+	DEFB '-','-',0  	;- , SHIFT-- , CTRL--
+	DEFB '.','.',0  	;. , SHIFT-. , CTRL-.
+	DEFB 0FBH,0FBH,0	;PRINT
+
+
+*EJECT
+VECTOR:	DEFW FKEYS 		;function key vector
+
+OFFSET  DEFL 0			;initialize offset
+
+FKEYS:	REPT 13			;function key pointer
+	DEFW F0+OFFSET
+OFFSET	DEFL OFFSET+81
+	ENDM
+	DEFW ERAEND,ERABEG,SOTXT,SOCRT,EOTXT,EOCRT
+	DEFW SOLIN,EOLIN,HSPACE,HYPHEN,JSTIFY
+
+F0:
+	.XLIST
+   	REPT 13			;function key buffer
+	DEFB 1
+	REPT 80
+	DEFB 0
+	ENDM
+	ENDM
+	.LIST
+
+;special WordStar part:
+ERAEND:	DEFB 2			;erase to end of line
+	DEFB DC1,'Y',0
+ERABEG:	DEFB 2			;erase to start of line
+	DEFB DC1,DEL,0
+SOTXT:	DEFB 2			;start of text
+	DEFB DC1,'R',0
+SOCRT:	DEFB 2			;start of screen
+	DEFB DC1,'E',0
+EOTXT:	DEFB 2			;end of text
+	DEFB DC1,'C',0
+EOCRT:	DEFB 2			;end of screen
+	DEFB DC1,'X',0
+SOLIN:	DEFB 2			;start of line
+	DEFB DC1,'S',0
+EOLIN:	DEFB 2			;end of line
+	DEFB DC1,'D',0
+HSPACE:	DEFB 2			;hard space
+	DEFB DLE,'O',0
+HYPHEN:	DEFB 2			;toggle hyphen help
+	DEFB SI,'H',0
+JSTIFY:	DEFB 2			;toggle right justifying
+	DEFB SI,'J',0
+		
+
+*EJECT
+;table of control codes:
+;  first byte = 0    	single ASCII control code
+;  first byte = 0FFH	escape sequence
+
+TAB1S:	DEFB 0,BEL		;beep
+	DEFB 0,BS		;cursor left
+	DEFB 0,LF		;cursor down
+	DEFB 0,VT		;cursor up
+	DEFB 0,FF		;cursor right
+	DEFB 0,CR		;carriage return
+	DEFB 0,RS		;home cursor
+TAB2S:	DEFB 0FFH,'='		;absolute cursor addressing
+
+	DEFB 0FFH,'I'		;set top line
+	DEFB 0FFH,'J'		;set bottom line
+	DEFB 0FFH,'K'		;set left column
+	DEFB 0FFH,'L'		;set right column
+
+TAB2E:	DEFB 0FFH,' '		;set erase character
+	DEFB 0FFH,FF		;cursor off
+	DEFB 0FFH,CR		;cursor on
+	DEFB 0FFH,'A'		;ASCII character set
+	DEFB 0FFH,'D'		;disable status line
+	DEFB 0FFH,'E'		;enable status line
+	DEFB 0FFH,'G'		;German character set
+	DEFB 0FFH,'N'		;normal keyboard
+	DEFB 0FFH,'O'		;WordStar keyboard			
+	DEFB 0FFH,'R'		;inverse display mode
+	DEFB 0FFH,'S'		;normal display mode
+
+	DEFB 0FFH,'P'		;insert character
+	DEFB 0FFH,'V'		;insert line
+	DEFB 0FFH,'Q'		;delete char
+	DEFB 0,CAN		;erase to end of line
+	DEFB 0FFH,'W'		;delete line
+	DEFB 0,EM		;erase to end of screen
+TAB1E:	DEFB 0,SUB		;clear screen	
+
+
+*EJECT
+;drive control tables:
+
+;drive 0:
+DCT:    DEFB 01110000B          ;bit 7   : size           0 = five  inch floppy
+                                ;                         1 = eight inch floppy
+                                ;bit 6   : no. of         0 = single sided
+                                ;          surfaces       1 = double sided
+                                ;bit 5   : density        0 = single density
+                                ;                         1 = double density
+                                ;bit 4   : desity of      0 = single density
+                                ;          first track    1 = double density
+                                ;bit 3   : no. of first   0 = zero
+                                ;          sec. on track  1 = one
+                                ;bit 2   : steps per      0 = one step
+                                ;          trk to trk     1 = two steps
+                                ;bits 1,0: track stepping rate
+                                ;          0 =  3 msec    1 =  6 msec
+                                ;          2 = 10 msec    3 = 15 msec
+        DEFB 10000000B          ;bits 7,6: sector length
+                                ;          0 = 128 bytes  1 =  256 bytes
+                                ;          2 = 512 bytes  3 = 1024 bytes
+                                ;bit 5   : 0 = new sector numbering on backside
+                                ;          1 = sector numbering continued on
+                                ;              backside
+                                ;bit 0   : drive status (used by disk driver --
+                                ;                        do not alter)
+        DEFB 2                  ;interleaving factor
+        DEFB 20                 ;sector count per track
+        DEFB 80                 ;number of usable tracks
+        DEFB 0                  ;current track
+
+;drive 1:
+        DEFB 01110000B
+        DEFB 10000000B
+        DEFB 2
+        DEFB 20
+        DEFB 80
+        DEFB 0
+
+;drive 2:
+        DEFB 10001010B
+        DEFB 00000000B
+        DEFB 1
+        DEFB 26
+        DEFB 77
+        DEFB 0
+
+;drive 3:
+        DEFB 00100000B,01000000B,2,18,79,0
+
+TRYS:   DEFB 10                 ;# of times to try I/O until routine gives up
+
+
+*EJECT
+;temporary storage area:
+
+;$VDINIT:
+CURBEG:	DEFS 1			;temporary storage for cursor start byte
+VIDPAR:	DEFS 16			;temporary buffer for video parameter table
+
+;$KBCHAR:
+GERMAN: DEFB 0    		;switch bit to alter character set
+				;(0 = US-ASCII, FF = German)
+KEYHLD:	DEFB 0,0,0,0,0,0        ;keyboard work area
+	DEFB 0,0,0,0,0
+COUNT1: DEFW 0     		;delay counters for auto repeat function
+COUNT2: DEFW 0     
+OLDROW: DEFW 0     		;temporary memory for keyboard driver
+OLCLMN: DEFB 0     
+RDYKEY:	DEFB 0			;key code memory
+REPEAT:	DEFB 0			;repeat mode
+
+;$KBWAIT:
+COUNT3:	DEFB 0     		;letter counter for function keys
+FPTR:	DEFW 0     		;letter pointer for function keys
+
+;$VDCHAR:
+;table of screen constants:
+VDTAB:	DEFB 24			;maximum line   count
+	DEFB 80			;maximum column count
+	DEFB 0			;top     line
+	DEFB 0			;left    column
+	DEFB 23			;bottom  line
+	DEFB 79			;right   column
+	DEFB 24			;line    count
+	DEFB 80			;column  count
+	DEFB 0			;current line
+	DEFB 0			;current column
+	DEFB ' '		;erase   character 
+
+;status line constants:
+VDSTAT:	DEFB 25			;maximum line   count
+	DEFB 80			;maximum column count
+	DEFB 24			;top     line
+	DEFB 0			;left    column
+	DEFB 24			;bottom  line
+	DEFB 79			;right   column
+	DEFB 1 			;line    count
+	DEFB 80			;column  count
+	DEFB 24			;current line
+	DEFB 0			;current column
+	DEFB ' '		;erase   character 
+
+ESCAPE:	DEFB 0     		;contains escape remarks
+ESCCHR: DEFB 0     		;memory for escape char
+LINE:  	DEFB 0     		;memory for line number
+CURSOR:	DEFB 0     		;0 = cursor on, 0FFH = cursor off
+CURADR: DEFW 3C00H		;memory for absolute cursor address
+INVERSE:DEFB 0     		;0 = normal mode, 80H = inverse mode
+STONOFF:DEFB 0			;0 = status line off, 0FFH = status line on
+VDTEMP:	DEFS 11			;temporary storage area for screen constants
+
+
+;$RSRCST:
+RSCHR:	DEFB 0			;input status
+
+;$READ/$WRITE:
+DRIVE:  DEFS 1                  ;drive
+TRACK:  DEFS 1                  ;track
+SECTOR: DEFS 1                  ;sector
+BUFFER: DEFS 2                  ;I/O buffer
+OLDDRV: DEFB 0FFH               ;contains # of previous selected disk
+OLDSTAT:DEFS 1			;contains drive status
+TRIES:  DEFS 1                  ;counter for counting # of times to try I/O
+                                ;after error occurs
+RDFLAG: DEFS 1                  ;flag (0 = WRITE, 0FFH = READ)
+WAIT:   DEFS 2                  ;counter for passed time
+
+;$GETTIM/$SETTIM:
+TIMBUF:	DEFS 13
+ATIMBUF:
+	DEFM 'WWW MM/DD/YY HH:MM:SS'
+TBUF3:	DEFS 5			
+YEAR:	DEFS 1
+MONTH:	DEFS 1
+DAY:	DEFS 1
+
+;interbank move routine:
+$IOSEL	EQU  0FAH		;select port for memory mapped I/O
+
+MOVE:	LD   A,7FH		;disable ROM bank
+	OUT  ($IOSEL),A
+	LDIR			;transfer data
+	LD   A,70H		;enable ROM bank
+	OUT  ($IOSEL),A
+	RET
+	.DEPHASE
+
+	ORG  08FEH
+	.PHASE 0FFFEH
+
+VERSION:DEFB 1,0		;1 = CP/M 3a
+				;0 = nonbanked system
+
+	END
+

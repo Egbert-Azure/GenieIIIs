@@ -1,0 +1,196 @@
+;	HDNDF/SRC
+;	02.11.92
+;
+;	Dieses Programm formattiert die Festplatte
+;	Eingestellt f}r 4 K|pfe, 10 Mb - Harddisk
+;	daten von mir ge{ndert am 17.02.92
+;	ske-faktor		=>  03h
+;	write-comp. ab		=>  0080h
+;	reduced current ab	=>  0080h
+;	anzahl zylind.		=>  612d(0264h)
+;
+;       auf CP/M umgeschrieben von mir
+;       soll mit 'E5h' formatiert werden.
+;
+;       jetzt umgeschrieben f}r Egbert. Soll eine Tandon TM252
+;	10,4 MB Festplatte mit XEBEC-Controller betun.
+; 	
+;	Dies ist nur ein Test !!!
+;	Die Ansteuerung der Festplatte durch das Holte CP/M sieht der
+;	Ansteuerung einer Platte an einem OMTI-Controller sehr {hnlich.
+;	Die Unterschiede sind (wahrscheinlich) nur folgende :
+;
+;		Die Ports liegen bei 00h statt bei 40h, wie bei mir.
+
+
+    
+;PROGRAMM ZUR BEHANDLUNG DER HARD-DISK
+hddata	EQU	0000H
+hdstat	EQU	0001H		;STATUSREGISTER DES CRT'S
+hdres	EQU	0001H		;RESETFUNKTION  DES CRT'S
+hdsel	EQU	0002H		;SELECTIERT CONTROLLER
+hdconf	EQU	0002H		;CONFIGURATION DER HARDDISK
+hdmask	EQU	0003H		;DMA MASKE DES CONTROLLERS
+
+	ORG	100h
+start	CALL	char
+	LD	A,0e5h		;F}llbyte f}r die Sektoren
+	CALL	fill		;Sektorpuffer der HD mit E5 f}llen
+	JP	form		;Platte formattieren und zur}ck
+	
+;UP WARTET BIS CONTROLLER FERTIG IST
+wcr	IN	A,(hdstat)	;STATUS LESEN
+	BIT	0,A		;KONTROLLER BEREIT ?
+	JR	Z,wcr		;NEIN DANN SPRUNG
+	RET
+
+;UP COMMANDO AN KONTROLLER PARAMETER: (HL); ANZAHL:B;COMANNDO:C
+hdscmd	OUT	(hdsel),A	;CONTROLLER SELECTIEREN
+	CALL	wcr		;CONTROLLER FERTIG ?
+	LD	A,C		;COMANNDO IN ACCU
+	OUT	(hddata),A	;UND AN CONTROLLER
+	LD	C,40h
+nxbhd	CALL	wcr
+	OUTI			;)		;NAECHSTER PARAMETER
+	JR	NZ,nxbhd
+	RET
+
+;UP TESTET OB FEHLER VORHANDEN AUSGABE:A=0 KEIN FEHLER
+err	CALL	wcr
+	IN	A,(hddata)	;SATUS EINLESEN
+	BIT	1,A		;DATENRICHTUNG
+	JR	Z,aus		;FALSCHE DATENRICHTUNG
+	PUSH	HL
+	PUSH	DE
+	PUSH	BC
+	LD	HL,errda	;COMMANDO FUER STATUSABFRAGE
+	LD	BC,0503H	;5 DATEN KOMMANDO 03
+	CALL	hdscmd		;KOMANNDO AN CONTROLLER
+	CALL	wcr
+	LD	C,hddata	;Datenport
+	IN	A,(C)		;Fehlercode lesen
+	CALL	wcr
+	IN	B,(C)
+	CALL	wcr
+	IN	B,(C)
+	CALL	wcr
+	IN	B,(C)
+	POP	BC
+	POP	DE
+	POP	HL
+	RET
+aus	XOR	A
+	RET
+
+;UP CHARAKTERISTIK DES LAUFWERKS UEBERMITTELN
+char	XOR	A
+	OUT	(hdres),A	;DISK-RESET
+	OUT	(hdmask),A	;DMA SPERREN
+	PUSH	HL
+	PUSH	DE
+	PUSH	BC
+	LD	HL,charda	;KOMMANDO SET CHAR.
+	LD	BC,050CH	;5 DATEN KOMANNDO 0CH
+	CALL	hdscmd		;KOMANNDO AN HARDDISK
+	LD	B,8		;ANZAHL DER DATEN
+	LD	HL,hdchar	;LAUFWERKPARAMETER@
+	LD	C,40h
+loop	CALL	wcr
+	OUTI
+	JR	NZ,loop
+	CALL	err		;FEHLER?
+	POP	BC
+	POP	DE
+	POP	HL
+	RET
+
+;UP SECTORBUFFER MIT DATEN (IN A) FUELLEN
+fill	PUSH	HL
+	PUSH	BC
+	PUSH	AF
+	LD	HL,fillda
+	LD	BC,050FH
+	CALL	hdscmd
+	POP	AF
+	LD	HL,200h
+	LD	B,A
+	LD	C,hddata
+LOOP5	CALL	wcr
+	OUT	(C),B
+	DEC	HL
+	LD	A,L
+	OR	H
+	JR	NZ,LOOP5
+	POP	BC
+	POP	HL
+	CALL	err
+	RET
+
+;UP HARDDISK FORMATIEREN
+form	PUSH	HL
+	PUSH	DE
+	PUSH	BC
+	PUSH	AF
+	LD	HL,formda
+	LD	BC,0504H
+	CALL	hdscmd
+	CALL	err
+	POP	AF
+	POP	BC
+	POP	DE
+	POP	HL
+	RET
+
+;DATEN FUER DIE KOMMANDOS
+errda	DEFB	00	;ADRESSE (KOPF)
+	DEFB	00	;SECTOR
+	DEFB	00	;TRACK
+	DEFB	01	;BCOUNT
+	DEFB	02	;TERMIN
+charda	DEFB	00
+	DEFB	00
+	DEFB	00
+	DEFB	00
+	DEFB	00
+writda	DEFB	00
+sect	DEFB	00
+cylind	DEFB	00
+	DEFB	01
+	DEFB	02
+readda	DEFB	00
+	DEFB	00
+	DEFB	00
+	DEFB	01
+	DEFB	02
+fillda	DEFB	00
+	DEFB	00
+	DEFB	00
+	DEFB	00
+	DEFB	00
+formda	DEFB	00
+	DEFB	00
+	DEFB	00
+skew	DEFB	03	;SKEWFAKTOR
+	DEFB	0C2H
+hdchar	DEFB	01	;LETZTER ZYLINDER   305, insgesamt 306 Cylinder 
+	DEFB	31h
+	DEFB	04	;ANZAHL DER KOEPFE    4 K|pfe
+	DEFB	00	;ERSTER ZYLINDER FUER REDUCED CURRENT
+	DEFB	80
+	DEFB	00	;ERSTER TRACK FUER PRECOMPENSATION
+	DEFB	80h
+	DEFB	00
+hderr1	CALL	char
+	POP	DE
+	POP	BC
+	POP	HL
+	LD	A,1
+	RET
+hderr2	CALL	char
+	POP	DE
+	POP	BC
+	POP	HL
+	LD	A,2
+	RET
+	END 	start
+

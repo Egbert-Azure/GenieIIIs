@@ -1,0 +1,18 @@
+Genie3s Holte CP/M - DSDD 96 tpi 5.25" format
+
+Bootet - letzte Žnderung F.Chwolka 07/0571992
+
+B0:$TEMP$          B0:BNKBDOS3.SPR    B0:BNKBIOS.MAC     B0:BNKBIOS.REL     
+B0:BNKBIOS3.SPR    B0:BOOT.MAC        B0:BOOT.REL        B0:BOOTER.MAC      
+B0:BOOTGEN.SUB     B0:CCP.COM         B0:CHARIO.MAC      B0:CHARIO.REL      
+B0:COPYSYS.COM     B0:CPM.SUB         B0:CPM3.SYS        B0:CPM3SUB.OLD     
+B0:CPMLDR.REL      B0:DCT.FCH         B0:DISKIO.MAC      B0:DISKIO1.MAC     
+B0:DISKIO1.REL     B0:DRIVER.MAC      B0:DRVTBL.MAC      B0:DRVTBL1.MAC     
+B0:DRVTBL1.REL     B0:FBOOTGEN.SUB    B0:FCHDISK         B0:FONT12.MAC      
+B0:GENCPM.COM      B0:GENCPM.DAT      B0:KONFIG.COM      B0:L80.COM         
+B0:LDRBIOS.MAC     B0:LIB.COM         B0:LINK.COM        B0:LSYS.SUB        
+B0:M80.COM         B0:MAC.COM         B0:MODEBAUD.MAC    B0:MOVE.MAC        
+B0:MOVE.REL        B0:RESBDOS3.SPR    B0:RMAC.COM        B0:SCB.MAC         
+B0:SCB.REL         B0:SUB.SUB         B0:T80.COM         
+
+220K free on drive B:

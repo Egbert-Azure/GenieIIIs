@@ -1,0 +1,330 @@
+	title	'hard-disk handler'
+
+;************************************************
+;*	H D  2 . M A C	Version : 3.2		*
+;*	Created	:	19-oct-87		*
+;*	by	:	Peter Petersen		*
+;*	Rev	:	22-oct-87..17-aug-89	*
+;*	weiter dran geschnitzt:			*
+;*	...08.07.90	H. Bernhardt		*
+;*      November 92     V.Dose                  *
+;*            pderr ge{ndert f}r Genie IIIs     *
+;*            angepasst an Harddisk 10 MByte    *
+;*                                              *
+;************************************************
+
+; CP/M-80 Version 3     ---  Modular BIOS  ---
+
+; Harddisk I/O routines for standardized BIOS interface
+; DPH und DPB in DTBL.ASM
+
+true	equ	-1
+false	equ	 0
+bel     equ    07h
+sub     equ    1AH
+esc     equ    1BH
+
+   
+	public	hdwrit,hdread,hdlogi,hdinit,hd1ini
+
+; Variables containing parameters passed by BDOS
+
+	external	@adrv,@rdrv,@dbnk,@dma,@trk,@sect
+	external	@cbnk,@erdme,?pderr
+	external        ?bank	        	;log. Bank (in A) einschalten
+
+; Utility routines in standard BIOS
+
+	external	?pmsg		; print message @<HL> up to 0,
+	            			; saves <BC> & <DE>
+        external        ?conin,?cono    ; console input and output
+        external        ?const          ; get console status
+
+; definition of hd-controller port-addresses and control-data
+
+hdport	equ	040h		; hd-controller base address
+
+hdstat	equ	hdport+1	; hard disk status port
+hdres	equ	hdport+1	; hard disk reset function
+hdsel	equ	hdport+2	; hard disk select function
+hdconf	equ	hdport+2	; hard disk configuration port
+hdmask	equ	hdport+3	; hard disk DMA- and Interrupt-mask
+
+        .z80
+	cseg			; residente Ruinen zum
+  				; Verholen von/zu Banks
+hdrd:	ld	hl,(@dma)	; set buffer address
+	ld	a,(@dbnk)
+	call	?bank
+	ld	bc,hdport	; get hd port address
+	inir			; 512 Beitz reinziehen
+	inirŠ	jr	termcmd1	; if yes quit loop
+
+hdwr:	ld	hl,(@dma)	; set buffer address
+	ld	a,(@dbnk)
+	call	?bank
+	ld	c,hdport	; get hd port address
+	outi			; get first data byte
+hdwrlp:	in	a,(hdstat)	; get hdc status
+	cp	0cfh		; test if transfer is terminated
+	jr	z,termcmd1	; if yes quit loop
+	cp	0c9h		; data requested  ?
+	jr	nz,hdwrlp	; loop if not
+wr_dat:	outi			; write data
+	jr	hdwrlp		; and loop
+
+termcmd1:			; aus dem Common heraus noch
+	xor	a		; schnell Bank 0 einschalten
+	call	?bank
+	jp	termcmd		; und den Job abschliessen
+
+	dseg
+
+; harddisk READ and WRITE entry points.
+; these entries are called with the following arguments :
+;	 relative drive number	in @rdrv	 (8 bits)
+;	 absolute drive number	in @adrv	 (8 bits)
+;	 disk transfer address	in @dma		(16 bits)
+;	 disk transfer bank	in @dbnk	 (8 bits)
+;	 disk track address	in @trk		(16 bits)
+;	 disk sector address	in @sect	(16 bits)
+;	 pointer to XDPH	in <DE>
+; they transfer the appropriate data, perform retries
+; if necessary, then return an error code in <A>
+
+hdread:	ld	hl,readmsg	; point at ' Read '
+	call	hdrw_common	; prepare command descriptor
+	di			; disable interrupts
+	ld	bc,0508h	; get length and command
+	call	hdscmd		; send command
+rd1:	in	a,(hdstat)	; get hdc status
+	cp	0cfh		; test if status is to send
+	jp	z,termcmd	; skip if yes
+	cp	0cbh		; test transfer direction
+	jr	nz,rd1		; loop until o. k.
+	jp	hdrd		; sektor holen
+
+hdwrit:	ld	hl,writemsg	; point to ' Write '
+	call	hdrw_common
+	di			; disable interrupts
+	ld	bc,050ah	; get length and command
+	call	hdscmd		; send command
+wr1:	in	a,(hdstat)	; get hdc status
+	cp	0cfh		; test if status is to send
+	jr	z,termcmd	; skip if yes
+	cp	0c9h		; test transfer direction
+	jr	nz,wr1		; loop until o. k.
+	jp	hdwr		; sektkorken wegdruecken
+
+termcmd:
+	ei			; test termination of command
+	ld	b,0		; set retry count to 256Štr1:	in	a,(hdstat)	; get hdc status
+	cp	0cfh		; ready to read status  ?
+	jr	z,tr2		; skip if o. k.
+	djnz	tr1		; else retry b times
+	ld	hl,hdmsg2	; print error mesage
+	jr	tr3
+
+tr2:	in	a,(hdport)	; get command status
+	and	2		; to test completion
+	ret	z
+
+	ld	hl,hdmsg1	; else print terminate error
+tr3:	out	(hdres),a	; reset hdc
+	call	dskerr		; print bios error message
+	ld	a,1
+	ret
+
+hdinit:	out	(hdres),a	; reset hard-disk controller
+get_st:	in	a,(hdstat)	; get status
+	cp	0c0h		; test if hdc is idle
+	jr	nz,get_st	; else loop until hdc is idle
+
+setmsk:	xor	a		; clear accu and send mask to disable
+	out	(hdmask),a	; interrupt and dma from hard-disk
+
+w0:	in	a,(hdstat)	; get status
+	cp	0c0h		; and wait until hdc is idle
+	jr	nz,w0
+
+;	init hd controller with hd-drive-characteristics
+
+trpara:	ld	hl,ifield	; point to init-parameter field
+	ld	bc,050ch	; get command to set hd characteristics
+	call	hdscmd		; send command
+	ld	hl,hd_charact	; point to table of hd characteristics
+	ld	c,hdport	; get hd port
+	ld	b,8		; get length of table
+tr_p1:	in	a,(hdstat)	; get hdc status
+	cp	0c9h		; request for data --> hdc  ?
+	jr	nz,tr_p1	; loop until hdc requests for data
+	jr	nx1		; else send data from data table
+
+nxtbyt:	call	wcr		; wait for controller ready
+nx1:	ld	a,(hl)		; get byte from table
+	out	(c),a		; send byte to hd controller
+	inc	hl		; increment pointer
+	djnz	nxtbyt		; loop until done
+
+;	test if command successfully completed
+
+rdy1:	in	a,(hdstat)	; get hdc status
+	cp	0cfh		; test if status is to be send
+	jr	nz,rdy1		; loop until o. k.
+	in	a,(hdport)	; get command status state
+	bit	2,a		; test if correctly terminated
+	jr	z,pri_ok	; skip if o. k.
+	out	(hdres),a	; reset controller
+	ld	hl,hdmsg1	; else print hd-init-error
+	jp	print		; and return
+
+pri_ok:	ld	hl,iniok	; print init o. k.Š	jp	print
+
+
+;	prepare command descriptor block setting cylinder,
+;	sector and head addresses
+;
+;  Byte  |  D7  | D6  | D5  | D4  | D3  | D2  | D1  | D0  |
+;----------------------------------------------------------
+;   0    |  Command-Class   |       Operation-Code        |
+;   1    | cyl10   0    LUN |         Head Number         |   head
+;   2    | cyl9  cyl8 |         Sector Number             |   sect
+;   3    |      Cylinder Number, Low Byte (cyl7-0)        |   cylind
+;   4    |     Interleave or Block Count (always 1)       |   bcount
+;   5    |          Control Byte  (always 2)              |   termin
+;
+
+
+hdrw_common:
+	ld	(hdc_rw),hl	; save name of operation
+	ld	bc,(@trk)	; get track #
+	ld	a,c		; get lsb of track #
+	ld	(cylind),a	; set lsb of track #
+	ld	c,0
+	rr	b		; move high byte of track #
+	rr	c		; into bits 7 and 6 of C
+	rr	b
+	rr	c
+	ld	b,0		; head count
+	ld	a,(@sect)	; sector # (only low byte significant)
+fdhead:	cp	17		; find head #
+	jr	c,hds0		; if head 0
+	sub	17		; else convert to sector # and head #
+	inc	b		; next head, if more than 26 secs
+	jr	fdhead
+hds0:	or	c
+	ld	(sect),a	; set sector and track msb
+	ld	a,b		; head #
+	ld	(head),a
+	ret
+	
+; suppress error message if BDOS is returning errors to application...
+
+dskerr:
+	ld	a,(@erdme) 
+	cp	0ffh 
+	jr	nz,pr_err
+	pop	af		; correct stack
+harderror:
+	ld	a,1		; get hard-error code
+	ei			; enable interrupts
+	ret			; and return to bdos
+
+; Had permanent error, print message like :
+; BIOS Err on d: T-nn, S-mm, <operation> <type>, Retry ?
+
+pr_err:	call	?pderr		; print message header
+        ld      hl,(hdc_rw)     ; READ oder WRITE
+        call    ?pmsg  
+        call    frageab         ; Eingabe holen
+        ld      hl,msgend       ; Statuszeile aus
+print:  call    ?pmsg  Šhdlogi:	ret			; dummy vector, hard-disk login
+
+; get console input, echo it and shift to uppercase
+
+frageab:  call ?const
+          or   a
+          jr   z,istda
+          call ?conin
+          jr   frageab
+istda:    call ?conin
+          push af
+          ld   c,a
+          call ?cono
+          pop  af
+          cp   'A'
+          ret  c
+          and  0dfh
+          ret
+     
+
+
+; hard disk subroutines
+
+; wait controller ready
+wcr:	push	bc		; save bc
+	ld	b,0		; set retry count to 256
+wcr1:	in	a,(hdstat)	; get hd controller status
+	bit	0,a		; test for data request
+	jr	nz,wcr2		; quit if request
+	djnz	wcr1		; else wait for request
+wcr2:	pop	bc		; restore bc
+	ret
+
+;hd send command	hl -->	parameterlist
+;			b  -->	count
+;			c  -->	command
+hdscmd:	in	a,(hdstat)	; get hdc status
+	cp	0c0h		; to test if hdc is idle
+	jr	z,hdc_id	; skip if o. k.
+	out	(hdres),a	; else reset hdc
+	jr	hdscmd		; and try again
+hdc_id:	out	(hdsel),a	; select hd controller
+	ld	hl,cfield	; set pointer to command field
+	call	wcr		; wait for controller ready
+	ld	a,c		; get command
+	out	(hdport),a	; to send it
+nxtpar:	call	wcr		; wait for controller ready
+	ld	a,(hl)		; fetch next parameter
+	out	(hdport),a	; to send it
+	inc	hl		; increment parameter pointer
+	djnz	nxtpar		; and loop until done
+hd1ini:	ret
+
+;  hard disk data area
+cfield:				; hdc command field
+head:	db	0		; selected head, lun and c10
+sect:	db	0		; sector #, c8 and c9
+cylind:	db	0		; cylinder #  < modulo 256 >
+bcount:	db	1		; block count
+termin:	db	2		; step rate --> 25 us
+Šhd_charact:			; drive characteristics
+				; 612 cylinders, 2 heads 
+	db	2		; last cylinder  (msb)
+	db	99		; last cylinder  (lsb)
+	db	2		; 2 heads
+	db	0,0		; start cyl reduced wr current
+	db	0,0		; start cyl wr precomp
+	db	0		; always zero
+
+ifield:	db	0,0,0,0,0	; hard disk init-parameter field
+
+;	error message components
+hdc_rw:		dw	readmsg
+readmsg:	db	', Read ',0
+writemsg:	db	', Write ',0
+hdmsg1:		db	7
+		db	'Hard Disk Error'
+		db	0
+hdmsg2:		db	7
+		db	'Command Terminate Error'
+		db	0
+iniok:		db	'Harddisk innischelleist'
+		db	13,10,0		
+msgend:         db      sub,esc,'D',0
+       
+
+
+
+	end
+

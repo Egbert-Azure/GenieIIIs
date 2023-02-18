@@ -1,0 +1,121 @@
+» DEFAULT.Z3Ð filå -­ Z3PLUÓ defaulô systeí descriptoò values
+
+» (11/05/89)
+» Changeä foò Fritú Chwolká ­ Geniå IIIó Holtå CP/Í 3á 03.10.90
+
+» Thå syntaø herå is:
+;
+» VARIABLENAMÅ ½ VALUÅ » anù comment
+;
+» valueó arå DECIMAÌ bù default
+;
+;	 nn® ió alsï DECIMAL
+;	 nnÈ ió HEX
+»      nnnnÂ ió BINARY
+;
+» Thå '=§ sigî isn'ô required®  Yoõ caî alsï uså 'equ',
+» oò jusô á spacå oò taâ separator.
+
+;-------------------------
+
+» THÅ FOLLOWINÇ VALUEÓ SHOULÄ ALWAYÓ BÅ ADJUSTEÄ TÏ DESCRIBÅ YOUÒ SYSTEM.
+
+EXPATHÓ ½ 5
+
+
+
+» vectoò oæ valiä drives¬ biô ° ió A:...biô 1µ ió P:
+» seô á ° digiô foò eacè unavailablå drivå (binarù numbeò endó witè 'B')
+
+DRVVEÃ  ½ 1111111111111111B	»  <-­ seô bitó foò valiä drives
+»         PONMLKJIHGFEDCBA
+
+» Thå highesô drivå anä useò numbeò thaô maù bå accessed
+» bù thå commanä processoò wheî loadinç á filå oò parsing
+» á commanä line.
+
+MAXDRV	½ 16	» notå --¾ Aº ½ 1¬ ..® Pº ½ 16
+MAXUSR	½ 15	» 1µ ió thå limiô foò CP/Í ³ bdos
+
+» Clocë speeä oæ youò computer
+
+SPEED	½  7	» cpõ iî mhz
+
+» CRÔ definitions
+
+COLS	½ 80	» CRÔ terminaì width
+ROWS	½ 24	» totaì rowó (lines)
+LINS	½ 22	» rows oæ text
+
+» Printeò definitions
+
+PCOL	½ 80	» PRÔ width
+PROW	½ 72	» totaì rowó (lines)
+PLIN	½ 64	» totaì lineó oæ text
+FORM	½  1	» ± iæ printeò caî form-feeä usinç form-feeä character
+
+;-------------------------
+
+» THÅ FEATUREÓ ANÄ MEMORÙ REQUIREMENTÓ OÆ YOUÒ Z3PLUÓ SYSTEÍ ARÅ 
+DETERMINED
+» BÙ THÅ FOLLOWINÇ VALUES®  Valueó markeä witè '*§ shoulä noô 
+normallù be
+» changed.
+
+» Z-Systeí segmenô sizeó (iî 128-bytå records)
+
+Z3ENVS	½   2	» ª environmenô sizå (± « ± foò termcap)
+CCPS	½  20	» * commanä processoò size
+RCPÓ 	½  18	»   residenô commanä packagå size
+FCPS	½   5	»   flo÷ commanä packagå size
+
+» Z-Systeí segmenô sizeó (iî otheò units)
+
+Z3NDIRS	½  10	»   nameó iî nameä directorù register
+Z3CLS	½ 20°   »   MULTIPLÅ COMMANÄ LINÅ (maø valuå =250)
+
+;-------------------------
+
+» OTHEÒ ITEMÓ THAÔ YOÕ ARÅ LESÓ LIKELÙ TÏ WANÔ TÏ CHANGE.
+
+» Thå namå oæ thå startuð commanä thaô ió executeä wheî Z3PLUS
+» ió loadeä foò thå firsô time®  Thaô commanä maù bå aî alias,
+» tï loaä terminaì definition¬ erroò handler¬ shell¬ oò whatever.
+
+STARTUÐ ½ STARTZ3P	» ascié string¬ nï spaces
+
+» Thå commanä searcè patè foò á file®  Uså onå tï fivå pairs
+» oæ drive-usernumbeò combinations® "$¢ meanó thå currenô drive
+» oò useò number®  Thå finaì paiò ió thå "root¢ directory¬ and
+PATÈ ½ a0c0d$e$a0
+» Otheò environmenô parameters
+
+QUIET	½  0	» ± iæ commandó arå tï bå silent
+WHEEL	½ FFh	» ° tï disablå protecteä commands
+
+DUOK	½  1	» ± iæ oë tï changå directorù usinç drive-userº form
+
+;-------------------------
+
+» DÏ NOÔ CHANGÅ ANÙ OÆ THÅ FOLLOWINÇ VALUES
+
+;CRT	½ 0
+;PRT	½ 0
+
+» Theså environmenô variableó arå reserveä foò future
+» development.
+
+SPAR1	0	» sparå bytå aô z3env+36h
+
+SPAR2	0	» sparå byteó aô z3env+3Bh
+SPAR3	0	» +3Ch
+SPAR4	0	» +3Dh
+SPAR5	0	» +3Eh
+
+» Thå environmenô typå shoulä bå lefô seô tï 80h.
+» Futurå developmentó maù uså higheò values.
+
+ENVTYP	½ 80h	» environmenô type
+
+» enä oæ DEFAULT.Z3P
+

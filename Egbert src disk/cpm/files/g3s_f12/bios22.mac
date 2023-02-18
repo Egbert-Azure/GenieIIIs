@@ -1,0 +1,482 @@
+;******************************************************************************
+;*  B I O S 2 2  *  C P M S Y S 6  *  T h o m a s   H o l t e  *  8 4 1 1 2 7 *
+;******************************************************************************
+;*									      *
+;*  R S X   T O   P R O V I D E   A   C P / M   2 . 2   C O M P A T I B L E   *
+;*  =======================================================================   *
+;*									      *
+;*  			B I O S   J U M P   V E C T O R			      *
+;*			===============================			      *
+;*									      *
+;*									      *
+;*  Version 1.0							Thomas Holte  *
+;*									      *
+;******************************************************************************  
+
+        .Z80
+
+        TITLE 'CP/M 2.2 BIOS RSX'
+
+;18 Jan 84                      by Mike Griswold
+;This RSX will provide CP/M 2.2 compatible BIOS support for CP/M 3.X. Primarily
+;it performs logical sector blocking and deblocking needed for some programs.
+;All actual I/O is done by the CP/M 3 BIOS.
+
+;This equate is the only hardware dependent value. It should be set to the
+;largest sector size that will be used.
+MAX$SECTOR$SIZE EQU 1024
+
+;RSX prefix structure
+        DEFB 0,0,0,0,0,0
+ENTRY:  JP   BOOT
+NEXT:   JP   0000H              ;jump
+PREV:   DEFW 0                  ;previous module
+REMOVE: DEFB 0FFH               ;remove flag
+NONBNK: DEFB 0
+        DEFM 'BIOS 2.2'
+        DEFB 0,0,0
+
+;Align jump table on next page boundary. This is needed for programs that cheat
+;when getting the addresses of BIOS jump table entries. Optimization freaks
+;could move some code up here. With a 60K TPA though its hard to get excited.
+        DEFS 229
+
+;BIOS jump table
+CBT:    JP   WBOOT              ;cold boot entry
+WBT:    JP   WBOOT              ;warm boot entry
+        JP   CONST              ;console status
+        JP   CONIN              ;console input
+        JP   CONOUT             ;console output
+        JP   LIST               ;list output
+        JP   PUNCH              ;punch output
+        JP   READER             ;reader input
+        JP   HOME               ;home disk head
+        JP   SELDSK             ;select drive
+        JP   SETTRK             ;select track
+        JP   SETSEC             ;select sector
+        JP   SETDMA             ;set DMA address
+        JP   READ               ;read a sector
+        JP   WRITE              ;write a sector
+        JP   LISTST             ;list status
+        JP   SECTRAN            ;sector translation
+
+;The CP/M 3 BIOS jump table is copied here to allow easy access to its
+;routines. The disk I/O routines are potentially in banked memory so they
+;cannot be called directly.
+XWBOOT: JP   0000H              ;warm boot
+CONST:  JP   0000H
+CONIN:  JP   0000H
+CONOUT: JP   0000H
+LIST:   JP   0000H
+PUNCH:  JP   0000H
+READER: JP   0000H
+        JP   0000H
+        JP   0000H
+        JP   0000H
+        JP   0000H
+        JP   0000H
+        JP   0000H
+        JP   0000H
+LISTST: JP   0000H
+
+;Signon message
+SIGNON: DEFB 0DH,0AH
+        DEFM 'BIOS Ver 2.2 active'
+        DEFB 0DH,0AH,0
+
+;Cold boot
+BOOT:   PUSH AF                 ;a BDOS call is in progress
+        PUSH HL                 ;so save CPU state
+        PUSH DE
+        PUSH BC
+        LD   HL,NEXT            ;now bypass this RSX on
+        LD   (ENTRY+1),HL       ;all subsequent BDOS calls
+        CALL INIT               ;initialize BIOS variables
+        LD   HL,(0001H)         ;save the CP/M 3 BIOS jump
+        LD   (OLD$ADDR),HL      ;at location 0
+        LD   DE,XWBOOT          ;set up to move jump table
+        LD   BC,15*3            ;byte count
+        LDIR
+        LD   HL,WBT             ;substitute new jump address
+        LD   (0001H),HL
+        LD   HL,SIGNON          ;sound off
+        CALL PRMSG
+        POP  BC                 ;restore BDOS call state
+        POP  DE
+        POP  HL
+        POP  AF
+        JP   NEXT               ;carry on
+
+;Warm boot
+WBOOT:  LD   HL,(OLD$ADDR)
+        LD   (0001H),HL         ;restore normal BIOS address
+        RST  0                  ;jump to CP/M 3 warm boot
+
+;Initialize BIOS internal variables for cold boot
+INIT:   XOR  A
+        LD   (HSTWRT),A         ;host buffer written
+        LD   (UNACNT),A         ;clear unalloc count
+        RET
+
+;Routine to call banked BIOS routines via BDOS function 50. All disk I/O calls
+;are made through here.
+XBIOS:  LD   (BIOSPB),A         ;set BIOS function
+        LD   C,50               ;direct BIOS call function
+        LD   DE,BIOSPB          ;BIOS parameter block
+        JP   NEXT               ;jump to BDOS
+
+BIOSPB: DEFB 0                  ;BIOS function
+AREG:   DEFB 0                  ;A register
+BCREG:  DEFW 0                  ;BC register
+DEREG:  DEFW 0                  ;DE register
+HLREG:  DEFW 0                  ;HL register
+
+;Home disk
+HOME:   LD   HL,0		;track to seek
+	LD   (SEKTRK),HL
+	LD   A,(HSTWRT)         ;check if pending write
+        OR   A
+        RET  NZ
+        LD   (HSTACT),A         ;buffer inactive
+        RET
+
+;Select disk
+SELDSK: LD   A,C                ;requested drive number
+        LD   (SEKDSK),A
+        LD   (BCREG),A          ;set C reg in BIOSPB
+        LD   A,9                ;BIOS function number
+        CALL XBIOS              ;CP/M 3 select
+        LD   A,H
+        OR   L                  ;check for HL = 0
+        RET  Z                  ;select error
+        LD   E,(HL)             ;get address of xlat table
+        INC  HL
+        LD   D,(HL)
+        EX   DE,HL
+        LD   (XLAT),HL          ;save xlat address
+        LD   HL,11              ;offset to DPB address
+        ADD  HL,DE
+        LD   E,(HL)             ;fetch address of DPB
+        INC  HL
+        LD   D,(HL)
+        EX   DE,HL
+        LD   (DPB),HL           ;address of DPB
+        LD   E,(HL)             ;CP/M sectors per track
+        INC  HL
+        LD   D,(HL)
+        LD   (SPT),DE
+        INC  HL                 ;point to block shift mask
+        INC  HL
+        LD   A,(HL)
+        LD   (BSM),A            ;save block shift mask
+        LD   DE,12              ;offset to PSH
+        ADD  HL,DE
+        LD   A,(HL)
+        LD   (PSH),A            ;save physical shift factor
+	INC  HL
+	LD   A,(HL)
+	LD   (PHM),A		;save physical record mask
+        LD   HL,DPH             ;return DPH address
+        RET
+
+;This fake DPH holds the addresses of the actual DPB. The CP/M 3 DPH is *not*
+;understood by CP/M 2.2 programs.
+DPH:    DEFW 0                  ;no translation
+        DEFS 6                  ;scratch words
+        DEFS 2                  ;directory buffer
+DPB:    DEFS 2                  ;DPB
+        DEFS 2                  ;CSV
+        DEFS 2                  ;ALV
+
+;Set track
+SETTRK: LD   (SEKTRK),BC
+        RET
+
+;Set DMA
+SETDMA: LD   (DMAADR),BC
+        RET
+
+;Translate sectors. Sectors are not translated yet. Wait until we know the
+;physical sector number. This works fine as long as the program trusts the BIOS
+;to do the translation. Some programs access the XLAT table directly to do
+;their own translation. These programs will get the wrong idea about the disk
+;skew but it should cause no harm.
+SECTRAN:LD   L,C                ;return sector in HL
+        LD   H,B
+        RET
+
+;Set sector number
+SETSEC: LD   (SEKSEC),BC
+        RET
+
+;Read the selected CP/M sector
+READ:   XOR  A
+        LD   (UNACNT),A
+        LD   A,1
+        LD   (READOP),A         ;read operation
+        INC  A                  ;A = 2 (WRUAL)
+        LD   (WRTYPE),A         ;treat as unalloc
+        JR   ALLOC              ;perform read
+
+;Write the selected CP/M sector
+WRITE:  XOR  A
+        LD   (READOP),A         ;not a read operation
+        LD   A,C
+        LD   (WRTYPE),A         ;save write type
+        CP   2                  ;unalloc block ?
+        JR   NZ,CHKUNA
+
+;Write to first sector of unallocated block
+        LD   A,(BSM)            ;get block shift mask
+        INC  A                  ;adjust value
+        LD   (UNACNT),A         ;unalloc record count
+        LD   A,(SEKDSK)         ;set up values for
+        LD   (UNADSK),A         ;writing to an unallocated
+        LD   HL,(SEKTRK)        ;block
+        LD   (UNATRK),HL
+        LD   HL,(SEKSEC)
+        LD   (UNASEC),HL
+
+CHKUNA: LD   A,(UNACNT)         ;any unalloc sectors
+        OR   A                  ;in this block ?
+        JR   Z,ALLOC            ;skip if not
+        DEC  A                  ;UNACNT = UNACNT - 1
+        LD   (UNACNT),A
+        LD   A,(SEKDSK)
+        LD   HL,UNADSK
+        CP   (HL)               ;SEKDSK = UNADSK ?
+        JR   NZ,ALLOC           ;skip if not
+        LD   HL,UNATRK
+        CALL SKTRKCMP          	;SEKTRK = UNATRK ?
+        JR   NZ,ALLOC           ;skip if not
+        LD   HL,UNASEC
+        CALL SKSECCMP          	;SEKSEC = UNASEC ?
+        JR   NZ,ALLOC           ;skip if not
+        LD   HL,(UNASEC)        ;move to next sector
+        INC  HL
+        LD   (UNASEC),HL
+	LD   A,(SPT+1)		;sector > SPT ?
+	CP   H
+	JR   NZ,NOOVF
+	LD   A,(SPT)
+	CP   L
+	JR   NZ,NOOVF		;skip if no overflow
+	LD   (UNASEC),HL	;reset sector count
+        LD   HL,(UNATRK)
+        INC  HL
+        LD   (UNATRK),HL        ;bump track
+NOOVF:  XOR  A
+        LD   (RSFLAG),A         ;don't pre-read
+        JR   RWOPER             ;perform write
+
+ALLOC:  XOR  A                  ;requires pre-read
+        LD   (UNACNT),A
+        INC  A
+        LD   (RSFLAG),A         ;force pre-read
+
+RWOPER: XOR  A
+        LD   (ERFLAG),A         ;no errors yet
+        LD   A,(PSH)            ;get physical shift factor
+        OR   A                  ;set flags
+        LD   B,A
+        LD   HL,(SEKSEC)	;logical sector
+        JR   Z,NOBLK		;no blocking
+SHIFT:  SRL  H
+	RR   L
+	DJNZ SHIFT
+NOBLK:	LD   (SEKHST),HL	;host sector to seek
+        LD   HL,HSTACT          ;buffer active flag
+        LD   A,(HL)
+        LD   (HL),1             ;set buffer active
+        OR   A                  ;was it already ?
+        JR   Z,FILHST           ;fill buffer if not
+        LD   A,(SEKDSK)
+        LD   HL,HSTDSK          ;same disk ?
+        CP   (HL)
+        JR   NZ,NOMATCH
+        LD   HL,HSTTRK          ;same track ?
+        CALL SKTRKCMP
+        JR   NZ,NOMATCH
+        LD   HL,HSTSEC          ;same buffer ?
+        CALL SKHSTCMP
+        JR   Z,MATCH
+
+NOMATCH:LD   A,(HSTWRT)         ;buffer changed ?
+        OR   A
+        CALL NZ,WRITEHST        ;clear buffer
+
+FILHST: LD   A,(SEKDSK)
+        LD   (HSTDSK),A
+        LD   HL,(SEKTRK)
+        LD   (HSTTRK),HL
+        LD   HL,(SEKHST)
+        LD   (HSTSEC),HL
+        LD   A,(RSFLAG)         ;need to read ?
+        OR   A
+        CALL NZ,READHST         ;yes
+        XOR  A
+        LD   (HSTWRT),A         ;no pending write
+
+MATCH:  LD   A,(SEKSEC)		;mask buffer number
+        LD   HL,PHM
+        AND  (HL)		;least signif bits
+	LD   L,A		;ready to shift
+	LD   H,0		;double count
+	LD   B,7		;shift left 7
+	ADD  HL,HL
+	DJNZ $-1
+	LD   DE,HSTBUF
+	ADD  HL,DE		;HL = host address
+	LD   DE,(DMAADR)	;get/put CP/M data
+        LD   BC,128             ;byte count
+	LD   A,(READOP)		;which way to move ?
+	OR   A
+	JR   NZ,RWMOVE		;skip if read
+	LD   A,1
+	LD   (HSTWRT),A		;mark buffer changed
+	EX   DE,HL		;HL = DMA  DE = buffer		
+
+RWMOVE: LDIR                    ;block move
+        LD   A,(WRTYPE)         ;write type
+        CP   1                  ;to directory ?
+        LD   A,(ERFLAG)         ;check for errors
+        RET  NZ                 ;done
+        OR   A
+        RET  NZ                 ;don't write dir if so
+        XOR  A
+        LD   (HSTWRT),A         ;show buffer written
+        CALL WRITEHST           ;write buffer
+        LD   A,(ERFLAG)
+        RET
+
+;utility subroutines for 16-bit compare:
+
+;HL = UNATRK or HSTTRK, compare with SEKTRK
+SKTRKCMP:
+	EX   DE,HL
+	LD   HL,SEKTRK
+	LD   A,(DE)		;low byte compare
+	CP   (HL)		;same ?
+	RET  NZ			;return if not
+;low bytes equal, test high 1s:
+	INC  DE
+	INC  HL
+	LD   A,(DE)
+	CP   (HL)		;sets flags
+	RET
+   
+;HL = UNASEC, compare with SEKSEC
+SKSECCMP:
+	EX   DE,HL
+	LD   HL,SEKSEC
+	LD   A,(DE)		;low byte compare
+	CP   (HL)		;same ?
+	RET  NZ			;return if not
+;low bytes equal, test high 1s:
+	INC  DE
+	INC  HL
+	LD   A,(DE)
+	CP   (HL)		;sets flags
+	RET
+   
+;HL = HSTSEC, compare with SEKHST
+SKHSTCMP:
+	EX   DE,HL
+	LD   HL,SEKHST
+	LD   A,(DE)		;low byte compare
+	CP   (HL)		;same ?
+	RET  NZ			;return if not
+;low bytes equal, test high 1s:
+	INC  DE
+	INC  HL
+	LD   A,(DE)
+	CP   (HL)		;sets flags
+	RET
+   
+;Disk read. Call CP/M 3 BIOS to fill the buffer with one physical sector.
+READHST:CALL RW$INIT            ;init CP/M 3 BIOS
+        LD   A,13               ;READ function number
+        CALL XBIOS              ;read sector
+        LD   (ERFLAG),A
+        RET
+
+;Disk write. Call CP/M 3 BIOS to write one physical sector from buffer.
+WRITEHST:
+        CALL RW$INIT            ;init CP/M 3 BIOS
+        LD   A,14               ;WRITE function number
+	CALL XBIOS		;write sector
+        LD   (ERFLAG),A
+        RET
+
+;Translate sector. Set CP/M 3 track, sector, DMA buffer and DMA bank.
+RW$INIT:LD   HL,(HSTTRK)        ;physical track number
+        LD   (BCREG),HL         ;track number in BC
+        LD   A,10               ;SETTRK function number
+        CALL XBIOS
+        LD   HL,(HSTSEC)        ;physical sector number
+        LD   (BCREG),HL         ;sector number in BC
+        LD   HL,(XLAT)          ;address of xlat table
+        LD   (DEREG),HL         ;xlat address in DE
+        LD   A,16               ;SECTRAN function number
+        CALL XBIOS              ;get skewed sector number
+        LD   (BCREG),HL         ;sector number in BC
+        LD   A,11               ;SETSEC function number
+        CALL XBIOS              ;set CP/M 3 sector
+        LD   A,1                ;DMA bank number
+        LD   (AREG),A           ;bank number in A
+        LD   A,28               ;SETBNK function number
+        CALL XBIOS              ;set DMA bank
+        LD   HL,HSTBUF          ;sector buffer
+        LD   (BCREG),HL         ;buffer address in BC
+        LD   A,12               ;SETDMA function number
+        JP   XBIOS
+
+;Print message at HL until null.
+PRMSG:  LD   A,(HL)
+        OR   A
+        RET  Z
+        LD   C,A
+        PUSH HL
+        CALL CONOUT
+        POP  HL
+        INC  HL
+        JR   PRMSG
+
+;Disk I/O buffer
+HSTBUF: DEFS MAX$SECTOR$SIZE
+
+;Variable storage area
+SEKDSK: DEFS 1                  ;logical disk number
+SEKTRK: DEFS 2                  ;logical track number
+SEKSEC: DEFS 2                  ;logical sector number
+
+HSTDSK: DEFS 1                  ;physical disk number
+HSTTRK: DEFS 2                  ;physical track number
+HSTSEC: DEFS 2                  ;physical sector number
+
+SEKHST: DEFS 2                  ;temp physical sector
+HSTACT: DEFB 0                  ;buffer active flag
+HSTWRT: DEFS 1                  ;buffer changed flag
+
+UNACNT: DEFB 0                  ;unallocated sector count
+UNADSK: DEFS 1                  ;unalloc disk number
+UNATRK: DEFS 2                  ;unalloc track number
+UNASEC: DEFS 2                  ;unalloc sector number
+
+SPT:    DEFS 2                  ;CP/M sectors per track
+XLAT:   DEFS 2                  ;xlat address
+BSM:    DEFS 1                  ;block shift mask
+PSH:    DEFS 1                  ;physical shift factor
+PHM:	DEFS 1			;physical record mask
+
+ERFLAG: DEFS 1                  ;error reporting
+RSFLAG: DEFS 1                  ;force sector read
+READOP: DEFS 1                  ;1 if read operation
+RWFLAG: DEFS 1                  ;physical read flag
+WRTYPE: DEFS 1                  ;write operation type
+DMAADR: DEFW 0080H              ;last DMA address
+OLD$ADDR:                       ;address of old BIOS
+        DEFS 2
+
+        END
+

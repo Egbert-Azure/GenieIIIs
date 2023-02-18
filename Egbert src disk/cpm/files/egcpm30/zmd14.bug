@@ -1,0 +1,26 @@
+.pl66
+.mt3
+.mb3
+.op
+Message received over INFO-CPM on the ARPA network relayed by Jay Sage:
+
+Date: 5 May 89 20:13:44 GMT
+From: amdahl!pacbell!sactoh0!ianj@ames.arc.nasa.gov  (Ian R. Justman)
+Subject: Bug in ZMP 1.4's dialing routine
+
+There is a slight bug in ZMP 1.4's dialing routine.  It sends a
+linefeed as well as a carriage return to the modem causing some
+modems to hang up before dialing.  Here's where the faulty code
+resides:
+
+0B82        LD        HL,0Ah
+0B85        PUSH        HL
+0B86        CALL        1437
+
+To fix this bug, put zeroes in locations 0B82h-0B88h (opcode for
+NOP) and then save the program using the command:
+
+A>SAVE 56 ZMP.COM
+
+Happy modeming!
+

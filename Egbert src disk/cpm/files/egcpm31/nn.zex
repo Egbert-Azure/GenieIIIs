@@ -1,0 +1,20 @@
+|zexmsg off|
+cls
+mail -upostmast
+cls
+mail -ucpm
+cls
+mail -utpforum
+cls
+mail -uki-allge
+cls
+mail -utpsysinf
+cls
+mail -uki-biete
+cls
+mail -utptest
+cls
+mail -uki-suche
+cls
+mail -unews
+

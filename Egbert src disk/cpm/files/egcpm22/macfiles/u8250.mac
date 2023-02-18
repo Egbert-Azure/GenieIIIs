@@ -1,0 +1,94 @@
+;******************************************************************************
+;*  U 8 2 5 0  *  C P M S Y S X X X  *  T h o m a s   H o l t e * 8 4 1 1 1 7 *
+;******************************************************************************
+;*									      *
+;*  	      H A R D W A R E   I N T E R F A C E   O F   B S T A M   	      *
+;*	      =====================================================	      *
+;*									      *
+;*   C O M M U N I C A T I O N   S O F T W A R E   T O   T H E   S E R I A L  *
+;*   =======================================================================  *
+;*									      *
+;*      C O M M U N I C A T I O N   C H I P   I N S 8 2 5 0   O F   T H E     *
+;*	=================================================================     *
+;*									      *
+;*  	   G E N I E   I I I   M I C R O C O M P U T E R   S Y S T E M        *
+;* 	   ===========================================================	      *
+;*									      *
+;*									      *
+;*  Version 1.0							Thomas Holte  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	ASEG
+	ORG  0103H			 
+
+;ASCII control codes:
+LF	EQU  0AH		;line feed
+CR	EQU  0DH		;carriage return
+
+BDOS	EQU  0005H		;BDOS entry point
+
+INITIL:	JP   INITIU		;initialization entry point
+INSPORT:JP   INSPRU		;status port read entry port
+ERRSET:	RET        		;error reset entry point
+	NOP
+	NOP
+INPORT:	JP   INPRTU		;read data port entry point
+OUTPORT:JP   OUTPRU		;write data port entry point
+DUART:	RET
+	NOP
+	NOP
+DUARTU:	RET		
+
+
+RBR	EQU  0E8H		;receiver buffer register
+THR	EQU  0E8H		;transmitter holding register
+LSR	EQU  0EDH		;line status register
+
+;print signon message:
+INITIU:	LD   DE,SIGNON		;^signon message --> reg. DE
+	LD   C,9		;function #	 --> reg. C
+	JP   BDOS 		;print message and return to caller
+
+SIGNON:	DEFB CR,LF,CR,LF
+	DEFM 'Special version for the Genie III Microcomputer System'
+	DEFB CR,LF,CR,LF,'$'
+
+;status input routine:
+INSPRU:	IN   A,(LSR)		;read line status
+	PUSH BC			;save reg. BC
+	LD   C,A		;line status --> reg. C
+	XOR  A			;clear accu
+	BIT  3,C		;framing error ?
+	JR   Z,OVERRUN		;jump if not	
+	SET  5,A		;return framing error
+OVERRUN:BIT  1,C		;overrun error ?
+	JR   Z,PARITY		;jump if not
+	SET  4,A		;return overrun error
+PARITY:	BIT  2,C		;parity error ?
+	JR   Z,TEMPTY		;jump if not
+	SET  3,A		;return parity error
+TEMPTY:	BIT  5,C		;transmitter empty ?
+	JR   Z,RREADY		;jump if not
+	BIT  6,C
+	JR   Z,RREADY
+	SET  0,A 		;return transmitter empty
+RREADY:	BIT  0,C		;data ready ?
+	JR   Z,RETURN		;jump if not
+       	SET  1,A		;return receiver ready
+RETURN:	POP  BC			;restore reg. BC
+	SET  2,A		;return transmitter ready
+	RET
+
+;data port input:
+INPRTU:	IN   A,(RBR)		;read receiver buffer
+	RET
+
+;data port output:
+OUTPRU:	OUT  (THR),A		;write byte to transmitter
+	RET
+
+	END
+

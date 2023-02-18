@@ -1,0 +1,205 @@
+;******************************************************************************
+;*			L O A D H R G . C O M  				      *
+;******************************************************************************
+;*									      *
+;*	Programm um HRG-Bilder des Genie IIIs von Diskette zu laden.          *    
+;*	Der Bildinhalt mit einer Systemroutine des Bios in den HRG-           *
+;*	Speicher des G IIIs }bertragen.					      *
+;*									      *
+;******************************************************************************
+
+; Das Programm mu~ zun{chst an den jeweiligen Rechner angepa~t werden !
+; Die Anzahl der Scanzeilen und die Anzahl der angezeigten Zeilen mu~
+; hier eingetragen werden.
+
+scanzeilen	equ	15
+zeilenzahl	equ	25
+maxy		equ	scanzeilen*zeilenzahl
+
+
+
+bel	equ	07h
+lf	equ	0ah
+cr	equ	0dh
+esc	equ	1bh
+
+bdos	equ	0005h
+wboot	equ	0000h
+
+userf	equ	30
+
+prtstr	equ	9
+open	equ	15
+close	equ	16
+searchf	equ	17
+next	equ	18
+makef	equ	22
+parse	equ	152
+read	equ	20
+multio	equ	44
+adrdma	equ	26
+
+
+fcb	equ	5ch
+hrgsei	equ	82h
+fname	equ	84h
+
+
+	org	100h		;Start der TPA
+start	ld	bc,0		;zun{chst wird die L{nge des Filenames geholt
+	ld	hl,fname	;start der Zeichenkette
+loop	inc	c		;C einen weiterz{hlen
+	inc	hl		;Zeiger auch
+	ld	a,(hl)		;Ist das Terminierungszeichen erreicht ?
+	cp	':'		;ist ein Drive angegeben? das darf nicht!
+	jp	z,error
+	cp	00h		;dann stimmt BC 
+	jr	nz,loop		;Schleife durchlaufen bis Schlu~
+				
+	ld	hl,fname	;Zun{chst wird der Filename des Bildes
+	ld	de,nambuf	;gesichert, da er an einer Stelle des 
+				;DMA-Buffers steht.
+	ldir			;Speichertransfer
+	ld	a,(hrgsei)	;Welche Seite soll gespeichert werden ?
+	cp	'0'		;ist es Null ?
+	jr	z,goon		;dann zun{chst nur speichern
+	cp	'1'		;oder Seite 1 ?
+	jp	nz,error	;Falsche Eingabe der Seiten #
+goon	ld	(seite),a	;In Hello-Meldung unterbringen
+	ld	de,hello	;Jetzt wird eine Begr}~ung ausgegeben
+	ld	c,prtstr	;mitels BDOS-Call
+	call	bdos
+
+aufdsk	ld	de,pfcb		;PARSE Filename will einen Controlblock sehen
+	ld	c,parse		;der Filename ist jetzt aufbereitet worden
+	call	bdos		;jetzt wird gekuckt, ob das File schon existiert
+
+	ld	de,fcb		;File Control Block
+	ld	c,searchf	;suche eintrag
+	call	bdos
+	cp	0ffh		;Eintrag gefunden = File existiert bereits ?
+	jp	z,keins		;dann FILE NOT EXIST ausgeben
+	
+
+holes	ld	de,fcb		;jetzt soll das File von Disk gelesen werden
+	ld	c,open		;es wird zun{chst ge|ffnet
+	call	bdos		
+	
+	cp	00h		;ist alles gut gegangen ?
+	jp	nz,nixis	;wenn nicht Fehlermeldung ausgeben
+	ld	(fcb+32),a	;cr-feld des FCB auf 0
+	ld	(fcb+12),a	;ext-feld auf 00
+
+	ld	e,128		;Multisektor I/O mit 16 K Bl|cken
+	ld	c,multio	;Bdos-Call
+	call	bdos
+	ld	de,buffer	;Zieladresse ist der Buffer
+	ld	c,adrdma	;Set DMA Adress	 			
+	call	bdos
+	
+	ld	de,fcb		;jetzt werden 16 KB gelesen
+	ld	c,read
+	call	bdos
+	cp	00h		;alles gut gegangen ?
+	jr	nz,nixis
+	
+	
+	ld	e,128		;wieder 16 KB schreiben
+	ld	c,multio
+	call	bdos
+	
+	ld	hl,buffer
+	ld	bc,4000h	;16kB dazuaddieren
+	add	hl,bc
+	ex	de,hl		;DMA Adresse nach DE
+	ld	c,adrdma	;set DAM Adresse
+	call	bdos
+	
+	ld	de,fcb
+	ld	c,read
+	call	bdos
+	cp	00h
+	jr	nz,nixis	
+
+
+gutgut	ld	de,fcb		;das file schlie~en
+	ld	c,close
+	call	bdos		;das wars dann!!!
+	
+	
+	
+trans	ld	a,(seite)	;jetzt wird das Bild in den HRG-Speicher }bertragen
+	sub	'0'		;ASCII => bin{r
+	add	0f0h		;Quelle ist der Buffer
+	ld	hl,parablock 
+	ld	de,buffer	
+	ld	c,33		;Systemfunktion Bereich kopieren
+	call	system
+
+
+	jp	wboot		;R}cksprung ins Betriebssystem }ber Warmstart
+
+nixis	ld	de,mist		;es ist ein Fehler aufgetreten !
+	ld	c,prtstr	;Fehlermeldung ausgeben
+	call	bdos
+	jp	wboot
+
+keins	ld	de,nichtda	;Fehlermeldung ausgeben
+	ld	c,prtstr
+	call	bdos
+	jp	wboot
+			
+
+
+error	ld	a,'$'		;Zun{chst einen Teil der Begr}~ung ausgeben
+	ld	(schlu),a	;String dort terminieren
+	ld	de,hello	;den dann ausgeben
+	ld	c,prtstr
+	call	bdos
+	ld	de,falsch	;Fehlermeldung ausgeben
+	ld	c,prtstr
+	call	bdos
+	jp	wboot
+		
+system:	push	bc			;zun{chst BC sichern
+	ld	ix,(wboot+1)		;(IX) Start der BIOS Jump Table	
+	ld	bc,3*(userf-1)		;Offset zum JP USERF
+	add	ix,bc			;dazu addieren	
+	pop	bc			;USERF-Nr. wieder zur}ck
+	jp	(ix)			;Sprung nach USERF und zur}ck zum
+					;Aufrufer von SYSTEM
+
+
+nichtda	defb	bel,'   Es ist kein File dieses Namens vorhanden.',cr,lf,'$'
+
+falsch	defb	bel,'   Syntax: LOADHRG [HRG Seiten #] [filename.ext]',lf,cr
+	defb	'$'
+
+hello	defb	cr,lf,esc,'R','LOADHRG.COM',esc,'S',' liest HRG-Bilder'
+	defb	' von Diskette im aktuellen Disk/User-Bereich.',lf,cr
+	defb	'   Nur lauff{hig auf Genie IIIs mit Holte CP/M +!',cr,lf,lf
+
+schlu	defb	'   Das Bild von mit dem Namen '
+nambuf	defb	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+	defb	' wird in die HRG Seite # '
+seite	defb	'0'
+	defb	' eingelesen. ',cr,lf,lf
+	defb	'$'
+mist	defb	bel,' Es ist ein Fehler aufgetreten. Abbruch !!','$'
+
+
+parablock				;hier stehen die Parameter f}r die
+	defw	0000h			;Systemroutine, hier Startpunkt X
+	defw	0000h			;Startpunkt Y
+	defw	 640			;horizontale Kantenl{nge
+	defw	maxy+1			;vertikale Kantenl{nge
+			
+pfcb	defw	nambuf			;Filename in ASCII-Format
+	defw	fcb			;hier liegt der 'wahre' FCB
+	
+
+
+buffer	equ	$			;Buffer f}r das Bild !
+			
+	end	start
+			  				

@@ -1,0 +1,10 @@
+|ZEXMSÇ off|
+|QUIEÔ on|
+CLS
+|SAYü                                   ARC-MENU
+|ENDSAY|
+SDÚ $± $$l;|quieô off|
+|SAYü                    ENTEÒ DU:FILEMASK
+|endSAY|
+UNARCZ1° $± $² |UNTIL|
+

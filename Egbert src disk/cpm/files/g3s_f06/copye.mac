@@ -1,0 +1,112 @@
+;******************************************************************************
+;*  C O P Y E  *  U T I L S 0 0 4 a  *  T h o m a s   H o l t e * 8 5 0 9 2 3 *
+;******************************************************************************
+;*									      *
+;*  	  L A N G U A G E   D E P E N D E N T   P A R T   O F   C O P Y       *
+;*        =============================================================       *
+;*									      *
+;*  			( E N G L I S H   V E R S I O N )		      *
+;*			=================================		      *
+;*									      *
+;*  Version 1.0							Thomas Holte  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	GLOBAL ALL,BOOT,CANCEL,END,ERROR2,ERROR3,ERROR4,ERROR5,ERROR6,ERROR7
+	GLOBAL FILES,NATIONAL,PRMPT1,PRMPT2,PRMPT3,PRMPT4,PRMPT5,PRMPT6,PRMPT7
+	GLOBAL PRMPT8,PRMPT9,PRMT10,PRMT11,PRMT12,PRMT13,PRMT14,PROCEED,RETRY
+	GLOBAL YES
+
+;ASCII control code:
+LF	EQU  0AH		;line feed	
+ESC	EQU  1BH		;escape
+
+NATIONAL:
+	DEFB ESC,'A',0
+
+ERROR2: DEFB LF
+	DEFM 'Disk select error on source'
+	DEFB LF,0
+ERROR3: DEFB LF
+	DEFM 'Disk select error on destination'
+	DEFB LF,0
+ERROR4: DEFB LF
+	DEFM 'Incompatible disks'
+	DEFB LF,0
+ERROR5: DEFB LF
+	DEFM 'Out of memory'
+	DEFB LF,0
+ERROR6:	DEFB LF,LF
+	DEFM 'Fatal I/O error'
+	DEFB LF,0
+ERROR7:	DEFB LF,LF
+	DEFM 'Diskette write protected'
+	DEFB LF,0
+
+PRMPT1: DEFB LF
+	DEFM 'Copy Ver. 3.3'
+	DEFB LF,0
+PRMPT2: DEFB LF
+	DEFM 'Mode    Function'
+	DEFB LF,LF
+	DEFM 'ALL     Copy the whole disk'
+	DEFB LF
+	DEFM 'BOOT    Copy the boot tracks'
+	DEFB LF
+	DEFM 'FILES   Copy the non-boot tracks'
+	DEFB LF
+	DEFM 'END     End this program'
+	DEFB LF,LF
+	DEFM 'Enter your copy mode: '
+	DEFB 0
+PRMPT3: DEFB LF
+	DEFM 'Enter source drive: '
+	DEFB 0
+PRMPT4: DEFB LF
+	DEFM 'Enter destination drive: '
+	DEFB 0
+PRMPT5: DEFB LF
+	DEFM '(^C to abort)'
+	DEFB LF
+	DEFM 'Return to copy '
+	DEFB 0
+PRMPT6: DEFM ' from '
+	DEFB 0
+PRMPT7: DEFM ' to '
+	DEFB 0
+PRMPT8: DEFB ' ',0
+PRMPT9:	DEFB LF,LF
+	DEFM 'Press <ENTER> when source diskette mounted on drive '
+	DEFB 0
+PRMT10:	DEFB LF,LF
+	DEFM 'Press <ENTER> when destination diskette mounted on drive '
+	DEFB 0
+PRMT11:	DEFM 'Reading track    '
+	DEFB 0
+PRMT12:	DEFM 'Writing track    '
+	DEFB 0
+PRMT13:	DEFB LF,LF
+	DEFM 'Do you wish to repeat the copy ? '
+	DEFB 0
+PRMT14:	DEFB LF
+	DEFM '(C)ancel, (P)roceed, or (R)etry'
+	DEFB LF,0
+ 
+ALL:	DEFM 'ALL'
+	DEFB 0
+BOOT:	DEFM 'BOOT'
+	DEFB 0
+FILES:	DEFM 'FILES'
+	DEFB 0
+END:	DEFM 'END'
+	DEFB 0
+
+CANCEL:	DEFB 'C'
+PROCEED:DEFB 'P'
+RETRY:	DEFB 'R'
+YES:	DEFB 'Y'
+
+	END
+

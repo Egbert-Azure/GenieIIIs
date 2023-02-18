@@ -1,0 +1,590 @@
+!
+!     ################################################################
+!     #    Zfiler Extended CMD File for single point general and     #
+!     #     specialized operations of Z-System Micro Computers       #
+!     #                 using  Zfiler vers. 1.0h                     #
+!     #                                                              #
+!     #              Copyright (C) 1988, John T. Brown               #
+!     #                     All Rights Reserved                      #
+!     #                                                              #
+!     #       May be used freely by the Z-System User Community      #
+!     #                                                              #
+!     ################################################################
+!
+!     reminder --> $d=current disk 
+!              --> $u=current user
+!              --> $f=current file 
+!              --> $p=current drive/user file
+!              --> $n=filename only
+!              --> $t=filetype only
+!              --> $h:=home du:
+!              --> $r:=home dir:
+!              --> $(char) insert character
+!
+!
+! Manù oæ yoõ ouô therå arå iî "Z¢ lanä arå probablù lookinç foò 
+! differenô wayó tï handlå youò machineó resourceó froí á singlå 
+! shelì prograí (Noô quitå because Vmenu is used)® Well¬ afteò manù 
+! trialó anä tribulationó É havå attempteä tï comå uð witè á 
+! solutioî thaô manù oæ yoõ wilì trulù enjoy® Tï uså thió commanä 
+! filå yoõ wilì havå tï bå runninç threå oæ Jaù Sage'ó masterfuì 
+! workó oæ art® Theù are:
+!
+¡                   1® ZCPR3.³   (a.k.a. Z33)
+¡                   2® ArunÚ  0.9g renamed to ----> cmdrun.com
+¡                   3® Zfileò 1.0h
+!
+¡ Otheò utilitieó requireä are:
+¡­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­-
+¡     UTILITÙ NAMÅ            RENAMEÄ TÏ         DRIVE/USEÒ LOCATION
+!-----------------------------------------------------------------------------
+!
+¡     1® iæ11.coí             if.coí                   a15:            
+¡     2® pause.coí               ­                     a15:
+¡     3® crunch24.coí         crunch.coí               a15:
+¡     4® uncr.coí                ­                     a15:
+¡     5® comp.coí                ­                     a15:
+¡     6® bcomp.coí               ­                     a15:
+¡     7® zlt.com                 ­                     a15:
+¡     8® getvar.coí           gtv.coí                  a15:
+¡     9® resolve.coí          rsv.coí                  a15:
+¡    10® dfa.coí                 ­                     a15:
+¡    11® sfa.coí                 ­                     a15:
+¡    13® z3ins14.coí          z3ins.coí                a15:      
+¡    14® print21.coí          print.coí                a15:
+¡    15® zpatch.coí              ­                     a15:
+¡    16® nulu152.coí          nulu.coí                 a9:Š¡    17® vlu102.coí           vlu.coí                  a15:
+¡    18® zas30.coí            zas.coí                  a11:
+¡    19® zlink.coí               ­                     a11:
+¡    20® vmenu27.coí          vmenu.coí                a15:
+¡    21® mac.coí                 ­                     a11:
+¡    22® rmac.coí                ­                     a11:
+¡    23® m80.cïí                 ­                     a11: 
+¡    24® l80.coí                 ­                     a11:
+¡    25® xiz.coí                 ­                     a11:
+¡    26® mload24.coí          mload.coí                a11:
+¡    27® lput.coí                ­                     a15:
+¡    29® ddtz.coí             ddt.coí                  a11:
+¡    30® findf.coí               ­                     a15:
+¡    31® findf26.coí             ­                     a15:
+¡    32® shctrl.coí              ­                     a15:
+¡    33® salias.coí              ­                     a15:
+¡    34® sid.coí                 ­                     a11:
+¡    35® vcomð.coí               ­                     a15:
+¡    36® unerase.coí             ­                     a15:
+!    37. cpsel.com               -                     a15:command.lbr
+!    38. notepad.com             -                     a9: 
+!    39. zldir.com            ldir.com                 a15:
+!    40. PUBlic.com (used w/zrdos 1.7)                 a15:                        
+!
+!=============================================================================
+!    Application programs needed are:
+¡­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­-
+¡     PROGRAM NAMÅ            RENAMEÄ TÏ         DRIVE/USEÒ LOCATION
+!-----------------------------------------------------------------------------
+!
+!     1. ws.com (ws3.3 or ws4)   -                     a15:
+!     2. dbase.com               -                     a9:
+!     3. term3 or mex            -                     a14:
+!     
+!=============================================================================
+!    Arunz Alias Scripts needed are:
+¡­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­-
+¡     SCRIPT NAMÅ             RENAMEÄ TÏ         DRIVE/USEÒ LOCATION
+!-----------------------------------------------------------------------------
+!
+!     1. compare                 -                     a15:alias.cmd
+!     2. print                   -                     a15:alias.cmd
+!     3. copyinto                -                     a15:alias.cmd
+!     4. prtdrv                  -                     a15:alias.cmd
+!
+!=============================================================================
+!
+! I have tried to make this command file as universal as possible, but it 
+! probably would be difficult to use this file with two 300K+ drives, so be it.
+! For those of you that will be using this file and already have established
+! your ROOT directory, you should have most if not all of the files on disk or
+! in the COMMAND.LBR on a15 . The other files are located in three other
+! directories on "A" drive, they are:
+!
+!           1. A9:CPM               on the path
+!           2. A11: - noname        B11:SOURCE is where source files are kept
+!           3. A14:TERM3            on the path
+!
+! You can either edit ZFILER.CMD to reflect where your current files are
+! (EASIER) or move your files to meet the requirements of the file which
+! could be difficult. The remainder of this document will try to explain what
+! ZFILER.CMD command file does.
+!
+! In closing, I would like to thank ALL of the visionaries who have made
+! this Operating System what it is today and what it will be in the future.
+! Without them the 8-bit world would be dead, this file would not be written,
+! and I would be using MS-DOS.
+!
+!                              HORRORS!!!
+!
+! I hope you will enjoy using this file with Zfiler as much as I do. 
+!
+!                                                       J.T.B.
+!
+!=============================================================================
+!
+!1cls;iæ $t=com;oò $t=lbr;pauså /p² c%>annoô ediô ¼ %<$f%¾>;else;poke f22° 0;<<
+! >>ws $ð $"N <CR> for Non-Doc Mode ";poke f22° 4
+!
+!Script title: Edit current file with Wordstar
+!
+¡       1® Asë tï uså Non-documenô modå Wordstar
+!	2. Clear the screen
+!	3. If the pointed file is a command file or a library, say
+!          that it can't be edited
+!	4. else
+¡       5® Iæ YEÓ, poke environmenô descriptoò tï removå shelì stack
+¡          NOTEº Thå pokå commanä ió usåä foò Wordstaò 4.° only
+¡                removå thå pokå commandó foò WS3.3
+¡          NOTEº Mù ENÖ startó aô F20°¬ makå surå yoõ changå thió 
+¡                addresó tï reflecô youò owî ENV.
+¡       6® Calì Wordstaò tï ediô thå pointeä filå
+¡       7® Re-establisè shelì stack
+!       8. Clear pending if's
+!
+!
+!2!$d$u:;cls;a15:if $t=com;pause /p2 < $f >%> cannot be viewed;else;if $t=lbr;<<
+!>>a15:ldir $n;a15:gtv fv file to view;a15:rsv zlt $n %fv;else;a15:zlt $p;fi;fi
+!
+!Script title: View current file either compressed, uncompressed 
+!              or in a library
+!
+!       1. Clear the screen
+!       1. If the pointed file is a "COM" file say that it can't be viewed
+!       2. If the pointed file is a "LBR" file, list files in the library
+!       3. Ask for the file to view
+!       4. View the file
+!       5. else
+!       6. If the pointed file is a compressed or uncompressed file view it
+!	7. Clear pending if's
+!       8. wait for user input
+!
+!
+!3$d$u:;cls;if compr $f;uncr $f /q;else;if input c%>runch < %<$f%> > (y/n)? ;<<
+! >>crunch $f /q;else;a9:sq $f;fi;fi;era $f i
+!
+!Script title: Compress, squeeze or uncompress current file
+!
+!       1. Clear th screen
+!       2. If the file is compressed, uncompress it
+!       3. else
+!       4. Ask to Crunch the file
+!       5. If yes
+!       6. Crunch the file
+!       7. else
+!       8. Squeeze the file
+!       9. Clear all pending if's
+!      10. Ask to erase original file  
+!
+! 
+!4$d$u:;cls;a15:if in d%>isplay attributes of%< $f %>(y/n)? ;dfa $f;<<
+! >>gtv sd set which attribute?;rsv sfa $f /%sd;else;<<
+! >>gtv sd set which attribute?;rsv sfa $f /%sd;fi
+!
+!Script title: Set and/or display current file attributes
+!
+!       1. Clear the screen
+!       2. Ask to display the attributes of the pointed file
+!       3. If yes
+!       4. Display the file attributes
+!       5. Ask which attribute(s) to set
+!       6. else
+!       7. Ask which attribute(s) to set
+!       8. Clear pending if's
+!
+!
+!5!$d$u:;/compare $" [du:ufn] to compare " $p
+!
+!Script title: Compare current file to another
+!
+!       1. Ask for the drive/user and filename to compare to pointed file
+!       2. Run Arunz alias "compare"
+!
+!
+!6$d$u:;cls;a15:if ne $t com;pause /p2 < $f >%> is not a executable command <<
+! >>file you are trying to install;else;z3ins $p;fi
+!
+!Script title: Install current Z3."n" file
+!
+!       1. Clear the screen
+!       2. If the pointed file is not a "COM" file say it can't be installed
+!       3. else
+!       4. Install current file
+!       5. Clear pending if's
+!
+!
+!7$d$u:;cls;a15:if ne $t lbr;pause /p2 < $f >%> is not a library!;else;<<
+! >>a15:if input (y)%>...for %<v%>lu or (n)...for nulu ;a15:vlu $n;else;<<
+! >>a9:nulu -o $n -h;fi;fi
+!
+!Script title: Open current library file w/Vlu or Nulu
+!
+!       1. Clear the screen
+!       2. If pointed file is not a library, say so!
+!       3. else
+!       4. Ask to use Vlu102 to open library
+!       5. else 
+!       6. Open library with Nulu
+! 
+!
+!8$d$u:;cls;/print $f
+!
+!Script title: Print the current file with print21
+!
+!       1. Clear the screen
+!       2. Run arunz alias script "PRINT" to print the current file
+!
+!   
+!9$d$u:;/copyinto $" Enter new filename--> " $p
+!
+!Script title: Copy the current file to a new filename in the current user
+!
+!       1. Ask for the new filename
+!       2. Run arunz alias script "COPYINTO" to copy the current file
+!
+!        
+!0cls;if input < u%>se zpatch (y/n)? ;$d$u:;zpatch $p;else;patch;fi
+!
+!Script title: Use file patching program on current file
+!
+!       1. Clear the screen
+!       2. Ask to use Zpatch on current file
+!       3. else
+!       4. Use Patch18a
+!       5. Clear pending if's
+!
+!
+!Acls;$" [d/u] or [dir] ":;a15:vmenu *.* asm.vmn
+!
+!Script title: Use assembly language Vmenu menu
+!
+!       1. Ask which drive/user to log into
+!       2. Clear the screen
+!       3. Run Vmenu w/named menu above
+!
+!
+!Bcls;a15:vmenu *.* menu.vmn
+!
+!Script title: Use general Vmenu menu
+!
+!       1. Clear the screen
+!       2. Run Vmenu w/named menu above
+!
+!
+!Ccls;b6:;a15:vmenu *.* term3.vmn
+!
+!Script title: Use Term3 Vmenu menu
+!
+!       1. Log into the download directory
+!       2. Clear the screen
+!       3. Run Vmenu w/named menu above
+!
+!
+!Dcls;b9:;a15:vmenu *.* discat.vmn
+!
+!Script title: Use discat Vmenu menu
+!
+!       1. Log into catalog directory
+!       2. Clear the screen
+!       3. Run Vmenu w/named menu above
+!
+!
+!Ecls;$" [d/u] or [dir] ":;a15:vmenu *.* ws.vmn
+!
+!Script title: Use wordprocessing Vmenu menu
+!
+!       1. Ask which drive/user to log into
+!       2. Clear the screen
+!       3. Run Vmenu w/named menu above
+!
+!
+!F!cls;findf $" File(s) to search for "
+!
+!Script title: Search drives for user named file
+!
+!       1. Ask which file(s) to search for
+!       2. Clear the screen and do the search
+!       3. wait for user input
+!
+!
+!G$d$u:;if ne $t z80;cls;pause /p2 n%>ot a z80 file;else;cls;a11:zas $n;<<
+!>>pause /p5 e%>rrors, cancel link?;a11:zlink $n,a:vlib/,a:z3lib/,a:z33lib/,<<
+!>>a:syslib/;era $n.* i;fi
+!
+!Script title: Assemble and link "Z80" file with Zas/Zlink
+!
+!       1. If not a "Z80" file, clear screen and say so
+!       2. else
+!       3. Clear the screen
+!       4. Assemble the current file using Zas
+!       5. Pause and ask if there where any errors in assembly
+!       6. Link current file using Zlink
+!       7. Cleanup directory, asking to delete specific files
+!       8. Clear pending if's
+!
+!
+!H$d$u:;if ne $t asm;cls;pause /p2 n%>ot an asm file;else;cls;<<
+! >>a11:mac $n $$-s pz;pause /p5 e%>rrors, cancel link?;a11:mload $n;<<
+! >>era $n.bak i;era $n.hex;fi
+!
+!Script title: Assemble "ASM" file with Mac and link it with Mload
+!
+!       1. If not an "ASM" file, clear screen and say so
+!       2. else
+!       3. Clear the Screen
+!       4. Assemble source using Mac
+!       5. Pause and ask if there where any errors in assembly
+!       6. Link current file using Mload
+!       7. Cleanup directory, asking to delete specific files
+!       8. Clear pending if's
+!
+!I$d$u:;if ne $t mac;pause /p2 not a mac;else;cls;a11:m80 =$n;<<
+! >>pause /p5 e%>rrors, cancel link?;a11:l80 /p:100,$n,a:vlib/s,a:z3lib/s,<<
+! >>a:z33lib/s,a:syslib/s,$n/n,/u,/e;era $n.*;fi
+!
+!Script title: Assemble and link "MAC" file with M80/L80
+!
+!       1. If not an "MAC" file, clear screen and say so
+!       2. else
+!       3. Clear the Screen
+!       4. Assemble source using M80
+!       5. Pause and ask if there where any errors in assembly
+!       6. Link current file using L80
+!       7. Cleanup directory, asking to delete specific files
+!       8. Clear pending if's
+!
+!
+!J!$d$u:;cls;if ne $t asm;or $t mac;pause /p3 c%>annot convert <%< $f > to <<
+! >>Z80;else;cls;a11:xiz $p;era $f i;fi
+!
+!Script title: Convert "Asm" and "Mac" source to "Z80" source file
+!
+!       1. If not an "ASM" or "MAC" file, clear screen and say so
+!       2. else
+!       3. Clear the screen
+!       4. Convert file using XIZ
+!       5. Cleanup directory, asking to delete original file
+!       6. Clear pending if's
+!
+!
+!K$d$u:;if ne $t z80;cls;pause /p2 n%>ot a z80 file;else;cls;a11:zas $n h;<<
+! >>pause /p5 e%>rrors, cancel link?;a11:mload $n;era $n.bak i;era $n.hex;fi
+!
+!Script title: Assemble "Z80" file with Zas to hex file and use Mload
+!
+!       1. If not a "Z80" file, clear screen and say so
+!       2. else
+!       3. Clear the Screen
+!       4. Assemble source using Zas
+!       5. Pause and ask if there where any errors in assembly
+!       6. Link current file using Mload
+!       7. Cleanup directory, asking to delete specific files
+!       8. Clear pending if's
+!
+!
+!
+!L$d$u:;if ne $t asm;cls;pause /p2 n%>ot an asm file;else;cls;<<
+! >>a11:rmac $n $$-s pz;pause /p6 E%>rrors, cancel link?;a11:mload $n;<<
+! >>era $n.bak i;era $n.hex;fi
+!
+!Script title: Assemble "ASM" file with Rmac and link using Mload
+!
+!       1. If not an "ASM" file, clear screen and say so
+!       2. else
+!       3. Clear the Screen
+!       4. Assemble source using RMac
+!       5. Pause and ask if there where any errors in assembly
+!       6. Link current file using Mload
+!       7. Cleanup directory, asking to delete specific files
+!       8. Clear pending if's
+!
+!
+!
+!M$d$u:;cls;if input l%>oad %<DDT%> with %<< $f >;a11:ddt;else;a11:ddt;fi
+!
+!Script title: Use DDT
+!
+!       1. Clear the screen
+!       2. Ask to load DDT with current file
+!       3. else
+!       4. Run DDT
+!       5. Clear pending if's
+!
+!
+!Ncls;b4:;b4:notepad;cls;$h:
+!
+!Script title: Make notes using notepad or similar program
+!
+!       1. Clear the screen
+!       2. Log into notes: directory
+!       3. Run notepad program
+!       4. Clear the screen again
+!       5. Go back to original directory
+!
+!
+!O$d$u:;cls;if input l%>oad %<SID%> with %<< $f >;a11:sid;else;a11:sid;fi
+!
+!Script title: Use Sid
+!
+!       1. Clear the screen
+!       2. Ask to load SID with current file
+!       3. else
+!       4. Run SID
+!       5. Clear pending if's
+!
+!
+!Pcls;echo c%>urrent printers:;/cpsel dp;gtv pr select (0-3);rsv cpsel p%pr;<<
+! >>if input r%>econfigure selected printer? ;/cpsel dp;/prtset;<<
+! >>gtv cl set params -> prtset ;rsv prtset %cl;else;$h:;fi
+!
+!Script title: Choose and reconfigure Z-System printer
+!
+!       1. Clear the screen
+!       2. Display current printer types available
+!       3. Ask to choose a new printer
+!       4. Ask if printer needs reconfiguring
+!       5. If yes, reconfigure printer parameters
+!       6. else
+!       7. Go back home
+!
+!
+!Qa9:end
+!
+!Script title: Shutdown the computer
+!
+!Note: This is a program that disables controller and keyboard on my Kaypro
+!
+!      Use your on machine specific command file here as needed
+!
+!
+!R!$d$u:;cls;if ne $t lbr;pause /p2 < $f >%> is not a library!;else;<<
+! >>lput $p $"[d/u]:Filename.ext to insert into library " ;fi
+!
+!Script title: Insert named file into current library
+!
+!      1. Ask for drive/user and filename to put in the library
+!      2. Clear the screen 
+!      3. If pointed file is not a library say so
+!      4. else
+!      5. Insert file into library
+!      6. Clear pending if's
+!
+!
+!S$d$u:;cls;if input p%>lace new alias in alias directory (y/n)?;a12:;<<
+! >>gtv ali Enter alias name ;rsv salias %ali;else;gtv ali Enter alias name ;<<
+! >>rsv salias %ali;$h:fi;fi
+!
+!Script title: Run Salias to make a new alias or edit an old one
+!
+!      1. Clear the screen
+!      2. Ask to put the file in the ALIAS: directory (which is in the path
+!          on my machine)
+!      3. If yes goto ALIAS directory, if no stay where you are
+!      4. Ask for the alias name
+!      5. Run Salias to make or edit the alias
+!      6. Clear all pending if's
+!
+!
+!Tcls;a15:if input u%>se %<t%>urbo %<p%>ascal...(y) or %<m%>odula...(n) ;b1:;<<
+! >>turbo;else;b17:;m2;fi
+!
+!Script title: Use Turbo Pascal or Turbo Modula
+!
+!      1. Clear the screen
+!      2. Ask to use Pascal or Modula
+!      3. If yes, log into PASCAL directory and run Turbo
+!      4. else
+!      5. Log into MODULA directory and run M2      
+!      6. Clear pending if's
+!
+!
+!U!$d:;cls;unerase *.* l;a15:if input u%>nerase file(s) (y/n)? ;<<
+! >>gtv une which file(s);rsv unerase %une z;<<
+! >>echo f%>ile(s) found have been unerased to user 0;else;<<
+! >>echo no f%>iles %<u%>nerased;fi
+!
+!Script title: Unerase file(s)
+!
+!       1. Clear the screen
+!       2. Show files that have been erased
+!       3. Ask which file(s) to unerase
+!       4. unerase the file(s) asked for and say they are in user 0
+!       5. else
+!       6. If you just wanted to see which files were erased say that
+!           "no files unerased"
+!       7. Clear pending if's
+!
+!
+!Va15:vcomp $p $" [d/u] of text file to compare ":$" filename.ext " /
+!
+!Script title: Compare current text file to named file
+!
+!       1. Ask for drive/user of text file to compare
+!       2. Ask for the filename to compare
+!       3. Use Vcomp to compare the two files
+!
+!
+!W!cls;findf26 c:*.*;$h:
+!
+!Script title: Look at files on the floppy drive
+!
+! Note: This script can be changed to ask for a drive letter and/or file types
+!
+!EXAMPLE: W!cls;findf26 $"Drive to look at ":*.*;$h:  OR
+!         W!cls;findf26 $"Drive to look at ":*.$"Type of files to look for";$h:
+!
+!
+!X$d$u:;prtdrv $p
+!
+!Script title: Use a special Wordstar 4 printer to print current file
+!
+!  Note: See WS4PRNDV.LBR for further information
+!
+!
+!Y$d$u:;cls;if $t=cmd;dbase $f;else;pause /p2 < $f%> > is not a dbase<<
+! >> command file!;fi
+!
+!Script title: Run dBaseII command file
+!
+!       1. Clear the screen
+!       2. If the pointed file is not a dBaseII "CMD" file say so
+!       3. else
+!       4. Run dBaseII with the command file
+!       5. Clear pending if's
+!
+!
+!Zmu3
+!
+!Script title: Run Mu3
+!
+!
+!------------------------------------------------------------------------------
+!
+#              ---=== ZFILER  EXTENDED  OPERATIONS  MENU ===---
+
+  *----------->>> File Operations <<<----------*   *---->>> VMenus <<<----*
+  | 1 - Edit               Install Z3 File - 6 |   |    A - Assembly      |
+  | 2 - View             Open Library File - 7 |   |    B - General       |
+  | 3 - Compress/Uncompress     Print File - 8 |   |    C - Term3         |
+  | 4 - Set Attribute     Copy to New File - 9 |   |    D - Discat        |
+  | 5 - Compare                     Zpatch - 0 |   |    E - Editing       |
+  *--------------------------------------------*   *----------------------*
+
+  *------------>>> Specialized Operations <<<------------*   *->> Misc <<-*
+  | G - Assemble/ZLink -> .Z80's <-   Assemble/MLoad - K |   | F - Findf  |
+  | H - Assemble w/Mac -> .ASM's <-  Assemble w/Rmac - L |   | N - Notes  |
+  | I - Assemble w/M80 -> .MAC's             Use DDt - M |   | Q - Quit   |
+  | J - Convert Source to .Z80 Code          Use Sid - O |   | S - sAlias |
+  | P - Configure Printer    Print w/Special Printer - X |   | T - Turbo  |
+  | R - Insert named file into Current Library           |   | U - Unerase|
+  | W - View File Directories in "C" drive               |   | V - Vcomp  |
+  | Y - Run Dbase command file                           |   | Z - Mu3    |
+  *------------------------------------------------------*   *------------*
+
+

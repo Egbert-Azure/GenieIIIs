@@ -1,0 +1,77 @@
+!: reset
+!V 1
+!W b
+!@ z z + 1
+!# z > 3 `exit
+!> Das Modem wird initialisiert\r\n
+.ATM0V1X4B0\r.OK\r\n.5.5
+
+!> Die erste Tel.-Nummer wird gewaehlt\r\n
+.AT\r.OK\r\n.5.5.
+.ATDP0431549061\r..
+![ - 9 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+
+!: nummer2
+!> Die zweite Tel.-Nummer wird gewaehlt\r\n
+.AT\r.OK\r\n.5.5.
+.ATDP0431549062\r..
+![ - 9 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+
+!: nummer3
+!> Die dritte Tel.-Nummer wird gewaehlt\r\n
+.AT\r.OK\r\n.5.5.
+.ATDP0431549063\r..
+![ - 9 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+ 
+!: nummer4
+!> Die vierte Tel.-Nummer wird gewaehlt\r\n
+.AT\r.OK\r\n.5.5.
+.ATDP0431549064\r..
+![ - 9 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+
+!: nummer5
+!> Die fuenfte Tel.-Nummer wird gewaehlt\r\n
+.AT\r.OK\r\n.5.5.
+.ATDP0431549065\r..
+![ - 9 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+
+!: nummer6
+!> Die sechste Tel.-Nummer wird gewaehlt\r\n
+.AT\r.OK\r\n.5.5.
+.ATDP0431549066\r..
+![ - 9 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+
+!: nummer7
+!> Die siebte Tel.-Nummer wird gewaehlt\r\n
+.AT\r.OK\r\n.5.5.
+.ATDP0431549067\r..
+![ - 9 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+![ = BUSY `reset
+![ = NO CARRIER `reset
+
+!# a = a `reset
+
+!: exit
+!> Das script ist beendet\r\n
+.ATH0\r.OK\r\n.5.5.
+!Q
+
+!: connect
+!w 0
+!A
+!> Das login beginnt\7\r\n
+..ogin:.
+.v_p_dose\r.Password:.
+.PASSWORD\r.(vt100).
+.\r..
+
+
+
+

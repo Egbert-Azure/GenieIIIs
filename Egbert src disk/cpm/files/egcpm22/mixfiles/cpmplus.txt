@@ -1,0 +1,104 @@
+Kurzanleitung zur CP/M-Plus Testkopie
+
+ACHTUNG: DAS CP/M-PLUS BEN\TIGT  256k  SPEICHER !!!
+
+Dieså Versioî isô zõ 99.9¥ fehlerfrei¬ jedocè nocè ohnå Patcheó (Zaps© 
+voî Digitaì Research® Bisheò sinä etwá 2° Patcheó voî DRÉ 
+ver|ffentlicè worden¬ einå Listå bekommå icè iî deî n{chsteî Tageî 
+(Wochen ?) von TCS.
+
+
+Daó besonderå aí CP/Í ³ ist¬ daş allå systemspezifischeî Dingå iî 
+Fileó abgelegô sind® Beií Booteî wirä eiî 'Mini-CP/M§ voî deò Boot-
+Spur geladen, welches zwei Files einliest:
+1® CONFIG.SYÓ daó allå systeminterneî Einstellungeî beinhaltet® Dieó 
+sinä ií einzelnenº Zeichensatz¬ Tastaturbelegung¬ SYSTAÂ (wiå ií CP/Í 
+2.2)¬ Funktionstastenbelegunç unä diå Formatå deò achô m|glicheî 
+Diskettenlaufwerke.
+Danî wirä daó Betriebssysteí selbeò voí Filå CPM3.SYÓ geleseî unä 
+gestartet® Daó Systeí l{dô danî daó drittå unä letztå Filå CCP.COÍ unä 
+speicherô eó iî deò Banë 2® Beé eineí Warmstarô wirä deò CCĞ alsï 
+immer aus dem Speicher nachgeladen.
+
+Solltå beií Booteî eineó deò Fileó nichô gefundeî werden¬ sï brichô 
+der Bootvorgang mit einer entsprechenden Meldung ab.
+
+Falló miô deò Winchesteò gearbeiteô werdeî soll¬ muş ersô diå logischå 
+Aufteilung darauf vermerkt werden !! (N{heres siehe WNINIT)
+
+Allå Programmå diå diå Konfiguratioî {nderî (AUTO¬ INFO¬ PD¬ TASTEN¬ 
+FKEY¬ SIÏ unä CONFIG© greifeî auæ CONFIG.SYÓ zõ unä speicherî diå 
+[nderungeî dorô ab® Dieó haô zwaò deî Nachteil¬ daş eó etwaó l{ngeò 
+dauert¬ daf}ò stehô diå gew{hltå Konfiguratioî nacè deí n{chsteî 
+Booteî wiedeò zuò Verf}gung® (Eiî CPMGEÎ wiå ií CP/Í 2.² isô alsï 
+NICHT n|tig).
+
+
+Kopieren des Systems:
+Diå Herstellunç eineò Backup-Kopiå isô etwaó einfacheò aló ií CP/Í 
+2.2:
+1. Formatieren einer Leerdiskette 'FORMAT B'
+2. Aufbringen der Bootspur }ber 'ID B:S80 DSDD'
+3. Kopieren der Files 'PIP B:=A:*.*'
+
+Dá diå Bootspuò eiî eigeneó CP/Í enth{lt¬ isô eó jetzô aucè m|glicè 
+voî andereî Formateî zõ booten® Sï isô eó miò gelungeî einå Diskettå 
+ií OMIKRON 4° (Singlå Density¬ 4° Track© Formaô zõ beschreibeî unä 
+dann im 80 Track Laufwerk zu booten !!
+
+Eiî Booteî voî ¸ Zolì solltå jetzô aucè m|glicè sein® (¸ Zolì Disë 
+formatieren¬ IÄ E:IBÍ 3740¬ PIĞ E:=A:*.*© Dieó habå icè abeò nocè 
+nicht getestet, da ich kein 8Zoller habe.
+
+
+Icè habå versuchô diå Benutzerf}hrung¬ soweiô eó ging¬ wiå beií CP/Í 
+2.² zõ belassen® Diå Tastaturaufteilunç unä diå Videocodeó sinä 
+vollkommen gleich geblieben.
+Diå Schnittstelleî (SIO¬ Centronicó etc© werdeî ií CP/Í ³ voí DEVICÅ 
+Programí deî verschiedeneî logischeî Namen® Weitereó siehå HELĞ 
+DEVICE.
+Diå SIÏ Einstellunç geschiehô weiterhiî ií SIO-Programm¬ einå [nderunç 
+z.b. der Baudrate }ber DEVICE hat also keinen Einfluss.Š
+
+Jedå Diskettå beé deò }beò IÄ einå Bootspuò aufgebrachô ist¬ wirä voí 
+CP/M-Pluó automatiscè erkannt® Einå vorherigå Format{nderunç miô PÄ 
+isô nuî nichô mehò n|tig® Eó ginç z.B® einwandfreé diå obeî erw{hntå 
+OMIKROÎ 4° Disë miô eineò J&Ë ZDOÓ 8° DSDÄ immeò wiedeò ií Laufwerë Bº 
+zõ tauscheî unä eiî DIÒ Bº zõ machen® Daó CP/Í brauchô zwaò etwaó Zeiô 
+aber es klappte ganz vorz}glich.
+Wenî daó BIOÓ eiî neueó Formaô erkennt¬ wirä eiî kurzeò Pieptoî 
+ausgegeben, dies hat aber nichts zu sagen.
+
+
+Daó Format-Programí isô vollkommeî neõ geschriebeî unä solltå jetzô 
+allå Formatå einwandfreé bearbeiten® Einå Pr}funç deò Formatierunç 
+erfolgô jetzô nichô mehr¬ wodurcè daó Programí wesentlicè schnelleò 
+geworden ist.
+Das Programm formatiert jetzt auch den gew{hlten Teil der Winchester.
+
+Gibô maî nacè deò Laufwerksbezeichnunç eiî '/v§ sï wirä diå Pr}funç 
+(Verify© erzwungen® Durcè '/w§ (Warten© beginnô daó Formatprogramí 
+nicht sofort sondern wartet noch auf einen Tastendruck.
+Beide Parameter k|nnen auch zusammen gegeben werden '/vw' bzw. '/wv'.
+
+
+IÄ haô denselbeî Syntaø wiå PD¬ stellô jedocè daó Formaô nichô um¬ 
+sonderî beschreibô diå Diskettå ií gew{hlteî Laufwerë miô eineò 
+Bootspuò unä eineò Formatkennung® Nuò Disketteî miô dieseò 
+Formatkennung werden vom System automatisch erkannt !!
+
+
+WNINIÔ teilô diå Winchesteò iî logischå Teilå unä arbeiteô genausï wiå 
+daó altå WNFORMAT® Beé deò Antworô 'NEU§ wirä diå neuå Aufteilunç auæ 
+deò Winchesteò gespeichert® Dieså Aufteilunç wirä beé jedeí Booteî voî 
+System geladen.
+Bevoò miô deò Winchesteò gearbeiteô werdeî kann¬ muş alsï ersô einå 
+Aufteilung gew{hlt und das System neu gebootet werden !!
+
+
+
+So¬ daş m}~tå f}ò deî Anfanç aî Erkl{runç reichen¬ alleó weiterå stehô 
+im HELP-File.
+
+Viel Spass damit !
+

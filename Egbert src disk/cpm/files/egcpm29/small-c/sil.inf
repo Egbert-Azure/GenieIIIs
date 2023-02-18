@@ -1,0 +1,35 @@
+ 
+
+SIL - Ein kompakter C-Compiler
+
+SIL ist ein C-Compiler, der puren Maschinencode erzeugt. Der Sprach-
+umfang von SIL lehnt sich an den von C an; er wurde aber um Elemente
+zur systemnahen Programmierung erweitert. SIL ist deshalb bestens zur
+Programmierung kleiner schneller Utility-Programme bis hin zu Betriebs-
+systemerweiterungen geeignet, bei denen oekonomischen Nutzung des
+Speicherplatzes wichtig ist.
+
+Die folgenden Dateien gehoeren zu SIL:
+
+SIL     .COM     Der SIL-Compiler
+SIL1    .DOC     Allgemeine Informationen zu SIL
+SIL2    .DOC     Ausfuehrliche Dokumentation zu SIL
+SOP     .COM     Der Optimizer fuer die Ausgabe
+SIL     .SUB     SUBMIT-Datei fuer das Compilieren
+SILLIB  .REL     .REL-Bibliothek fuer SIL-Funktionen
+CPMDIO  .REL     .REL-Bibliothek fuer CP/M-Ein- und Ausgabe
+SILZ80  .LIB     Makrobibliothek mit Z80-Simulationsbefehlen fuer RMAC
+
+Diese Diskette und eine grosse Zahl weiterer interessanter Public Domain-
+Programme erhalten Sie bei:
+
+Martin Kotulla
+Grabbestrasse 9
+8500 Nuernberg 90
+
+Telefon 0911/30 33 33
+er Public Domain-
+Programme erhalten Sie bei:
+
+Martin Kotulla
+Grabbestra

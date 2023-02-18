@@ -1,0 +1,180 @@
+
+	ORG	01100H
+;	
+;	Dies ist eine Unterroutine aus dem Eprom des Genie IIIs, die wohl
+;	von Arnulf Sopp geschrieben wurde. Sie l{dt den ersten Sektor
+;	einer mit einem OMTI-HardDiskController angeschlossenen Sektor
+;	in den Speicher. So ist es m|glich von HardDisk urzuladen.
+;	Disassembled und kommentiert von Volker Dose.
+;
+;	Januar 1993
+	
+
+
+X3800	EQU	03800H			;hier gehts mit dem Bootstraploader weiter
+X382E	EQU	0382EH			;
+YFFFF	EQU	0FFFFH			;hier ist der Zustand der FTASTEN beim
+					;Druck der RESET-Tasten gespeichert
+
+
+	org	1100h			;hier war Platz im EPROM
+	LD	A,(YFFFF)		;Ftastenzustand begucken
+	AND	003H			;soll explizit von Floppy gebootet werden?
+A1105:	JP	NZ,X3800		;dann soll es also geschehen
+	IN	A,(042H)		;lese Jumperinformation vom HDC
+	CP	0FAH			;wenn FA auf Port 42 gejumpert ist,
+	JR	NZ,A1105		;Booten von Harddisk m|glich, sonst 
+	XOR	A			;normale 'BOOT'-Abfrage weiter
+	OUT	(041H),A		;HDC Reset
+	OUT	(043H),A		;DMA und Interruptmaske aus
+	LD	D,020H			;32 Harddiskbootversuche, sonst Floppy
+A1115:	LD	HL,T11BC		;Zeiger auf Parameterfeld, nur LW Nr. wichtig
+	LD	BC,00500H		;5 Bytes, Befehl 00H = Drive ready ?
+	PUSH	DE			;Bootz{hler sichern
+	CALL	A1175			;Call HDSCMD Sende Harddisk Command
+	CALL	A1185			;Call WCR , Wait Controller Ready
+	POP	DE			;Bootz{hler wieder zur}ck
+	IN	A,(040H)		;hole Datenwort vom HDC
+	RES	5,A			;l|sche bit 5
+	OR	A			;ist der Accu jetzt 0 ?
+	JR	Z,A1133			;wenn ja, Bootvorgang weiter
+	CALL	A11DC			;sonst Warteschleife f}r HDC
+	DEC	D			;Bootz{hler einen runter
+	JR	NZ,A1115		;solange nicht null, weiter versuchen
+	JP	X3800			;sonst von Floppy booten
+;
+A1133:	CALL	A1191			;Initialisiere HDC mit Drive Char.
+	CALL	A1144			;lese 512 Byte nach 4200h ff
+	JR	NZ,A1105		;wenn nicht okay, von Floppy booten
+	LD	E,001H			;Bootflag f}r GDOS laden
+	LD	IX,04200H		;(IX) ist die Bootadresse
+	JP	X382E			;normales Booten weiter, mit Daten von 
+					 Harddisk	
+
+;Unterprogramm liest 512 Bytes von Sektor 0 Track 0
+
+A1144:	LD	HL,T118C		;Parameterfeld zum Sektor lesen
+	LD	BC,00508H		;5 Bytes, Befehl 08H READ SECTOR
+	CALL	A1175			;Call HDSCMD Harddisk Command senden
+	CALL	A1185			;CALL WCR , Wait Controller Ready ? 
+	IN	A,(041H)		;Hole Statuswert vom HDC
+	BIT	2,A			;Falls nicht, zur}ck zum Aufrufer
+	JP	NZ,A1174		;dort steht RET
+	LD	HL,04200H		;HL wird mit der Zieladresse geladen
+	LD	BC,00040H		;B = 256 Bytes, C = Datenport des HDC
+	LD	D,002H			;diese Schleife 2 mal durchlaufen
+A115F:	CALL	A1185			;CALL WCR Wait Controller Ready ?
+	INI				;Hole also denn 256 Byte, INC HL
+	JR	NZ,A115F		;solange bis B wieder 0 ist 
+	DEC	D			;N{chste Schleifenebene weiter z{hlen
+	JR	NZ,A115F		;es sollen ja 512 Byte geladen werden
+	CALL	A1185			;CALL WCR Wait Controller Ready ?
+	IN	A,(040H)		;Datenwort vom HDC holen
+	BIT	1,A			;ist alles gut gegangen ?
+	JP	NZ,A1174		;wenn nein mit NZ zur}ck	
+	XOR	A			;setze Z-Flag
+A1174:	RET				;und zur}ck
+;
+
+;HDSCMD sende Befehl zum Hard Disk Controller
+
+A1175:	OUT	(042H),A		;Select HDC
+	CALL	A1185			;Call WCR Wait Controller Ready
+	LD	A,C			;in C ist der Befehl f}r den HDC
+	OUT	(040H),A		;gib den zum HDC aus
+	LD	C,040H			;die nachfolgenden Daten sollen nach
+	CALL	A1185			;Port 40h, danach Wait Controller Ready
+	OTIR				;sende die Bytes nach dem HDC
+	RET				;wenn erledigt wieder zur}ck
+;
+
+;WCR Warte bis der Hard Disk Controller fertig f}r Datentransfer
+
+A1185:	IN	A,(041H)		;lese Statusport des HDC
+	BIT	0,A			;Controller fertig ?
+	JR	Z,A1185			;wenn nich verweile hier
+	RET				;sonst zur}ck
+;
+
+T118C:	db	00h			;parameterbereich f}r HEAD, CYLINDER
+	db	00h			;SPUR usw.
+	db	00h			;5 Bytes gro~
+	db	01h
+	db	02h
+
+;]bermittle Drive Characteristic an HDC
+
+a1191:	xor	a			;accu <= 00h
+	OUT	(041H),A		;RESET HDC
+	OUT	(043H),A		;DMA mask und Interrupt sperren
+	PUSH	HL			;Register sichern
+	PUSH	DE
+	PUSH	BC
+	LD	HL,T11BC		;Parameterfeld mit 00h 
+	LD	BC,0050CH		;5 Bytes, Befehl 0Ch = Init Drive Char.
+	CALL	A1175			;Call HDSCMD sende Daten an Controller
+	LD	B,008H			;Drive Char. Table ist 8 Byte lang
+	LD	HL,T11B5		;sie steht bei 11B5h
+	LD	C,040H			;die Daten sollen nach Port 40h
+	CALL	A1185			;Call WCR Wait Controller Ready ?
+	OTIR				; OUT   (C),A
+					; DEC   B
+					;bis B = 0 
+	CALL	A11C2			;Status des HDC erfragen
+	POP	BC			;Register wieder zur}ck
+	POP	DE
+	POP	HL
+	RET				;zur}ck zum Aufrufer
+;
+;Daten des angeschlossenen Laufwerkes, hier f}r 10.4 MB Platte
+
+T11B5:	db	02h			;Anzahl der Cylinder
+	db	64h			;LSB
+	db	02h			;Anzahl der K|pfe
+	db	00h			;
+	db	00h
+	db	01h
+	db	2ch
+
+;Parameterfeld f}r sende Harddisk Command
+
+t11bc:	db	00h
+T11BD:	db	00h
+	db	00h
+	db	00h	
+	db	00h
+	db	01h
+
+;Status des Laufwerkes abfragen
+
+a11c2:	call	a1185			;Call WCR Wait Controller Ready
+	in	a,(40h)			;lese Byte vom Datenport
+
+	BIT	1,A			;teste bit 1	
+	JR	Z,A11DA			;wenn nicht 0, dann }berspringe
+	PUSH	HL			;Regster sichern
+	PUSH	DE		
+	PUSH	BC
+	LD	HL,T11BD		;HL zeigt auf Parameterfeld
+	LD	BC,00503H		;5 Bytes, Commando 03h = Requset Sense
+	CALL	A1175			;Call HDSCMD
+	POP	BC			;Registersatz wieder zur}ck
+	POP	DE
+	POP	HL
+A11DA:	XOR	A			;Flagl|schen, A := 0
+	RET				;zur}ck
+;
+
+;Warteschleife, wird 65535 mal durchlaufen
+
+A11DC:	LD	BC,00000H
+A11DF:	DEC	BC
+	LD	A,B
+	OR	C
+	RET	Z
+	JR	A11DF
+;
+
+
+	END
+

@@ -1,0 +1,99 @@
+;******************************************************************************
+;*  F O R M A T E * U T I L S 0 0 6 a * T h o m a s   H o l t e * 8 5 0 6 0 4 *
+;******************************************************************************
+;*									      *
+;*     L A N G U A G E   D E P E N D E N T   P A R T   O F   F O R M A T      *
+;*     =================================================================      *
+;*									      *
+;*  		      ( E N G L I S H   V E R S I O N )			      *
+;*		      =================================			      *
+;*									      *
+;*									      *
+;*  Thomas Holte						 Version 1.0  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	GLOBAL CANCEL,ERROR1,ERROR2,ERROR3,ERROR4,ERROR5,ERROR6,ERROR7,ERROR8
+	GLOBAL ERROR9,ERR10,ERR11,NATIONAL,PRMPT1,PRMPT2,PRMPT3,PRMPT4,PRMPT5
+	GLOBAL PRMPT6,PRMPT7,PRMPT8,PRMPT9,PRMT10,PROCEED,RETRY,YES
+
+;ASCII control codes:
+BS	EQU  08H		;backspace
+LF	EQU  0AH		;line feed
+VT	EQU  0BH		;vertical tabulation 
+CR	EQU  0DH		;carriage return
+ESC	EQU  1BH		;escape
+
+PRMPT1:	DEFM 'Do you really want to format disk '
+	DEFB 0
+PRMPT2: DEFM ' ? '
+	DEFB 0
+PRMPT3:	DEFB LF
+	DEFM 'Formatting track   '
+	DEFB 0
+PRMPT4:	DEFM 'Verifying track    '
+	DEFB BS,0
+PRMPT5:	DEFB LF
+	DEFM 'Formatting track    '
+	DEFB 0
+PRMPT6:	DEFB CR
+	DEFM 'Verifying track     '
+	DEFB BS,0
+PRMPT7:	DEFM ' bad sectors detected'
+	DEFB 0
+PRMPT8:	DEFB CR,VT
+	DEFM 'Verifying track '
+	DEFB 0
+PRMPT9:	DEFB LF,LF
+	DEFM 'Initializing directory'
+	DEFB LF
+	DEFB 0
+PRMT10:	DEFB LF
+	DEFM '(C)ancel, (P)roceed, or (R)etry'
+	DEFB LF,0
+
+ERROR1:	DEFM 'Invalid drive name (use '
+	DEFB 0
+ERROR2:	DEFB LF,LF
+	DEFM 'Illegal drive #'
+	DEFB LF,0
+ERROR3:	DEFB LF,LF
+	DEFM 'Track # too high'
+	DEFB LF,0
+ERROR4:	DEFB LF,LF
+	DEFM 'Sector # too high'
+	DEFB LF,0
+ERROR5:	DEFB LF,LF
+	DEFM 'Device not available'
+	DEFB LF,0
+ERROR6:	DEFB LF,LF
+	DEFM 'Write protected diskette'
+	DEFB LF,0
+ERROR7:	DEFB LF,LF
+	DEFM 'Write fault on disk drive'
+	DEFB LF,0
+ERROR8:	DEFB LF,LF
+	DEFM 'Data record not found'
+	DEFB LF,0
+ERROR9:	DEFB LF,LF
+	DEFM 'Parity error'
+	DEFB LF,0
+ERR10:	DEFB LF,LF
+	DEFM 'Lost data'
+	DEFB LF,0
+ERR11:	DEFB LF,LF
+	DEFM 'WINCHESTER DISK DRIVE FAULT'
+	DEFB LF,0 
+
+NATIONAL:
+	DEFB ESC,'A',0
+
+CANCEL:	DEFB 'C'
+PROCEED:DEFB 'P'
+RETRY:	DEFB 'R'
+YES:	DEFB 'Y'	
+
+	END
+		

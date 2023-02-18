@@ -1,0 +1,55 @@
+%3 = ""
+%4 = ""
+%5 = ""
+%6 = ""
+%get.p2
+%print -n "enter main program file name without .REL: "
+%getstr %2 <TTY:
+%if %2 = "" then goto ready
+%upcase %2
+%print
+%iffile $2.REL present then goto get.p3
+%print error - $2.REL not found ^G
+%goto get.p2
+%get.p3
+%print -n "enter   subprogram file name without .REL: "
+%getstr %3 <TTY:
+%if %3 = "" then goto exec.linkage
+%upcase %3
+%print
+%iffile $3.REL present then goto get.p4
+%print error - $3.REL not found ^G
+%goto get.p3
+%get.p4
+%print -n "enter   subprogram file name without .REL: "
+%getstr %4 <TTY:
+%if %4 = "" then goto exec.linkage
+%upcase %4
+%print
+%iffile $4.REL present then goto get.p5
+%print error - $4.REL not found ^G
+%goto get.p4
+%get.p5
+%print -n "enter   subprogram file name without .REL: "
+%getstr %5 <TTY:
+%if %5 = "" then goto exec.linkage
+%upcase %5
+%print
+%iffile $5.REL present then goto get.p6
+%print error - $5.REL not found ^G
+%goto get.p5
+%get.p6
+%print -n "enter   subprogram file name without .REL: "
+%getstr %6 <TTY:
+%if %6 = "" then goto exec.linkage
+%upcase %6
+%print
+%iffile $6.REL present then goto exec.linkage
+%print error - $6.REL not found ^G
+%goto get.p6
+%exec.linkage
+%print ^Zlinking:	$2 $3 $4 $5 $6 F80LIB M80LIB FORLIB
+L80 $2,$3,$4,$5,$6,F80LIB/S,M80LIB/S,FORLIB/S,$2/N/E
+wait <TTY:
+%ready
+

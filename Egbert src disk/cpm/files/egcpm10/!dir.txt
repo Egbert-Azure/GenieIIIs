@@ -1,0 +1,19 @@
+Genie3s Kaempf CP/M - DSDD 96 tpi 5.25" format
+
+B0:ALIAS.CMD       B0:CCP.COM         B0:CMDRUN.COM      B0:CONFIG.COM      
+B0:CONFIG.SYS      B0:CPM3.SYS        B0:DATE.COM        B0:DEVICE.COM      
+B0:DIR.COM         B0:DIRCPM.COM      B0:DISKSTAT.COM    B0:ERA.COM         
+B0:FF.COM          B0:FKEY.COM        B0:FORMAT.COM      B0:HELP.COM        
+B0:HELP.HLP        B0:ID.COM          B0:IF.COM          B0:INITDIR.COM     
+B0:LDIR.COM        B0:LGET.COM        B0:LPUT.COM        B0:LSH.CMD         
+B0:LSH.COM         B0:NDF.COM         B0:NSWP.COM        B0:PATH.COM        
+B0:PD.COM          B0:PDRIVE.SYS      B0:PIP.COM         B0:PIPE.COM        
+B0:PWD.COM         B0:QL.COM          B0:REN.COM         B0:SALIAS.COM      
+B0:SAVE.COM        B0:SDZ.COM         B0:SET.COM         B0:SETDEF.COM      
+B0:SIO.COM         B0:SLR180.COM      B0:STARTZ3P.COM    B0:TCVIEW.COM      
+B0:TEST.COM        B0:UNARC.COM       B0:UNCR.COM        B0:VLU.COM         
+B0:Z3PLUS.COM      B0:Z3PLUS.LBR      B0:ZDE.COM         B0:ZERRLSH.COM     
+B0:ZEX.COM         B0:ZFILER.CMD      B0:ZFILER.COM      B0:ZP.COM          
+B0:ZSHOW.COM       
+
+104K free on drive B:

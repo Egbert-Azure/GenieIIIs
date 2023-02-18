@@ -1,0 +1,47 @@
+   Here is a very brief introduction to the syntax and use of the assembler
+and linker.  The default operation of each tool can be changed using the
+corresponding configuration program, CONFIG for Z80ASM, 180FIG for SLR180,
+and LNKFIG for SLRNK.  Make copies of the master disk and then experiment
+with the configuration programs.  They are self-prompting and easy to use.
+
+   The basic syntax for the assemblers is: Z80ASM FILE/options or SLR180
+FILE/options.  The file name must have a type of Z80 (unless changed by
+CONFIG) for Z80ASM or type 180 (unless changed by 180FIG) for SLR180.  The
+most commonly used options are:
+
+	A	Generate, in one pass, an absolute output (COM file). This
+		is the preferred mode unless the source is not self-
+		contained and requires linkage to other modules.
+
+	H	Generate a HEX output file.  This is rarely needed (only for
+		patch files); normally the 'A' option is preferrable.
+
+	M	Generate a Microsoft relocatable format.  Use '/M6' or just
+		'/6' for six significant characters (this is what the
+		Conn libraries use) or '/M7' or just '/7' for seven
+		significant characters.
+
+	R	Generate an SLR-format relocatable file
+
+	F	Perform a two-pass assembly (slower, but all symbol values
+		resolved in the listing) and generate a listing file.  Use
+		this option only when a listing is needed.
+
+	L	Generate a one-pass assembly and listing.  Forward-
+		referenced symbols will not have their values included in
+		the listing.
+
+	S	Generate a symbol file (this is in a special format that
+		must be converted using MAKESYM.COM to make a symbol file
+		that can be used by symbolic debuggers such as SID and DSD.
+
+	X	Generate a crossreference listing.
+
+	U	Declare all undefined symbols to be external.
+
+   To assemble ZCPR33 to a COM file for installation using a disk utility or
+debugging program, I use the command line "Z80ASM ZCPR33/A".  Actually, I do
+not have to enter the 'A' because I configure my Z80ASM to default to
+absolute output mode.
+
+   Drives can be speci

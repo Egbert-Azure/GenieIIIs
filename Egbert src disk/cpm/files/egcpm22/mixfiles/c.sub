@@ -1,0 +1,28 @@
++V
+;******************************************************************************
+;*									      *
+;*          Shell file for compiling C sources with the Mi-C Compiler         *
+;*									      *
+;*  Default drive: M (must be patched, if to be altered)		      *
+;*  									      *
+;*  Optional switches (2nd, 3rd, ... arguments):			      *
+;*  F - compile only (no link pass)					      *
+;*  L - link previously compiled program				      *
+;*  R - run program after compilation and linking			      *
+;*									      *
+;******************************************************************************
+-V
+%if %2 = "L" then goto link_only
+%if %2 = "l" then goto link_only
+%if %3 = "L" then goto link_only
+%if %3 = "l" then goto link_only
+
+A:
+%print "CCZ /0S M:$1"           >CTEMP.SUB
+%print "SH M:; CCONT $1 $2 $3" >>CTEMP.SUB
+SUBMIT CTEMP
+-X
+
+%link_only
+CCONT $1 $2 $3
+

@@ -1,0 +1,44 @@
+; Programm um das BOOT Eprom des Genie IIIs auszulesen und in einen anderen
+; Bereich zu kopieren. Dort kann es dann beguckt werden.
+
+sys0	equ	0f9h
+sys1	equ	0fah
+wboot	equ	0000h
+
+
+	org	100h
+start	ld	hl,rout_start	;die Routine soll nach 4000h verschoben
+	ld	de,4000h	;werden und dort ausgef}hrt werden
+	ld	bc,end-begin
+	ldir
+
+
+
+	jp	begin
+
+rout_start	equ	$
+
+	.phase 4000h		;mu~ oberhalb des EPROMS liegen
+
+begin	di			;unbedingt INTs abstellen
+	in	a,(sys1)	;Systemport 2 sichern
+	ld	(sys1alt),a	;SYS-Port 1 sichern
+	ld	a,0c0h		;gibt EPROM statt DRAM frei
+	out	(sys1),a	;ausf}hren
+	ld	hl,0000h	;EPROM ins RAM kopieren
+	ld	de,4100h	;nach diesem Programm 
+	ld	bc,1fffh	;12kB L{nge
+	ldir
+	ld	a,(sys1alt)
+	out	(sys1),a
+	ei
+	jp	wboot
+
+sys0alt	db	0	
+sys1alt	db	0
+end	equ	$
+
+	.dephase
+	
+	end	start
+		

@@ -1,0 +1,15 @@
+M80
+<BNKBIOS,BNKBIOS=BNKBIOS/C
+<SCB,SCB=SCB/C
+<BOOT,BOOT=BOOT/C
+<CHARIO,CHARIO=CHARIO/C
+<MOVE,MOVE=MOVE/C
+<DRVTBL1,DRVTBL1=DRVTBL1/C
+<DISKIO1,DISKIO1=DISKIO1/C
+<
+
+LINË-G BNKBIOS3[B,NR]=BNKBIOS,SCB,BOOT,CHARIO,MOVE,DRVTBL1,DISKIO1
+
+b:Gencpí auto
+
+

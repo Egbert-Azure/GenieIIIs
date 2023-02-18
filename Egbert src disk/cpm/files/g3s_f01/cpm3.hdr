@@ -1,0 +1,106 @@
+.PL 68
+.LH 12
+.OP
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       G E N I E - I I I s - C P / M   V e r s i o n   3 b
+
+
+
+                       Autor: Thomas Holte
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+††                                        Nachdruck, auch
+                                          auszugsweise, verboten! ä               I N H A L T S V E R Z E I C H N I S               ___________________________________
+
+
+Kapitel                                                Seite
+
+1         Mini Disk Operation                            1
+1.1       Funktionsweise                                 1
+1.1.1     Funktionsweise der Diskette                    2
+1.1.2     Einf}hren der Diskette in das Laufwerk         3
+1.1.3     Einschalten des Ger{tes                        3
+1.2       Pflege der Disketten                           4
+1.2.1     Sie haben Probleme ...                         5
+1.3       Technische Daten                               6
+1.4       Anfertigen einer Sicherungskopie               6
+
+2         Genie-IIIs-CP/M-Dienstprogramme                9
+2.1       FORMAT                                        10
+2.2       FTASTEN                                       10
+2.3       KONFIG                                        11
+2.4       KOPIER                                        16
+2.5       M6845                                         17
+2.6       ZEISATZ                                       21
+
+3         Technische Informationen                      22
+3.1       Speicheraufteilung                            22
+3.2       Ger{tezuordnung                               23
+3.3       Tastatur                                      23
+3.3.1     WordStar Tastatur                             25
+3.4       Bildschirm                                    27
+3.5       Serielle Schnittstelle                        32
+3.5.1     ]bertragung digitaler Daten                   32
+3.5.2     Signalpegel                                   34
+3.5.3     Anschlu~bezeichnungen und                     35
+          Signalbeschreibungen
+3.5.4     Anschlu~belegung                              37
+.PAäKapitel                                                Seite
+
+4         Treiberroutinen                               39
+
+5         Festplatte                                    56
+5.1       Generieren eines Festplattensystems           56
+5.2       Das Dienstprogramm BACKUP                     57
+
+6         Einschr{nkungen                               58
+6.1       RST 38H                                       58
+6.2       Inkompatibilit{ten zu CP/M Version 2.2        58
+6.3†      Lieferumfang                                  59
+
+7         Unterst}tzung des Benutzers                   60        
+
+Anlage A: SYSTAB
+
+Anlage B: Diskettenformate
+
+Anlage C: Bildschirmparameter
+
+
+
+SollteÓ† SiÂ† irgendwelchÂ ProblemÂ habeÓ odeÚ† Verbesserungsvorç
+schl{gÂ macheÓ wollen¨ wendeÓ SiÂ sicË bittÂ an
+
+                    Thomas Holte
+                    Sommerstr.16
+               8504 Stein
+                    Tel. 0911 / 68 50 13
+

@@ -1,0 +1,37 @@
+hostname	cpmgut
+smarthost	cpmgut
+inethost	tpki.toppoint.de
+user		v_p_dose@cpmgut.toppoint.de (Volker Dose)
+user		cpmgut.toppoint.de!v_p_dose	
+user		cpmgut!v_p_dose
+user		cpmgut!v_p_dose@cpmgut.toppoint.de (Volker Dose)
+defsys		TPK
+remote		CPMcpmgut
+remote		TPKtpki
+xferdrv		m7:
+workdrv		d7:
+progdrv		d7:
+$drv	        m:
+feed		tpki
+alias		mir			v_p_dose@cpmgut.toppoint.de
+alias           norbert                 nobs@isys-hh.hanse.de
+alias           jay                     sage@ll.mit.edu
+alias		helmut			100024.1545@compuserve.com
+alias		egbert			e.schroeer@genie.geis.com
+alias		holger			100117.610@compuserve.com
+alias		martin			maro@maroki.toppoint.de
+alias		david			dg@pallio.sf.ca.us
+alias		victor			victor@vicki.toppoint.de
+newsgroup	comp.os.cpm		cpm
+newsgroup	tp.sysinfo		tpsysinf
+newsgroup	tp.hilfe		tphilfe
+newsgroup	tp.forum		tpforum
+newsgroup	tp.test			tptest
+newsgroup	kiel.biete		ki-biete
+newsgroup	kiel.suche		ki-suche
+newsgroup	kiel.allgemein		ki-allge
+newsgroup	comp.sys.tandy		tandy
+newsgroup	news			ts0
+newsgroup	comp.mail.uucp		compmail
+
+

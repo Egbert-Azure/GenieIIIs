@@ -1,0 +1,210 @@
+;******************************************************************************
+;*			S A V E H R G . C O M 				      *
+;******************************************************************************
+;*									      *
+;*	Programm um HRG-Bilder des Genie IIIs auf Diskette zu speichern.      *    
+;*	Zun{chst wird der Bildinhalt mit einer Systemroutine des Bios in      *
+;*	die TPA }bertragen. Dann wird das File abgespeichert.		      *
+;*									      *
+;******************************************************************************
+
+; Das Programm mu~ zun{chst an den jeweiligen Rechner angepa~t werden !
+; Die Anzahl der Scanzeilen und die Anzahl der angezeigten Zeilen mu~
+; hier eingetragen werden.
+
+scanzeilen	equ	15
+zeilenzahl	equ	25
+maxy		equ	scanzeilen*zeilenzahl
+
+
+
+bel	equ	07h
+lf	equ	0ah
+cr	equ	0dh
+esc	equ	1bh
+
+bdos	equ	0005h
+wboot	equ	0000h
+
+userf	equ	30
+
+prtstr	equ	9
+delete	equ	19
+close	equ	16
+searchf	equ	17
+makef	equ	22
+parse	equ	152
+write	equ	21
+multio	equ	44
+adrdma	equ	26
+
+
+fcb	equ	5ch
+hrgsei	equ	82h
+fname	equ	84h
+
+
+	org	100h		;Start der TPA
+start	ld	bc,0		;zun{chst wird die L{nge des Filenames geholt
+	ld	hl,fname	;start der Zeichenkette
+loop	inc	c		;C einen weiterz{hlen
+	inc	hl		;Zeiger auch
+	ld	a,(hl)		;Ist das Terminierungszeichen erreicht ?
+	cp	':'		;ist ein Drive angegeben? das darf nicht!
+	jp	z,error
+	cp	00h		;dann stimmt BC 
+	jr	nz,loop		;Schleife durchlaufen bis Schlu~
+				
+	ld	hl,fname	;Zun{chst wird der Filename des Bildes
+	ld	de,nambuf	;gesichert, da er an einer Stelle des 
+				;DMA-Buffers steht.
+	ldir			;Speichertransfer
+	ld	a,(hrgsei)	;Welche Seite soll gespeichert werden ?
+	cp	'0'		;ist es Null ?
+	jr	z,goon		;dann zun{chst nur speichern
+	cp	'1'		;oder Seite 1 ?
+	jp	nz,error	;Falsche Eingabe der Seiten #
+goon	ld	(seite),a	;In Hello-Meldung unterbringen
+	ld	de,hello	;Jetzt wird eine Begr}~ung ausgegeben
+	ld	c,prtstr	;mitels BDOS-Call
+	call	bdos
+
+trans	ld	a,(seite)	;jetzt wird das Bild in die TPA }bertragen
+	sub	'0'		;ASCII => bin{r
+	rrca			;Quellseite ins obere nibble schieben
+	rrca
+	rrca
+	rrca
+	add	0fh		;Ziel ist der Buffer
+	ld	hl,parablock 
+	ld	de,buffer	
+	ld	c,33		;Systemfunktion Bereich kopieren
+	call	system
+
+aufdsk	ld	de,pfcb		;PARSE Filename will einen Controlblock sehen
+	ld	c,parse		;der Filename ist jetzt aufbereitet worden
+	call	bdos		;jetzt wird gekuckt, ob das File schon existiert
+	ld	de,fcb		;File Control Block
+	ld	c,searchf	;suche eintrag
+	call	bdos
+	cp	0ffh		;Eintrag gefunden = File existiert bereits ?
+	jr	z,keins		;dann weiter im Text
+	ld	de,frage1	;Frage 1 ausgeben
+	ld	c,prtstr
+	call	bdos		;
+	ld	c,01h		;hole Zeichen von der Konsole
+	call	bdos
+	cp	'n'		;wenn anderer Filename soll, dann Abbruch
+	jp	z,wboot
+loefil	ld	de,fcb		;sonst File l|schen
+	ld	c,delete		 
+	call	bdos		;und neues File erzeugen
+
+keins	ld	de,fcb		;jetzt soll das File erzeugt werden
+	ld	c,makef		;
+	call	bdos		
+	cp	00h		;ist alles gut gegangen ?
+	jp	nz,nixis	;wenn nicht Fehlermeldung ausgeben
+
+	ld	e,128		;Multisektor I/O mit 16 K Bl|cken
+	ld	c,multio	;Bdos-Call
+	call	bdos
+	ld	de,buffer	;Quelladresse ist der Buffer
+	ld	c,adrdma	;Set DMA Adress	 			
+	call	bdos
+	ld	de,fcb		;jetzt wird echt geschrieben
+	ld	c,write
+	call	bdos
+	cp	00h		;alles gut gegangen ?
+	jr	nz,nixis
+	
+	ld	e,128		;wieder 16 KB schreiben
+	ld	c,multio
+	call	bdos
+	ld	hl,buffer
+	ld	bc,4000h	;16kB dazuaddieren
+	add	hl,bc
+	ex	de,hl		;DMA Adresse nach DE
+	ld	c,adrdma	;set DAM Adresse
+	call	bdos
+	ld	de,fcb
+	ld	c,write
+	call	bdos
+	cp	00h
+	jr	nz,nixis	
+	ld	a,(fcb+32)
+	ld	(0010h),a
+
+	ld	de,fcb		;das file schlie~en
+	ld	c,close
+	call	bdos		;das wars dann!!!
+	
+	jp	wboot		;R}cksprung ins Betriebssystem }ber Warmstart
+
+nixis	ld	de,mist		;es ist ein Fehler aufgetreten !
+	ld	c,prtstr	;Fehlermeldung ausgeben
+	call	bdos
+	jp	wboot
+		
+
+
+error	ld	a,'$'		;Zun{chst einen Teil der Begr}~ung ausgeben
+	ld	(schlu),a	;String dort terminieren
+	ld	de,hello	;den dann ausgeben
+	ld	c,prtstr
+	call	bdos
+	ld	de,falsch	;Fehlermeldung ausgeben
+	ld	c,prtstr
+	call	bdos
+	jp	wboot
+		
+
+
+
+
+
+		
+system:	push	bc			;zun{chst BC sichern
+	ld	ix,(wboot+1)		;(IX) Start der BIOS Jump Table	
+	ld	bc,3*(userf-1)		;Offset zum JP USERF
+	add	ix,bc			;dazu addieren	
+	pop	bc			;USERF-Nr. wieder zur}ck
+	jp	(ix)			;Sprung nach USERF und zur}ck zum
+					;Aufrufer von SYSTEM
+
+
+
+
+falsch	defb	bel,'   Syntax: SAVEHRG [HRG Seiten #] [filename.ext]',lf,cr
+	defb	'$'
+
+hello	defb	cr,lf,esc,'R','SAVEHRG.COM',esc,'S',' speichert HRG-Bilder'
+	defb	' auf Diskette im aktuellen Disk/User-Bereich.',lf,cr
+	defb	'   Nur lauff{hig auf Genie IIIs mit Holte CP/M +!',cr,lf,lf
+
+schlu	defb	'   Das Bild von HRG-Seite '
+seite	defb	'0'
+	defb	' wird unter dem Namen '
+nambuf	defb	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+	defb	' abgespeichert.',cr,lf,lf
+	defb	'$'
+frage1	defb	bel,'   File dieses Namens existiert bereits. File l|schen ? (J/N) '
+	defb	'$'
+mist	defb	bel,' Es ist ein Fehler aufgetreten. Abbruch !!','$'
+
+
+parablock				;hier stehen die Parameter f}r die
+	defw	0000h			;Systemroutine, hier Startpunkt X
+	defw	0000h			;Startpunkt Y
+	defw	 640			;horizontale Kantenl{nge
+	defw	maxy+1			;vertikale Kantenl{nge
+			
+pfcb	defw	nambuf			;Filename in ASCII-Format
+	defw	fcb			;hier liegt der 'wahre' FCB
+	
+
+
+buffer	equ	$			;Buffer f}r das Bild !
+			
+	end	start
+			  				

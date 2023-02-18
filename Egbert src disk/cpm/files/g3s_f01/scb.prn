@@ -1,0 +1,63 @@
+'SYSTEM CONTROL BLOCK DEFINITION FOR CP/M 3 BIOS'	MACRO-80 3.44	09-Dec-81	PAGE	1
+
+
+                                ;******************************************************************************
+                                ;*  S C B  *  C P M S Y S 4 a  *  T h o m a s   H o l t e   *   8 5 0 2 0 5   *
+                                ;******************************************************************************
+                                ;*									      *
+                                ;*   S Y S T E M   C O N T R O L   B L O C K   D E F I N I T I O N   F O R    *
+                                ;*   =====================================================================    *
+                                ;*									      *
+                                ;*  	       		    C P / M   3 . 0   B I O S			      *
+                                ;*	                    =========================           	      *
+                                ;*									      *
+                                ;*									      *
+                                ;*  Thomas Holte						 Version 1.0  *
+                                ;*									      *
+                                ;******************************************************************************
+                                
+                                	.Z80
+                                
+                                	TITLE 'SYSTEM CONTROL BLOCK DEFINITION FOR CP/M 3 BIOS'
+                                
+                                	GLOBAL @CIVEC,@COVEC,@AIVEC,@AOVEC,@LOVEC,@ERDME,@DATE,@HOUR,@MIN
+                                	GLOBAL @MXTPA
+                                
+                                
+  FE00                          SCB$BASE EQU 0FE00H		;base of the SCB
+                                
+  FE22                          @CIVEC  EQU  SCB$BASE+22H	;console   input  redirection vector
+                                				;(word, R/W)
+  FE24                          @COVEC  EQU  SCB$BASE+24H       ;console   output redirection vector 
+                                				;(word, R/W)
+  FE26                          @AIVEC  EQU  SCB$BASE+26H	;auxiliary input  redirection vector
+                                				;(word, R/W)
+  FE28                          @AOVEC	EQU  SCB$BASE+28H	;auxiliary output redirection vector
+                                				;(word, R/W)
+  FE2A                          @LOVEC	EQU  SCB$BASE+2AH	;list	   output redirection vector
+                                                                ;(word, R/W)
+  FE4B                          @ERDME	EQU  SCB$BASE+4BH	;BDOS error mode (byte, R/O)
+  FE58                          @DATE	EQU  SCB$BASE+58H	;date in days since 1 Jan 78 (word, R/W)
+  FE5A                          @HOUR	EQU  SCB$BASE+5AH	;hour   in BCD (byte, R/W)
+  FE5B                          @MIN	EQU  SCB$BASE+5BH	;minute in BCD (byte, R/W)
+  FE62                          @MXTPA	EQU  SCB$BASE+62H	;top of user TPA (address at 6, 7) (word, R/O)
+                                
+                                        END
+'SYSTEM CONTROL BLOCK DEFINITION FOR CP/M 3 BIOS'	MACRO-80 3.44	09-Dec-81	PAGE	S
+
+
+Macros:
+
+Symbols:
+FE26I 	@AIVEC          FE28I 	@AOVEC          FE22I 	@CIVEC          
+FE24I 	@COVEC          FE58I 	@DATE           FE4BI 	@ERDME          
+FE5AI 	@HOUR           FE2AI 	@LOVEC          FE5BI 	@MIN            
+FE62I 	@MXTPA          FE00 	SCB$BASE        
+
+
+
+No Fatal error(s)
+
+
+TPA (address at 6, 7) (word, R/O)
+                  

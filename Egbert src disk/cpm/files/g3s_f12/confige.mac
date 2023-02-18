@@ -1,0 +1,219 @@
+;******************************************************************************
+;*  C O N F I G E * U T I L S 0 0 3 a * T h o m a s   H o l t e * 8 6 0 1 1 8 *
+;******************************************************************************
+;*									      *
+;*  	L A N G U A G E   D E P E N D E N T   P A R T   O F   C O N F I G     *
+;*      =================================================================     *
+;*									      *
+;*  			( E N G L I S H   V E R S I O N )		      *
+;*			=================================		      *
+;*									      *
+;*  Version 1.1							Thomas Holte  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	GLOBAL BLOCK,_DOUBLE,ENDMSG,ERROR1,ERROR2,ERROR3,ERROR4,ERROR5,ERROR6
+	GLOBAL ENDMSG,EVEN,MENU,NATIONAL,NO,NOPARITY,ODD,SINGLE,UNDERLINE,YES
+
+;ASCII control code:
+LF	EQU  0AH		;line feed	
+ESC	EQU  1BH		;escape
+
+MENU:	DEFM '*** CP/M 3 ***  MM/DD/YY  HH:MM:SS      '
+	DEFM ' Main Menu        '
+	DEFB 98H
+	DEFM ' 1985 by Thomas Holte'
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM ' @@@  @   @  @@@  @@@@@ @@@@@ @   @     '
+	DEFM '                                        '
+	DEFM '@   @ @   @ @   @   @   @     @@ @@     '
+	DEFM '                                        '
+	DEFM '@      @ @  @       @   @     @ @ @     '
+	DEFM '                                        '
+	DEFM ' @@@    @    @@@    @   @@@@  @ @ @     '
+	DEFM '                                        '
+	DEFM '    @   @       @   @   @     @   @     '
+	DEFM '                                        '
+	DEFM '@   @   @   @   @   @   @     @   @     '
+	DEFM '                                        '
+	DEFM ' @@@    @    @@@    @   @@@@@ @   @     '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM ' @@@   @@@  @   @ @@@@@  @@@   @@@  @   '
+	DEFM '@ @@@@    @   @@@@@  @@@  @@@@          '
+	DEFM '@   @ @   @ @   @ @       @   @   @ @   '
+	DEFM '@ @   @  @ @    @   @   @ @   @         '
+	DEFM '@     @   @ @@  @ @       @   @     @   '
+	DEFM '@ @   @ @   @   @   @   @ @   @         '
+	DEFM '@     @   @ @ @ @ @@@@    @   @ @@@ @   '
+	DEFM '@ @@@@  @   @   @   @   @ @@@@          '
+	DEFM '@     @   @ @  @@ @       @   @   @ @   '
+	DEFM '@ @ @   @@@@@   @   @   @ @ @           '
+	DEFM '@   @ @   @ @   @ @       @   @   @ @   '
+	DEFM '@ @  @  @   @   @   @   @ @  @          '
+	DEFM ' @@@   @@@  @   @ @      @@@   @@@   @@@'
+	DEFM '  @   @ @   @   @    @@@  @   @         '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM '                                        '
+ 	DEFM '                System parameters       '
+ 	DEFM '                  (1)                   '
+ 	DEFM '                Floppy disk drives      '
+ 	DEFM '                  (2)                   '
+ 	DEFM '                Store altered parameters'
+	DEFM ' and exit program (3)                   '
+ 	DEFM '                Your choice ------------'
+	DEFM '----------------->                      '
+
+	DEFM '*** CP/M 3 ***  MM/DD/YY  HH:MM:SS   Sys'
+	DEFM 'tem Parameters    '
+	DEFB 98H
+	DEFM ' 1985 by Thomas Holte'
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM 'SYSTEM PARAMETERS:                      '
+	DEFM '                                        '
+	DEFM 'Cursor character ((b)lock or (u)nderline'
+	DEFM ') --> .                                 '
+	DEFM 'Blinking cursor (Y/N) ------------------'
+	DEFM '----> .                                 '
+	DEFM 'German character set at power-up (Y/N) -'
+	DEFM '----> .                                 '
+	DEFM 'Hardware clock (Y/N) -------------------'
+	DEFM '----> .                                 '
+	DEFM 'Additional RAM (0 - 128 KBytes) --------'
+	DEFM '----> ...                               '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM 'RS-232-C INTERFACE 1:                   '
+	DEFM '                                        '
+	DEFM 'Number of data bits (5 - 8) ------------'
+	DEFM '----> .                                 '
+	DEFM 'Number of stop bits (1, 1.5, or 2) -----'
+	DEFM '----> ...                               '
+	DEFM 'Parity ((o)dd, (e)ven or (n)o) ---------'
+	DEFM '----> .                                 '
+	DEFM 'Baud rate (50 - 19200) -----------------'
+	DEFM '----> .....                             '
+	DEFM 'XON/XOFF protocol (Y/N) ----------------'
+	DEFM '----> .                                 '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM 'RS-232-C INTERFACE 2:                   '
+	DEFM '                                        '
+	DEFM 'Number of data bits (5 - 8) ------------'
+	DEFM '----> .                                 '
+	DEFM 'Number of stop bits (1, 1.5, or 2) -----'
+	DEFM '----> ...                               '
+	DEFM 'Parity ((o)dd, (e)ven or (n)o) ---------'
+	DEFM '----> .                                 '
+	DEFM 'Baud rate (50 - 19200) -----------------'
+	DEFM '----> .....                             '
+	DEFM 'XON/XOFF protocol (Y/N) ----------------'
+	DEFM '----> .                                 '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFB 8FH,'/',91H
+	DEFM ' = previous                      '
+	DEFM 90H,'/',92H
+	DEFM ' = next                      BREAK = quit'
+
+	DEFM '*** CP/M 3 ***  MM/DD/YY  HH:MM:SS   Flo'
+	DEFM 'ppy Disk Drives   '
+	DEFB 98H
+	DEFM ' 1985 by Thomas Holte'
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM 'Logical drive P: ------------> physical '
+	DEFM 'drive (  -  ) --> .                     '
+	DEFM 'Disk size (8" or 5") -------------------'
+	DEFM '----------------> .                     '
+	DEFM '(S)ingle or (d)ouble sided -------------'
+	DEFM '----------------> .                     '
+	DEFM '(S)ingle or (d)ouble density -----------'
+	DEFM '----------------> .                     '
+	DEFM 'Density of 1st track (S or D) ----------'
+	DEFM '----------------> .                     '
+	DEFM 'Number of usable tracks ----------------'
+	DEFM '----------------> ..                    '
+	DEFM 'Steps per track to track (1 or 2) ------'
+	DEFM '----------------> .                     '
+	DEFM 'Track stepping rate (5" --> 6, 12, 20, o'
+	DEFM 'r 30 msec)                              '
+ 	DEFM '                    (8" --> 3,  6, 10, o'
+	DEFM 'r 15 msec) -----> ..                    '
+	DEFM 'Sector count per track -----------------'
+	DEFM '----------------> ..                    '
+	DEFM 'Physical sector length (128, 256, 512, o'
+	DEFM 'r 1024 Bytes) --> ....                  '
+	DEFM 'Number of first sector (0 or 1) --------'
+	DEFM '----------------> .                     '
+	DEFM 'Sector numbering continued on back side '
+	DEFM '(Y/N) ----------> .                     '
+	DEFM 'Interleaving factor --------------------'
+	DEFM '----------------> ..                    '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFM 'CP/M-SPECIFIC PARAMETERS:               '
+	DEFM '                                        '
+	DEFM 'Block size (KBytes) --------------------'
+	DEFM '----------------> ..                    '
+	DEFM 'Directory size (KBytes) ----------------'
+	DEFM '----------------> .                     '
+	DEFM 'Skew factor ----------------------------'
+	DEFM '----------------> ..                    '
+	DEFM 'Number of system tracks ----------------'
+	DEFM '----------------> .                     '
+	DEFM '                                        '
+	DEFM '                                        '
+	DEFB 8FH,'/',91H
+	DEFM ' = previous                      '
+	DEFM 90H,'/',92H
+	DEFM ' = next                      BREAK = quit'
+
+NATIONAL:
+	DEFB ESC,'A',0
+
+ERROR1: DEFB LF
+	DEFM 'Can''t open A:CPM3.SYS'
+	DEFB LF,0
+ERROR2: DEFB LF
+	DEFM 'Out of memory'
+	DEFB LF,0
+ERROR3: DEFB LF
+	DEFM 'Synchronization error'
+	DEFB LF,0
+ERROR4: DEFB LF
+	DEFM 'Can''t open A:CPM3.SYS (RO)'
+	DEFB LF,0
+ERROR5:	DEFB LF
+	DEFM 'Fatal I/O error'
+	DEFB LF,0
+ERROR6:	DEFB LF
+	DEFM 'Diskette write protected'
+	DEFB LF,0
+
+ENDMSG:	DEFM 'Press <RESET> to activate reconfigured system'
+	DEFB LF,0
+
+BLOCK:	DEFB 'B'
+_DOUBLE:DEFB 'D'
+EVEN:	DEFB 'E'
+NO:	DEFB 'N'
+NOPARITY:
+	DEFB 'N'
+ODD:	DEFB 'O'
+SINGLE:	DEFB 'S'
+UNDERLINE:
+	DEFB 'U'
+YES:	DEFB 'Y'
+
+	END
+

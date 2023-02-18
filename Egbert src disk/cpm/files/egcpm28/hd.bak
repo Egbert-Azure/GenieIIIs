@@ -1,0 +1,66 @@
+
+;:---------------------:
+;:HARDISË 20.´ MBytå   :
+;º Partitioî °         :
+;:---------------------:
+DPBHD0:	DEFÂ  	010H,001È   ;SPT½ 27²      12¸ Bytå records/track
+	DEFB	005È        ;BSH½   µ      blocë shifô factoò  
+        DEFÂ    01FÈ        ;BLM½  3±      blocë masë   
+	DEFB	001È        ;EXM½   ±      extenä masë  
+        DEFÂ    01FH,00AÈ   ;DSM=259±      maximuí blocë numbeò 
+	DEFB	0FFH,003È   ;DRM=102³      maximuí directorù number
+	DEFB	0FFÈ        ;AL0½ 25µ      allocatioî vectoò 0
+        DEFÂ    000È        ;AL1½  0°      allocatioî vectoò 1
+	DEFB	000H,080È   ;CKS½   °      checksuí sizå ió zero
+                            »              ,permanentlù mounted
+	DEFB	002H,000È   ;OFF½   ²      reserveä trackó 
+ 	DEFB	002È        ;PSH½   ²      physicaì sectoò shift
+	DEFB	003È        ;PHM½   ³      physicaì recorä masë 
+
+;daó hei~ô auæ Deutsch:
+;			51² Bytes/Sector
+;			 6¸ Sectoren/Zylindeò (´ K|pfe*1· Sec/Cyl)
+;			30· Cylinder/Laufwerk
+;			4KÂ Blockgr|~e
+;		       102´ Directorù Eintr{ge
+;			  ² Reserviertå Systemspur
+;		      8000è Flaç f}ò nonremovablå mediuí 			
+
+
+
+;:---------------------:
+;:HARDISË 20.´ MBytå   :
+;º Partitioî ±         :
+;:---------------------:
+DPBHD1:	DEFÂ  	010H,001È   ;SPT½ 27²      12¸ Bytå records/track
+	DEFB	005È        ;BSH½   µ      blocë shifô factoò  
+        DEFÂ    01FÈ        ;BLM½  3±      blocë masë   
+	DEFB	001È        ;EXM½   ±      extenä masë  
+        DEFÂ    039H,00AÈ   ;DSM=261·      maximuí blocë numbeò 
+	DEFB	0FFH,003È   ;DRM=102³      maximuí directorù number
+	DEFB	0FFÈ        ;AL0½ 25µ      allocatioî vectoò 0
+        DEFÂ    000È        ;AL1½  0°      allocatioî vectoò 1
+	DEFB	000H,080È   ;CKS½   °      checksuí sizå ió zero
+                            »              ,permanentlù mounted
+	DEFB	033H,001È   ;OFF½ 30·      reserveä trackó 
+ 	DEFB	002È        ;PSH½   ²      physicaì sectoò shift
+	DEFB	003È        ;PHM½   ³      physicaì recorä masë 
+
+;daó hei~ô auæ Deutsch:
+;			51² Bytes/Sector
+;			 6¸ Sectoren/Zylindeò (² K|pfe*1· Sec/Cyl)
+;			30· Cylinder/Laufwerk
+;			4KÂ Blockgr|~e
+;		       102´ Directorù Eintr{ge
+;			30· Reserviertå Systemspuren
+;		      8000è Flaç f}ò nonremovablå mediuí 			
+
+	
+
+          DSEG
+
+;EJECT
+;RAÍ disë iniô routine:
+;---------------------:
+POWUP	EQU	111DH		» Poweò up/reseô marker
+

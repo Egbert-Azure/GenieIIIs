@@ -1,0 +1,79 @@
+;******************************************************************************
+;* A U T O L O D T * U T I L S 0 0 1 a * T h o m a s   H o l t e * 8 4 0 6 2 7*
+;******************************************************************************
+;*									      *
+;*    M E N U   A N D   W I N D O W   L O C A T I O N   T A B L E   F O R     *
+;*    ===================================================================     *
+;*									      *
+;*	                       A U T O L O A D                		      *
+;*		               ===============                  	      *
+;*									      *
+;*									      *
+;*  Version 1.0						        Thomas Holte  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+	GLOBAL TAB,ZBUF
+
+ZBUF:	DEFM '*** CP/M Ver. 2.2 ***'
+	DEFM '***840627***'
+	DEFM 'A U T O L O A D'
+	DEFM '==============='
+	DEFB 9CH
+	REPT 78
+	DEFB 8CH
+	ENDM
+	DEFB 0ACH,95H
+	DEFM ' This command  allows the user to speci'
+	DEFM 'fy a 1 - 43 character CP/M command  to '
+	DEFB 0AAH,95H
+	DEFM ' be  invoked automatically at reset tim'
+	DEFM 'e.  This command is stored in the boot '
+	DEFB 0AAH,95H
+	DEFM ' sector of the current system diskette.'
+	DEFM '                                       '
+	DEFB 0AAH,95H
+	DEFM ' If no CP/M command is specified,  then'
+	DEFM ' a null command is stored  in the boot '
+	DEFB 0AAH,95H
+	DEFM ' sector to indicate to reset/power-on t'
+	DEFM 'hat no AUTOLOAD command exists.        '
+	DEFB 0AAH,95H
+	DEFM ' AUTOLOAD  is useful  to the user  who '	
+	DEFM 'usually executes  the same command  or '
+	DEFB 0AAH,95H
+	DEFM ' chain of commands at reset time.      '	
+	DEFM '                                       '
+	DEFB 0AAH,9DH
+	REPT 78
+	DEFB 8CH
+	ENDM
+	DEFB 0AEH,95H
+	DEFM ' Enter command ----------------->      '
+	DEFM '                                       '
+	DEFB 0AAH,9DH
+	REPT 78
+	DEFB 8CH
+	ENDM
+	DEFB 0AEH,95H
+	DEFM ' Is the command correct (Y/N) --> '	
+	DEFB 7FH
+	DEFM '                                           '
+	DEFB 0AAH,8DH
+	REPT 78
+	DEFB 8CH
+	ENDM
+	DEFB 8EH
+
+;Parameter:  CTRL  BEG  END  INDEX/OPTION
+TAB:	DEFW    0H,0000,2379,0000H
+	DEFW	3H,0000,0020,0000H
+	DEFW	3H,0068,0079,0150H
+	DEFW    3H,0432,0546,0210H
+	DEFW    3H,0700,1979,03F0H
+	DEFW    4H,1635,1677,3320H
+	DEFW 7F11H,1835,1835,3821H
+
+	END
+

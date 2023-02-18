@@ -1,0 +1,197 @@
+
+                 RELEASE.NOT - UPDATE INFORMATION ON Z3PLUS
+                              April 24, 1991
+
+Lesen Sie bitte am Ende dieser RELEASE.NOT, wie Sie Ihr Z3PLUS dazu bringen, 
+von anderen Laufwerken zu booten.
+
+
+Bitte verstehen Sie, da~ anders als rein kommerzielle Unternehmen, Z-System nur
+die Arbeit von Enthusiasten darstellt.  Daher wird das Z-System wohl nie 
+vollst{ndig abgeschlossen; jede Neuentwicklung ist mehr ein Plateau, auf dem 
+weitere Erneuerung stattfindet.  Trotz unserer besten Anstrengungen ist die 
+gedruckte Dokumentation unweigerlich immer ein bi~chen hinter den j}ngsten 
+Neuerungen hinterher. Versuchen Sie so viel Material als m|glich zu studieren 
+zu einem bestimmten Befehl, bevor Sie fortfahren; wenn es ein .HLP oder .DOC 
+(.DOK) File zu diesem Befehl hibt, ist dieser meist aktueller als der Druck,  
+speziell in Bezug auf Syntax oder technische Spezifikationen.  
+Wenn Sie sich dessen bewu~t sind, nehmen Sie bitte freundlichst diese neueren
+Revisionen der Z3PLUS Dokumentation zur Kenntnis:
+
+              1.  TCSELECT PROBLEM.
+              2.  LSH ERSETZT EASE.
+              3.  COPY LDIR.COM TO A0:.
+              4.  WAHL DER MODULE SIZES.
+              5.  REN.COM WIRD BENOETIGT.
+              6.  ZHELP.COM.
+              7.  OSBORNE EXECUTIVE ROM BUG.
+              8.  SMARTKEY BUGS.
+              9.  KOMPATIBILITAET MIT BYE.
+              10. KLEINERE UPDATE ANMERKUNGEN.
+              11. AN NEUE Z-SYSTEM USER.
+              12. NEUE DEFAULTS UND NEUE FILES: FCP.LBR, RCP.LBR.
+
+
+1.  TCSELECT PROBLEM.
+
+TCSELECT ist ein Z-System Program und funktioniert unter CP/M nicht zuverl{ssig 
+(auf einigen Systemen gibt es Abst}rze).  Zum Gl}ck gibt es eine einfache 
+L|sung: einfach die im Handbuch angegebene Reihenfolge vertauschen, so da~ 
+Z3PLUS gestartet wird, bevor MYTERM.Z3T erzeugt werden kann, und rufen Sie  
+TCSELECT erst dann auf.  Sie brauchen sowohl TCSELECT.COM, als auch Z3TCAP.TCP 
+zum erzeugen Ihres .Z3T Files.  Die Eintr{ge in der Z3TCAP-Library f}r die
+Xerox Computer wurden gepatched um einen lange bestehenden Fehler zu 
+korrigieren.
+
+
+2.  LSH ERSETZT EASE.
+
+EASE wurde durch ein neueres, sehr vielseitiges und gutartiges Programm 
+nameens LSH (Log SHell) ersetzt.  WIe EASE, erlaubt LSH das Editieren der 
+Befehlszeile mit WordStar-{hnlichen Befehlen.  Lesen Sie LSH.WZ (gecruncht!)
+vor dem Gebrauch f}r allgemeine Hilfe und/oder rufen Sie HELPLSH auf, w{hrend 
+LSH l{uft, um LSH's F{higkeiten zu sehen. LSHINST installiert LSH und pa~t es
+auf Ihre Bed}rfnisse an. Error-Handler ist jetzt ZERR.COM, ein separates 
+Programm.  
+
+Unser Dank geb}hrt Rob Friefeld, der solch fantastische Z-System Tools 
+geschrieben hat und uns erlaubt hat, diese dem Z-SYSTEM-Paket beizuf}gen.
+
+
+
+3.  COPY LDIR.COM TO A0:.
+
+Es wurde vergessen, LDIR.COM nach A0: zu kopieren. Tun Sie das, damit die
+angegeben Beispiele alle laufen.
+
+4.  WAHL DER MODUL-GR\SSEN.
+
+Because of the page alignment of the Z3PLUS system, if the total number of 
+records required by the NDR, FCP, and RCP combined is an odd number, you 
+can generally increase the size of one of the modules by 1 record without 
+losing any additional TPA.  We have, therefore, increased the number of 
+names in the NDR from 14, as stated in the manual, to 21.  Until you reach 
+a large number of names (more than 60), you can figure one record of memory 
+for each 7 names.
+
+Wegen der Page-orientierten Ausrichtung von Z3PLUS ist die Gesamtzahl der 
+Records von NDR, FCP und RCP eine ungerade Zahl.  Daher kann eines der Module 
+um einen Record vergr|~ert werden, ohne weiter TPA zu verlieren.  Daher haben 
+wir die Anzahl der NDR-Eintr{ge von 14 auf 21 erh|ht.  Wenn Sie nicht ein gro~e 
+Anzahl Namen (}ber 60) erreichen, k|nnen je 1 Record pro 7 Eintr{ge gerechnet 
+werden.
+
+5.  SIE BRAUCHEN REN.COM.
+
+Wenn Sie keinen residenten REN-Befehl im Z3PLUS haben (Standard-Einstellung),
+sollten Sie die transiente Version TY4REN.COM auf A0: als REN.COM kopieren. 
+
+6.  ZHELP.COM.
+
+Die Version von ZHELP, die mit Z3PLUS geliefert wird, wurde gepatched, so da~ 
+sie nur nach .HLP Files sucht.  Sp{tere Versionen haben m|glicherweise keinen 
+Patch f}r CP/M Plus, so da~ Probleme auftreten k|nnen.  Bitte verst{ndigen Sie 
+sofort Ihre Z-System-Kollegen, wenn Ihnen so etwas begegnet. 
+
+7.  OSBORNE EXECUTIVE ROM BUG.
+
+Version 1.21 des Osborne Executive ROM arbeitet korrekt und ist von der FOG
+ (First Osborne Group) erh{ltlich.  Als Alternative ist ein Utility namens 
+TPATCH in Maiboxen erh{ltlich.  TPATCH kann nach einem Kaltstart und vor dem 
+Start von Z3PLUS geladen werden. 
+
+8.  SMARTKEY BUGS.
+
+Smartkey II Version 1.0A hat manchmal Probleme mit gebanktem CP/M Plus.
+Vor allem beim Umgang mit Z3PLUS ist die Datei PATCHSK.SUB zu beachten, 
+die PATCH4SK.HEX in Smartkey installiert und offenbar den Bug beseitigt.
+
+
+9.  COMPATIBILITY WITH BYE.
+
+Extrahieren Sie DEFCP3.ZRL aus der Z3PLUS.LBR.  Verwenden Sie PATCHER, um die 
+erste "Page" der Datei anzusehen.  Suchen SIe den String "Z3PLUSCP 6/25/88 
+v 1.00".  Wenn Sie diesen sehen, gehen Sie zum Offset 985 hex in der Datei. 
+Dort sollten zwei Bytes stehen: D6 und C3 hex.  Ersetzen Sie diese durch Af AF.
+Verwenden Sie jetzt LPUT, um DEFCP3.ZRL zur}ck in die Z3PLUS.LBR zu packen und 
+starten Sie Z3PLUS erneut.
+
+
+10. KLEINERE UPDATE NOTES.
+
+- Der RCP-Befehl WHLQ ist drau~en.  "WHL" zeigt den aktuellen Wheel Status.  
+Wie zuvor  schaltet "WHL password" das Wheel-Byte ein.  "WHL xxx" schaltet 
+das Wheel-Byte auf OFF, wenn xxx etwas anderes ist als das korrekte Pa~wort.
+
+- ARUNZ ist jetzt ein Typ-4 Program, das sich an die h|chste Stelle im Speicher 
+l{dt umd die unteren Bereiche zur Wiederausf}hrung mit GO freizuhalten. Siehe 
+ARUNZ09R.DZC und TCJ31.MZG (und auch die Handb}cher Ihres NZ-COM oder Z3PLUS 
+Handbuchs) f}r mehr }ber den erstaunlichen ARUNZ (in CMDRUN.COM umbenennen!).
+
+- VLU gibt es nur noch in der gepatchten 1.02 Version, die den korrekten 
+Disk-Speicherplatz unter CP/M Plus anzeigt. 
+
+Anmerkung (Helmut Jungkunz): diese VLU-Version ist speziell gepatcht und 
+getestet unter CP/M PLUS. Bitte keine neueren Versionen verwenden. Der 
+Diskfree wurde ebenfalls fuer CP/M PLUS korrigiert. Auch fuer EASE oder
+den DU3 gibt es gepatchte Loesungen auf Wunsch.
+
+- At this writing, we are sorry to note that both Z-Node Central and the
+  Lillipute Z-Nodes mentioned in Chapter 7 of your manual are out of
+  service.  Z-Nodes 2 and 3 are still going strong, however, as are the
+  many others listed in ZNODES.LST.  Z-Node 2 is the new Z-Node Central. 
+  We cannot recommend highly enough that you get a modem and investigate at
+  least one Z-Node as a source of inspiration and support.
+
+Anmerkung: Z-NODE 51 in Europa (Deutschland) 08165/60041  300-2400 8 N 1 !
+
+- Version 5.0 des ZEX Batch-Prozessors ersetzt fr}here Versionen.  ZEX 
+  l{uft jetzt sowohl unter NZ-COM als auch unter Z3PLUS und ist ein sehr 
+m{chtiges Werkzeug zum Anpassen von Programmen und Befehlen. 
+
+ZEX.RSX wird nicht mehr ben|tigt.  Siehe ZEX50.DZC.
+
+11. AN NEUE Z-SYSTEM USER.
+
+- Dateien mit einem "Z" als zweites Zeichen im DATEI-TYP (z.B., SAMPLE.DZC) 
+  sind ge"crunchte" Files, die mit LT.COM, UNCRUNCH.COM  oder QL vor Gebrauch 
+  entkomprimiert werden m}ssen. 
+
+- Wie in der Sektion 4.3.2 Ihres Manuals erw{hnt, haben die meisten Z-System- 
+  Programme ein eingebaute Hilfe. Geben SIe dazu den Namen eines Programs ein, 
+  gefolgt von  "//", um ein Kurzanleitung zu erhalten, wenn Sei den ]berblick  
+  einmal verlieren sollten.
+
+- Lassen Sie sich Zeit und }berst}rzen Sie nichts.  Lesen Sie H{ppchen f}r 
+  H{ppchen und bedenken Sie, da~kein Mensch erwartet, da~ Sie alles auswendig 
+  lernen. 
+
+12. NEUE DEFAULTS UND NEUE FILES: FCP.LBR, RCP.LBR.
+
+Um Diskettenplatz zu minimieren, enth{lt die Z3PLUS.LBR nur einige Standard-
+Konfigurationen der FCP^- und RCP-Module.  Alternative Versions finden Sie in 
+extra Libraries.  Moduln k|nnen direkt aus diesen geladen werden, oder einzelne 
+Files k|nnen extrahiert werden und in die Z3PLUS.LBR gepackt werden, um die 
+Default-Files zu ersetzen.  Jede Library hat ein kurzes DOC-File dabei, das 
+diese Moduln beschreibt (einige sind die DEFAULT-Versionen, die in Ihrer 
+Z3PLUS.LBR enthalten sind).
+
+Carson Wilson und Rob Friefeld haben den RCP Code wesentlich ver{ndert
+ (siehe DOC-File in der RCP.LBR).  Das Standard RCP-Modul ist jetzt 18 Records
+lang statt 16, und das LARGE RCP Modul ist 36 Records lang.  Die TPA Angaben 
+im Manual sind daher nicht mehr korrekt.
+
+
+PATCH-Anleitung f}r Z3PLUS.
+
+Kopieren Sie Z3PLUS.COM und EDITZ3P.COM auf eine Arbeitsdiskette.
+Geben Sie ein <EDITZ3P Z3PLUS.COM><ENTER>
+
+An dieser Stelle herzlichen Dank an Alexander Schmid f}r dieses tolle Programm!
+
+Antworten Sie jetzt mit Z3PLUS.COM auf die Frage nach dem Dateinamen. Kopieren  
+Sie die Z3PLUS.LBR auf die Arbeitsdiskette und starten Sie!
+
+
+                          - End of RELEASE.NOT -
+

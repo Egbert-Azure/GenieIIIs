@@ -1,0 +1,99 @@
+;******************************************************************************
+;*  I N I T W G  *  C P M S Y S 5 b  *  T h o m a s   H o l t e * 8 5 0 7 0 2 *
+;******************************************************************************
+;*									      *
+;*  	 L A N G U A G E   D E P E N D E N T   P A R T   O F   I N I T W      *
+;*       ===============================================================      *
+;*									      *
+;*  			 ( G E R M A N   V E R S I O N )		      *
+;*			 =============================== 		      *
+;*									      *
+;*  Version 1.0							Thomas Holte  *
+;*									      *
+;******************************************************************************
+
+	.Z80
+
+	GLOBAL CANCEL,DRIVE,ERROR1,ERROR2,ERROR3,ERROR4,ERROR5,ERROR6,ERROR7
+	GLOBAL NATIONAL,PRMPT1,PRMPT2,PRMPT3,PRPT31,PRMPT4,PRMPT5,PRMPT6,PRMPT7
+	GLOBAL PRMPT8,PROCEED,TYPE0,TYPE1,TYPE2,TYPE3
+
+;ASCII control code:
+BS	EQU  08H		;backspace
+LF	EQU  0AH		;line feed	
+VT	EQU  0BH		;vertical tabulation
+CR	EQU  0DH		;carriage return
+ESC	EQU  1BH		;escape
+
+PRMPT1:	DEFB LF
+	DEFM 'Initialisierung eines CP/M Ver 3 Festplattensystems'
+	DEFB LF,LF
+	DEFM 'Konfigurierung:'
+	DEFB LF,0
+PRMPT2:	DEFB LF
+	DEFM 'Festplatte ist schon initialisiert'
+	DEFB LF
+	DEFM '(A)bbrechen oder (F)ortfahren'
+	DEFM LF,0
+PRMPT3:	DEFB LF
+	DEFM 'Formatieren'
+	DEFB 0
+PRPT31: DEFM ' von Spur     '
+	DEFB 0
+PRMPT4:	DEFB CR
+	DEFM 'Verifizieren von Spur      '
+	DEFB BS,0
+PRMPT5:	DEFM ' defekte Bl|cke'
+	DEFB 0
+PRMPT6:	DEFB CR,VT
+	DEFM 'Verifizieren von Spur '
+	DEFB 0
+PRMPT7:	DEFB LF,LF
+	DEFM 'Initialisieren des Inhaltsverzeichnisses'
+	DEFB LF,0
+PRMPT8:	DEFB LF
+	DEFM 'Kopieren des Betriebssystems'
+	DEFB LF,0
+
+ERROR1:	DEFB LF
+	DEFM 'CPM3HD.SYS nicht verf}gbar'
+	DEFB LF,0
+ERROR2:	DEFB LF
+	DEFM 'Nicht gen}gend Speicherplatz verf}gbar'
+	DEFB LF,0
+ERROR3:	DEFB LF
+	DEFM 'Synchronisierungsfehler'
+	DEFB LF,0
+ERROR4:	DEFB LF
+	DEFM 'C:CPM3.SYS kann nicht angelegt werden'
+	DEFB LF,0
+ERROR5:	DEFB LF
+	DEFM 'CCP.COM nicht verf}gbar'
+	DEFB LF,0
+ERROR6:	DEFB LF
+	DEFM 'C:CCP.COM kann nicht angelegt werden'
+	DEFB LF,0
+ERROR7:	DEFB LF
+	DEFM 'FESTPLATTENLAUFWERK DEFEKT'
+	DEFB LF,0
+
+CANCEL:	DEFB 'A'
+PROCEED:DEFB 'F'
+
+NATIONAL:
+	DEFB ESC,'G',0
+
+DRIVE:	DEFM 'Laufwerk'
+	DEFB 0
+
+TYPE0:	DEFM 'Festplatte'
+	DEFB 0
+TYPE1:	DEFM 'Wechselplatte'
+	DEFB 0
+TYPE2:	DEFM 'Minifloppy'
+	DEFB 0
+TYPE3:	DEFM 'Standardfloppy'
+	DEFB 0 
+
+	END
+

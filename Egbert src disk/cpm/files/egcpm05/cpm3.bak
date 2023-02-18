@@ -1,0 +1,23 @@
+M80
+<=BNKBIOS
+<=SCB
+<=BOOT
+<=CHARIO
+<=MOVE
+<=DRVTBL
+<=DISKIO
+<
+
+LINK BNKBIOS3[B,NR]=BNKBIOS,SCB,BOOT,CHARIO,MOVE,DRVTBL,DISKIO
+
+GENCPM
+
+ERA BNKBIOS.REL
+ERA SCB.REL
+ERA BOOT.REL
+ERA CHARIO.REL
+ERA MOVE.REL
+ERA DRVTBL.REL
+ERA DISKIO.REL
+ERA BNKBIOS3.SPR
+

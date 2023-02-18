@@ -1,0 +1,8 @@
+|zexmsg off|
+smail *.out -o -d
+ccico -x2 -stpk -l
+concat ccico.log=strich /da
+pipe m7:d*.* m8:
+rmail
+rnews
+

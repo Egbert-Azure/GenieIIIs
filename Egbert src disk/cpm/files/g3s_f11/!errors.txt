@@ -1,0 +1,12 @@
+Genie3s Kaempf CP/M - DSDD 96 tpi 5.25" format                                  
+                                                                                
+Copying B0:WINDOW.C to D:\DISKTOOL\22FCH\TEMP\WINDOW.C                          
+Error reading diskette B: (Cyl 16, Side 1, Sect 1):                             
+ Data error                                                                      
+ Enter R - retry operation, A - abort program, I - ignore error
+ I                  
+Copying B0:WINDOW.C to D:\DISKTOOL\22FCH\TEMP\CHECKTRK.MAC                          
+Error reading diskette B: (Cyl 17, Side 1, Sect 1):                             
+ Enter R - retry operation, A - abort program, I - ignore error
+ Data error                                                                      
+ I                                                                                

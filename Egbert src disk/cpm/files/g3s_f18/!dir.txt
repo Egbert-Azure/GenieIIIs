@@ -1,0 +1,5 @@
+Genie3s Kaempf CP/M - DSDD 96 tpi 5.25" format
+
+B0:MCONFIG.COM     B0:WS-TUNER.LBR    B0:WS3DTSCH.LBR    B0:WSOS1-UT.LBR    
+
+120K free on drive B:

@@ -1,0 +1,29 @@
+1° DIÍ T(10):Z=0
+2° LPRINÔ "Tabellå eineò Tellerfedeò A40-DIÎ 2093"
+2± LPRINÔ "------------------------------------------------"
+2² LPRINT
+2³ REÍ Formeì Maschinenelementå Hefô · Seite1± Nr.(7© 
+2´ REÍ Festlegeî deò Rechendarstellung
+3° DEFDBÌ A-Ú º REÍ Doppeltå Genauigkeiô ¶ Stelleî nacè deí Komma
+4° DEFSNÇ Ó   º REÍ Einfachå Genauigkeiô ² Stelleî nacè deí Komma
+5° DEFINÔ I   º REÍ Ganzå Zahlen
+6° REÍ Schriftinit
+7° REÍ Texô zentriereî unä unidirektionaì drucken
+8° LPRINÔ CHR$(27)CHR$(97)CHR$(1);:LPRINÔ CHR$(27)CHR$(85)CHR$(1);
+8µ REÍ Schmalschrifô unä Ranä auæ 13· Zeichen
+9° LPRINÔ CHR$(27)CHR$(15);:LPRINÔ CHR$(27)CHR$(81)CHR$(137);
+10° REMº Federdaten:
+11° T=2.25:H=.9:S=°  :DE=40
+12° REÍ Konstantå t^3/(0.75*DE^2)
+13° K=T^3/(.75*DE^2)
+14° REÍ Berechnunç deò Kr{ftå anhanä angenommeneò Wege
+15° V=((((H-S)/T)*((H-(.5*S))/T))+1)*10^6
+16° Æ ½ S*Ë *Vº REÍ "s¢ isô hieò deò variablå Wert
+17° LPRINÔ "F½ ";:LPRINÔ USINÇ "######.##";F;
+18°  LPRINÔ ¢ s=";:LPRINÔ USINÇ "##.##";S;:LPRINÔ CHR$(179);
+19° Z=Z+1:IÆ Z=¶ THEÎ GOSUÂ 220
+20° S=S+.05
+21° GOTÏ 150
+22° Z=0:LPRINT
+23° RETURN
+

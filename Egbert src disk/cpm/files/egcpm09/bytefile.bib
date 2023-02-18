@@ -1,0 +1,157 @@
+(*****************************************************************************)
+(*    Bibliotheks-modul  Bytefile                                            *)
+(*      Ermoeglicht auch unter CP/M das byteweise Lesen einer Datei          *)
+(*      Der Type BYTEFILE ersetzt den MS-DOS Typ File of Byte                *)
+(*      (const   MaxByteBuffer  =  1024  kann Vielfaches von 128 sein        *)
+(*      (type    BF_str14  )                                                 *)
+(*      (proc.   LiesBlock )                                                 *)
+(*                                                                           *)
+(*       t  ByteFile    entspricht    'File of Byte'                         *)
+(*       p  AssignByteFile      wie   'Assign'                               *)
+(*       p  ResetByteFile       wie   'Reset'                                *)
+(*       p  RewriteByteFile     wie   'Rewrite'                              *)
+(*       p  CloseBytefile       wie   'Close'                                *)
+(*       f  EOFByteFile         wie   'EOF'                                  *)
+(*       p  ReadByteFile        wie   'Read'                                 *)
+(*       p  WriteByteFile       wie   'Write'                                *)
+(*       v  IOResultByteFile    wie   'IOResult' nur nach Reset und Rewrite  *)
+(*****************************************************************************)
+
+Const   MaxBytePuffer      =  1024;
+Type    BF_str14           =  String[14];
+        ByteFile           =  Record
+                                f  :  File;
+                                puffer  :  array[1..MaxBytePuffer] of Byte;
+                                Ptr,Erster,Letzter,Size   :  integer;
+                                WriteFlag                 :  boolean;
+                              End;
+
+Var     IOResultByteFile   :  integer;
+
+procedure  LiesBlock(Var BF:ByteFile; Nr : integer);
+ Function  Min(x,y : integer):integer;
+   begin  if x<y then min := x else min := y end;
+ begin
+   with bf do
+        begin
+          erster := Nr;  Ptr := 0;
+          Letzter:= Nr+MIN(size-Nr,pred(MaxBytePuffer SHR 7));
+          seek(f,pred(Nr));
+          blockread(f,Puffer,succ(Letzter-Erster));
+        end;
+ end;
+
+Procedure FlushByteFile(VAR BF : ByteFile);
+Begin
+  With BF do
+    If WriteFlag Then
+       Begin
+         seek(f,pred(Erster));
+         blockwrite(f,puffer,succ(Letzter-Erster));
+         WriteFlag := false;
+       End;
+end;
+
+Procedure LongSeekByteFile(Var BF : ByteFile; Position : real);
+ Var Seite,Nummer   :   integer;
+ Begin
+   Seite := Trunc(Position/128); Nummer := trunc(Position-128.0*Seite);
+   Seite := succ(Seite);
+   With BF do
+     If (Seite >= Erster) AND (Seite <= Letzter)
+        Then Ptr := ((Seite-Erster) SHL 7) OR Nummer
+        else Begin FlushByteFile(BF);LiesBlock(BF,Seite);Ptr := Nummer END;
+
+END;
+
+Function LongFilePosByteFile(VAR BF : Bytefile) : real;
+Begin
+  With BF do LongFilePosByteFile := 128.0*pred(Erster)+Ptr
+End;
+
+
+
+Function  EOFByteFile(Var BF : Bytefile) : boolean;
+Begin
+  With BF do
+       EOFByteFile := (Letzter = Size) AND (Ptr=succ(Letzter-Erster) SHL 7)
+end;
+
+Function LongFileSizeByteFile(Var BF : Bytefile) : real;
+Begin
+LongFileSizeByteFile := 128.0 * BF.size
+End;
+
+
+
+Procedure AssignByteFile(Var BF : Bytefile; Name : BF_str14);
+begin
+  with bf do assign(f,name);
+end;
+
+Procedure ResetByteFile( Var BF : Bytefile);
+Begin
+With BF do
+     begin
+     {$I-}; reset(f);  {$I+};  Letzter := 0; WriteFlag := false;
+     IOResultByteFile := IOResult;
+     if IOResultByteFile = 0 Then
+        begin
+        {$I-}; Size := FileSize(f); {$I+};  IOResultByteFile := IOResult;
+        if IOResultByteFile =0 then LongSeekByteFile(BF,0);
+        end;
+end;
+end;
+
+Procedure  RewriteByteFile(Var BF : Bytefile);
+   Begin
+     With  BF do
+       Begin
+         {$I-};  rewrite(f);  {$I+}; IOResultByteFile := IOResult;
+         Ptr := 0; Erster := 1; Letzter := 0; Size := 0; WriteFlag := false;
+       end;
+end;
+
+Procedure ReadByteFile(Var BF : Bytefile; Var B : Byte);
+Begin
+  With BF do
+       Begin
+          if Ptr = MaxBytePuffer
+          then begin Flushbytefile(bf);LiesBlock(BF,succ(Letzter))  End;
+
+       Ptr := succ(Ptr);  B := Puffer[Ptr];
+  end;
+end;
+
+Procedure WriteByteFile(Var BF : Bytefile; B : Byte);
+  Function MAX(x,y : integer):integer; Begin IF x>y then max:=x else max:=y end;
+  begin
+   with  BF do
+         begin
+           If Ptr=MaxBytePuffer then
+              begin  FlushByteFile(BF); Erster := succ(Letzter); Ptr := 0 END;
+           Ptr := succ(Ptr);  Puffer[Ptr] := B;
+           Letzter := max(letzter,erster+(pred(ptr) SHR 7));
+           WriteFlag := True; Size := MAX (Size,Letzter);
+         end;
+  end;
+
+
+Procedure CloseByteFile(Var BF : ByteFile);
+Begin
+  FlushByteFile(BF);
+  close(BF.f);
+end;
+
+Procedure EraseByteFile(VAR BF : ByteFile);
+Begin
+  erase(BF.f);
+end;
+
+Procedure RenameByteFile ( VAR BF : ByteFile; Name : BF_Str14);
+Begin
+  rename(BF.f,name)
+end;
+
+
+

@@ -1,0 +1,683 @@
+Rev. 1.1 10/23/85
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                       sss         ccc        ii   
+                     sssssss     ccccccc        
+                    sss   sss   ccc   ccc   iiii  
+                     ssss      ccc          iiii
+                        ssss   ccc            ii
+                    sss   sss   ccc   ccc     ii
+                     sssssss     ccccccc   iiiiiiii
+                       sss         ccc     iiiiiiii
+
+             A "Small C" Interpreter for CP/M-80 (tm) systems
+                         version 1.1: October, 1985
+                               Bob Brodt
+                            34 Mehrhof Rd.
+                        Little Ferry, NJ 07643
+
+
+
+
+
+
+
+
+
+
+
+
+
+                              DISCLAIMER
+ This program is being distributed under the Freeware (tm) concept
+ and, as such, may not be re-distributed for profit.  If you find
+ the program useful please make a donation of whatever you feel the
+ program is worth, otherwise treat it as you would any other non-
+ communicable disease.  The author makes no guarantees of any kind,
+ either expressed or implied, as to the bugyness of this program and
+ its documentation.  Any bugs that you find in this program and or
+ documentation you may keep at no extra charge.
+
+
+
+
+
+
+
+
+
+INTRODUCTION
+
+   SCI is a "C" language interpreter loosely based on the language subset
+ described in James Hendrix' "Small C" compiler  (see the section
+ "DIFFERENCES FROM  SMALL C", below). It is a fully interactive interpreter
+ (no compilation!) that includes a simple line editor and a program trace
+ facility.  SCI was meant to be a stepping stone for the experienced BASIC
+ programmer who is ready to move up to the exciting world of "C"!
+
+   The SCI interpreter is very similar to BASIC internally - each line of
+ input is first scanned and "tokenized", a process in which language elements
+ are converted to one-, two- or three-byte "tokens" which are easier to
+ handle by a computer than arbitrarily long character sequences.
+
+
+STARTING_OUT
+
+   The files on the distribution diskette are:
+
+ SCI.DOC   - documentation and sound effects
+ SCI.COM   - the interpreter proper
+ SHELL.SCI - the command shell, written in "Small C"
+ CALC.SCI  - a short demo program
+
+   To start up SCI, make sure that SHELL.SCI resides on the current drive
+ and then execute SCI.COM. The interpreter will then read and execute the
+ program it finds in SHELL.SCI.
+
+
+THE_SHELL
+
+   The "stock" version of the shell simply displays a prompt on the
+ console, reads a line of input, and attempts to execute the input line
+ The entire shell program (sans support routines) is shown below:
+
+ int size,top;
+ char line[80];
+ char program[16000];
+
+ main()
+ {
+    int from, to;
+
+    top=16000;
+    program[0] = 90;   # This is an "End of program" token - required
+    size=1;
+
+    # print sign-on message
+    printf( "%s\nShell V1.1, 23 OCT 1985\n", sys(0) );
+
+    while(1)
+    {
+       puts("> ");
+       if(gets(line))
+       {
+          if (!strncmp(line,"edit",4))
+             size = sys(atoi(line+5),program,15); # envoke the editor
+          else if (!strncmp(line,"save ",5))
+             sys(line+5,program,21);              # save the program buffer
+          else if (!strncmp(line,"load ",5))
+             size = sys(line+5,program,20);       # load the program buffer
+          else if (!strncmp(line,"list",4))
+          {
+             if(line[4])
+                sscanf(line+4,"%d %d",&from,&to);
+             else
+             {
+                from=1;
+                to=32765;
+             }
+             sys(program,from,to,22);           # list the program buffer
+          }
+          else if (!strncmp(line,"exit",4))
+             return;                              # return to previous shell
+          else if (!strncmp(line,"free",4))
+             printf("%d\n",top-size);             # show amount of free space
+          else
+             #
+             # attempt to parse the line as a small c statement. Note that
+             # we will always display the results of the statement, so you
+             # could enter something like: 2+2 and a 4 would be printed.
+             #
+             printf("%d\n", sys(line,program,size,12) );
+       }
+    }
+ }
+ 
+   Later, as you become more familiar with the "C" language, you may wish
+ to modify the shell program and add your own commands.  The stock version
+ of the shell recognizes four basic (pardon the pun) commands: "edit",
+ "load", "save" and "free". These are similar in operation to the BASIC
+ commands of the same name, with the exception that no quote (") is required
+ in front of the file name for the "load" and "save" commands.  Anything
+ else typed at the shell is assumed to be a valid "Small C" statement and
+ is handed off to the interpreter to be executed.
+
+   By the way, programs that are "save"d by SCI are ordinary text files,
+ suitable for editing with your favourite CP/M text editor (if there be
+ such a thing).
+
+
+THE_EDITOR
+
+   To edit a program, simply type "edit", or "edit N", where "N" is the
+ line number in the program to start editing. The requested line will be
+ displayed and the cursor positioned on the first character of the line.
+
+   The editor has two different operating modes: EDIT and INSERT.
+ In EDIT mode, you may move the current character position ("cursor")
+ anywhere within the program and you may delete text. In INSERT mode,
+ any characters that you type are inserted into the program until you
+ return to EDIT mode.
+
+   Any changes you make during an editing session affect only the program
+ currently residing in memory. The copy of the program on disk (if one
+ exists) is not changed until you issue a "save" command.
+
+   To leave the editor and return to the command shell, type an <ESCAPE>
+ character.
+
+   Editing commands are divided into 3 categories: cursor movement,
+ text insertion and text deletion. The cursor movement commands allow
+ you to position the cursor anywhere in the program. These are:
+
+   'h' or CTL-S or <BACKSPACE> -
+      moves the cursor to the left by 1 character position.
+
+   'l' (that's a lower-case "ell") or CTL-D or <SPACE> -
+      moves the cursor to the right by 1 character position.
+
+   'j' or CTL-X or <RETURN> or <LINEFEED> -
+      advances the cursor to the next line ON THE SCREEN and displays
+      the next line of the program.
+
+   'k' or CTL-E -
+      advances the cursor to the next line ON THE SCREEN and displays
+      the previous line of the program.
+
+   'g' -
+      prompts for a line number, advances the cursor to the next line
+      on the screen and displays the requested line of the program.
+
+   'f' -
+      prompts for a character sequence to be searched for in the program,
+      advances the cursor to the next line on the screen and displays the
+      requested line of the program.
+
+   If the cursor is moved past the end of the program, the editor will
+ display an <EOF> and will not allow you to move past it. Similarly, if
+ the cursor is moved to the first line of the program, the 'k' command
+ will be inoperative.
+
+   The text insertion commands are:
+
+   'i' -
+      will cause characters to be inserted before the current cursor
+      position. As you type, the characters to the right of the cursor
+      will appear to be overwritten on the screen, but are actually shifted
+      (in the editor's buffer) to make room for the inserted text.
+      To leave the character insertion mode, end the line with a <RETURN>.
+      the cursor will advance to the next line on the screen and the line
+      will be redrawn with the newly inserted text.
+   'I' -
+      will enter line insertion mode. All characters typed will be inserted
+      into the program in front of the line the cursor was resting on.
+      To leave the line insertion mode, type and <ESCAPE>.
+
+   Text may be deleted from the program either a character-at-a-time or
+   a line-at-a-time:
+
+   'd' -
+      will delete the character the cursor is resting on. The cursor
+      advances to the next line on the screen and the current line is re-
+      drawn with the deleted character missing.
+
+   'D' -
+      will delete the line the cursor is resting on. The cursor advances
+      to the next line on the screen and the next line in the program is
+      displayed.
+
+   Remember, type <ESCAPE> to exit the editor!
+
+
+LANGUAGE_ELEMENTS
+
+   Althgough SCI implements only a subset of the "C" language, it is
+ powerful enough to teach you the major principles of "C". We're going
+ to cop out now and refer you to a higher authority for a sound
+ introduction to "C", but we will list here the major features of the
+ language subset recognized by SCI.
+
+   * "char" and "int" data types, as well as pointers to "char"s and
+     "int"s and single-dimensioned arrays of "char" and "int".
+
+   * Decimal integer constants, character constants and string constants.
+     Character and string constants may contain all of the standard
+     escape characters such as "\n", "\b", etc. Hexadecimal and octal
+     integer constants are not supported.
+
+   * "if-else" and "while-break" control structures.
+
+   * Numerous operating system functions available to user programs
+     (see THE SYS FUNCTIONS, below).
+
+   * Program trace capability.
+
+
+MY_FIRST_PROGRAM
+
+   To get you started writing "C" programs, step right up to your computer
+ (don't be shy), fire 'er up and insert the disk. Then type "SCI" and
+ wait for the shell program to load (don't get too anxious now!).
+ When the shell prompts you with "> " boldly type the word:
+
+      > edit_
+
+   and hit <RETURN>. You are now in the editor. Time to refer back to
+ the EDITOR section of this manual. Since there is nothing in the program
+ buffer, the editor displays:
+
+        1:<EOF>_
+
+   Hold down that shift key and poke the key with the letter 'I' on it.
+ You are now in line insertion mode. Anything you type from here on will
+ be inserted into the program buffer until you press <ESCAPE>. Notice that
+ the editor prompts you with "new:" to tell you that you are entering a new
+ line. So, why not just type in the little program below:
+
+      new:hi()
+      new:{
+      new:   puts( "hello, world\n" );
+      new:}
+      new:_
+
+   When you're done, hit <ESCAPE> to end line insertion mode. Your screen
+ should look like this:
+
+      new:hi()
+      new:{
+      new:   puts( "hello, world\n" );
+      new:}
+        5:<EOF>_
+
+ Then type <ESCAPE> again to leave the editor. When the shell gives you
+ its prompt, type:
+
+      > hi()_
+
+   and hit <RETURN>. The shell will hand the input line off to the
+ interpreter, the interpreter will scan the program buffer for a function
+ named "hi" and call that function. The "hi" function will then call the
+ library function "puts" to print the string "hello, world\n" on the console.
+ What you see is simply:
+
+      > hi()
+      hello, world
+      > _
+
+   Congratulations, even if six months ago you couldn't spell "programur",
+ you now are one!
+
+
+THE_SYS_FUNCTIONS
+
+   The "sys" keyword has been reserved by SCI as a means of communicating
+ between a user's program and the interpreter. It is treated exactly the
+ same as a (pre-defined) function that may be referenced by a user program.
+ This is an interface to some complex and time-critical system functions,
+ that has been provided mainly as a convenience to the user.
+
+   A "sys" call may have several arguments, the number and type of which
+ depends upon the integer value of the last (right-most) argument. This
+ righ-most argument is called the "sys number" and defines the actual
+ function performed by a "sys" call. These "sys numbers" and the functions
+ performed by each are described below. Following the sys number, in
+ parentheses, is a mnemonic name for the function that is also the name
+ of a "library" function that may be found in the stock shell, SHELL.SCI.
+ These library functions provided in the standard shell are merely
+ intermediate functions to the "sys" call. They are intended to provide a
+ programming environment that is compatible with most commercially available
+ "C" compilers. The usage of these functions is identical to the "sys" calls
+ with the exception that the "sys number" need NOT be given in the library
+ function call.
+
+         library
+ sys #   function   description
+ -----  ---------   -----------
+  0     (version) - returns a pointer to a string containing the version
+                    number of the interpreter.
+  1     (putchar) - sends a single character to the console.
+                    RETURNS: the character that was displayed.
+
+                    sys(chr,1)
+                       chr - the character to be displayed.
+
+  2     (getchar) - reads a character from the console keyboard and echos
+                    it to the console display.
+                    RETURNS: the character read.
+
+                    sys(2) - no arguments.
+
+  3     (fputs)   - writes a string to a given file channel. The channel
+                    must have been previously opened with sys(7), or it
+                    may be either 1 or 2 to write to the standard output
+                    file (initially the console) or the standard error
+                    file (also initially the console).
+                    RETURNS: the address of the string, or -1 on error.
+
+                    sys(str,channel,3)
+                       str - the string to be written.
+                       channel - the file channel number.
+
+  4     (fgets)   - reads a string from a given file channel. The channel
+                    must have been previously opened with sys(7), or it
+                    may be 0 to read from the standard input file
+                    (initially the console). A string is roughly equivalent
+                    to a single line of text in the file.
+                    RETURNS: the address of the string, or 0 on EOF.
+
+                    sys(buf,channel,4)
+                       str - the address where the string will be read to.
+                       channel - the file channel number.
+
+  5     (sprintf) - does a formatted print to a string. See the "printf"
+                    function in your "C" manual for more info.
+                    RETURNS: nothing interesting.
+
+                    sys(buf,format,arg1,arg2 ... arg8,5)
+                        buf - the address where the formatted string will
+                           be written to.
+                        format - the conversion format.
+                        arg1...arg8 - up to 8 optional arguments that will
+                           be converted, according to "format".
+
+  6     (sscanf)  - does a formatted read from a string. See the "scanf"
+                    function in your "C" manual for more info.
+                    RETURNS: the number of items read.
+
+                    sys(buf,format,arg1,arg2 ... arg8,6)
+                        buf - the string to be scanned.
+                        format - the conversion format.
+                        arg1...arg8 - up to 8 optional arguments that will
+                           receive the information scanned from "buf"
+
+  7     (fopen)   - opens the given file name for read or write.
+                    RETURNS: a non-negative channel number to be used for
+                    subsequent reads or writes on the channel, or a -1 if
+                    the file could not be opened.
+
+                    sys(file,mode,7)
+                       file - the name of the file to be opened.
+                       mode - is the string "r" to open the file for read,
+                              or "w" for write.
+
+  8     (fread)   - reads a given number of bytes from a file channel. As
+                    with sys(4), the channel must already be open.
+                    RETURNS: the address of the data read, or 0 on EOF.
+
+                    sys(buf,count,channel,8)
+                       buf - the address where the data will be read to.
+                       count - the number of data bytes to be read.
+                       channel - the file channel number.
+
+  9     (fwrite)  - writes a given number of bytes to a file channel.
+                    RETURNS: the address of the data written, or -1 on error.
+
+                    sys(buf,count,channel,9)
+                       buf - the address of the data to be written.
+                       count - the number of data bytes to be written.
+                       channel - the file channel number.
+
+  10     (fclose) - closes an open file channel.
+                    RETURNS: 0 if successful, or -1 if not.
+
+                    sys(channel,10)
+                       channel - the file channel number.
+
+  11     (exit)   - exits to CP/M
+
+                    sys(11) - no arguments.
+
+  12     (stmt)   - hands a string containing a "Small C" statement off to
+                    the interpreter to be executed.
+                    RETURNS: the results of the statement.
+
+                    sys(str,12)
+                       str - the string containing the C statement.
+
+  13     (totok)  - "tokenize" the given string containing a "Small C"
+                    statement.
+                    RETURNS: the length of the tokenized string.
+
+                    sys(srcbuf,tknbuf,13)
+                       srcbuf - the string containing the C statement.
+                       tknbuf - the destination of the tokenized version
+                          of "srcbuf".
+
+  14     (untok)  - "un-tokenizes" the given token string.
+                    RETURNS: the length of the tokenized string.
+
+                    sys(tknbuf,srcbuf,14)
+                       tknbuf - the string containing the tokenized C
+                          statement.
+                       srcbuf - the destination of the untokenized version
+                          of "tknbuf".
+
+  15     (edit)   - envokes the program editor.
+                    RETURNS: the new length of the program buffer.
+
+                    sys(linenum,program,15)
+                       linenum - the line number to start editing.
+                       program - the tokenized program buffer.
+
+  16     (strcmp) - comparse two strings for equality.
+                    RETURNS: 0 if the strings match, non-zero if not.
+
+                    sys(str1,str2,count,16)
+                       str1,str2 - the 2 strings to be compared.
+                       count - an optional count of the number of characters
+                          to be compared.
+  17     (corelft)- check how much free space is left in the heap.
+                    RETURNS: the number of bytes of available memory.
+
+                    sys(17) - no arguments.
+
+  18     (malloc) - request a given number of bytes of memory from the heap.
+                    RETURNS: the address of the first byte of the allocated
+                    block. This address must be given to sys(19) to return
+                    the block back to the heap.
+
+                    sys(count,18)
+                       count - the number of bytes requested.
+
+  19     (free)   - return a block of memory to the heap.
+
+                    sys(address,19)
+                       address - the address of the block (previously gotten
+                          from sys(18).
+
+  20     (load)   - load a program (in untokenized form) from a file into
+                    memory.
+                    RETURNS: the size of the tokenized program.
+
+                    sys(file,program,20)
+                       file - the name of the file containing the program.
+                       program - an array that contains the tokenized
+                          version of the program.
+
+  21     (save)   - save a program (in tokenized form) to a file.
+                    RETURNS: nothing interesting.
+
+                    sys(file,program,21)
+                       file - the name of the file where the program is to
+                          be written to.
+                       program - an array that contains the tokenized
+                          version of the program.
+
+  22     (list)   - list a program in tokenized form to the console.
+                    RETURNS: nothing interesting.
+
+                    sys(program,from,to,22)
+                       program - an array that contains the tokenized
+                          version of the program.
+                       from - the starting line # to be listed.
+                       to - the ending line # to be listed.
+
+  23     (trace)  - enable or disable the program line trace function.
+                    RETURNS: nothing interesting.
+
+                    sys(on_off,23)
+                       on_off - if non-zero will enable trace, zero will
+                          disable it.
+
+
+PROGRAM_TRACE
+
+   The library function "trace", described in the previous section allows
+ you to enable or disable the program trace feature. When trace is enabled,
+ the interpreter displays each line of the program on the console before
+ it executes it, and then displays a question mark (?) prompt. At
+ this point you may either enter another "Small C" statement (to display
+ the contents of a variable for example) or hit <RETURN> to have the
+ interpreter execute the line and go on to the next line in the program.
+ Typing an <ESCAPE> at the "?" will disable trace and cause your program
+ to execute normally from there on.
+
+   Also, if the interpreter finds an error in your program, it will
+ automatically enable trace and halt the program at the offending line,
+ at which point you may wish to examine program variables or whatever.
+
+
+PASSING_ARGUMENTS_TO_THE_SHELL
+
+   A mechanism has been provided to pass CP/M command line arguments to
+ the command shell in a way similar to most commerically available "C"
+ compilers.  When you start up SCI from CP/M, a "-A" will cause all
+ following arguments to be passed to the command shell.  For example,
+ suppose the following program to be the command shell:
+
+      main( argc, argv )
+      int argc, *argv;
+      {
+          int i;
+
+          while( i<argc )
+          {
+              printf("<%s>\n",argv[i]);
+              i=i+1;
+          }
+      }
+
+ Then, typing the CP/M command:
+
+      A>SCI -A HELLO OUT THERE
+
+ would cause SCI to display the following:
+
+      <HELLO>
+      <OUT>
+      <THERE>
+
+
+DIFFERENCES_FROM_SMALL_C
+
+   SCI supports the subset of the "C" language defined by James Hendrix'
+ public domain "Small C" compiler, available for many CP/M and MS-DOS
+ machines. There are, however, some minor differences that have been
+ dictated in part by the fact that this is an interpreter. These are:
+
+   0) Program source lines are limited to 80 characters, just to keep
+      things simple. The editor will complain if you try to enter a line
+      longer than 80 characters.
+   1) There are no #define or #include statements, simply because there
+      is no pre-processor!
+   2) Comments are introduced by the number symbol (#) and are terminated
+      by the end of the line. The "/*" and "*/" combinations will only
+      be barfed at by SCI.
+   3) Statements in general are terminated by the end of a line - the
+      semicolon required by the "C" language at the end of a statement
+      is superfluous. This restriction imposes that an expression be
+      completely on one line (boooo, hissss!), however you no longer
+      get penalized for forgeting a semicolon (hurray, yay!). This also
+      implies that string and character constants are terminated by the
+      end of the line. In fact, if you forget to add the terminating quote
+      or apostrophe delimiter, SCI will insert one for you.
+   4) Increment and decrement operators are not recognized (aaaaww).
+   5) The comma operator is recognized ONLY when used in function calls
+      and data declarations. For instance, it would be illegal to say:
+         while ( argv=argv+1, argc=argc-1 );
+   6) Data declarations may appear ANYWHERE within a program or function
+      (hurray, yay!), however local data declarations remain active up
+      to the end of the function - they don't go away at the end of the
+      compound statement they were declared in (boooo, hissss!).
+   7) Pointers to integers are advanced to the next BYTE, not the next
+      integer. For example, *(ip+1) will point to the least significant
+      byte of the next integer (on a Z80 machine), not the next word
+      (booo, hisss!). But, ip[1] still points to the next integer (whew!).
+   8) Pointer expressions are not allowed on the left-hand side of an
+      equal sign.  This restriction is due to the author's laziness.
+   9) Be careful, array references can be used on the left side of an
+      equal sign (ptewph, yuk, cough!).
+
+
+ERROR_MESSAGES
+
+ missing '}' or ')'
+   Left and right braces or parentheses don't match up.
+
+ missing operator
+   The interpreter found two consecutive operands.
+
+ missing ')' or ']'
+   Left and right brackets don't match up
+
+ subscript out of range
+   The subscript used to index an array was larger (or smaller) than
+   what the array was declared to be.
+
+ not a pointer
+   An attempt was made to use a simple char or int variable as an array
+   or a pointer.
+
+ syntax error
+   An error was detected in the structure of a statement.
+
+ need an lvalue
+   An attempt was made to assign a value to a constant.
+
+ stack overflow
+   The expression is too complicated or function calls are nested too
+   deeply.
+
+ stack underflow
+   Something is wrong (?)
+
+ too many functions
+   Just what it says - the interpreter ran out of function table space.
+
+ too many symbols
+   The interpreter ran out of variable table space.
+
+ out of memory
+   Just what it says.
+
+ link error
+   The interpreter could not make sense out of the program.
+
+ missing '}'
+   Left and right braces don't match up.
+
+ sys error
+   The wrong number of arguments were passed to a sys call.
+
+ undefined symbol
+   A variable name was used that was never declared anywhere.
+
+ interrupt
+   A user program was interrupted by pressing the <ESCAPE> key. To resume,
+   press <ESCAPE> again.
+
+ unknown error
+   something is wrong with the interpreter (?).
+

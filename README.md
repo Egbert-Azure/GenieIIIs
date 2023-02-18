@@ -13,4 +13,7 @@ With our project, we hope to inspire other enthusiasts to join us in exploring t
 ![image](https://user-images.githubusercontent.com/55332675/219800153-87168b70-fd9c-40e2-b4cf-b99ee3ae718b.png)
 
 ## How to Articles ##
-can be found This GitHub markdown file segment describes an article series written by Volker Dose and Egbert Schröer in July 1993, which explains how to use the graphic capabilities of the Genie III computer under Holte CP/M+. The article series covers three programming languages: Turbo Pascal 3.0, ANSI C, and assembler.
+
+can be found in `How to article`
+
+- Grafik des Genie IIIs 1-3 describes an article series written by Volker Dose and Egbert Schröer in July 1993, which explains how to use the graphic capabilities of the Genie III computer under Holte CP/M+. The article series covers three programming languages: Turbo Pascal 3.0, ANSI C, and assembler.

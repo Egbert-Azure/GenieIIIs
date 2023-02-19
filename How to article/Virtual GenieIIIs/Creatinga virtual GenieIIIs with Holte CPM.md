@@ -2,6 +2,7 @@
 
 > Note: First Draft
 
+![image](https://user-images.githubusercontent.com/55332675/219958640-1cf13e8e-c9d4-4292-b11b-0bffc0cffedc.png)
 
 ### DISCIO.MAC
 

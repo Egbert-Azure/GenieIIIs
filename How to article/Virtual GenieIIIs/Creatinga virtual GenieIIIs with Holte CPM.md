@@ -2,13 +2,13 @@
 
 > Note: First Draft
 
-Das alte, für 21 MB geänderte, DISKIO.MAC ist in dem DMK, HD2.MAC braucht man nicht (das waren ja euere Anpassungen für den OMTI-Controller). Um ein neues CP/M 3 zu generieren, gibt es BOOTGEN.SUB und CPM3.SUB. Eine System-Disk kann man über KOPIER.COM im Holte-CP/M erstellen. Das obige DMK-Image wird als "Boot-Laufwerk" angegeben:
-
-... dann erstellt man ein "Hard Disk"-Image (Alt-H) mit den Parametern:
+The old DISKIO.MAC, modified for 21 MB, is in the DMK file, HD2.MAC is not needed (those were your adaptations for the OMTI controller). To generate a new CP/M 3, there are BOOTGEN.SUB and CPM3.SUB. A system disk can be created using KOPIER.COM in Holte-CP/M. The (here link) DMK image is specified as the "boot drive":
 
 ``` consol
 sdltrs -disk0 g3s-holte-21.dmk
 ```
+
+Then create a "Hard Disk" image (Alt-H) with the following parameters in `sdltrs`:
 
 ![image](https://user-images.githubusercontent.com/55332675/219958640-1cf13e8e-c9d4-4292-b11b-0bffc0cffedc.png)
 

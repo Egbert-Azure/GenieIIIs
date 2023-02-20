@@ -1,4 +1,4 @@
-## Holte virtual disks for Emulator:
+## Holte virtual disks for Emulator ##
 
 - egcpm01.dmk - CP/M 3.0 plus. boot disk with Holte CP/M 3.0; Seagate ST225 and OMTI Controller
 - egcpm03.dmk - CP/M 3.0; system development boot disk; origin with Tandon TM252 harddisk
@@ -28,6 +28,3 @@
 - egcpm29.dmk - lesbar;content: "Diskettenweitwurf" Volker & Egbert & Fritz
 - egcpm30.dmk - lesbar;content: DFUE stuff
 - egcpm34.dmk - lesbar;content: Systemerstellung Testdisk
-- egcpm35.dmk - damaged/nich lesbar vom Holte CP/M aus; CP/M 2.2 Kaempf fuer Genie IIIs
-- egcpm36.dmk - damaged/nich lesbar vom Holte CP/M aus; CP/M 3.0 Kaempf fuer Genie IIIs
-- egcpm38.dmk - damaged/nich lesbar vom Holte CP/M aus; CP/M 3.0 Kaempf fuer Genie IIIs

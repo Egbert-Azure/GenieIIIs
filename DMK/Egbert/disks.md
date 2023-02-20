@@ -1,7 +1,8 @@
 ## Holte virtual disks for Emulator ##
 
-- ### egcpm01.dmk - CP/M 3.0 plus. boot disk with Holte CP/M 3.0; Seagate ST225 and OMTI Controller
-![image](https://user-images.githubusercontent.com/55332675/220178600-dcbccd4b-59c5-4a9f-93eb-85c091bec062.png)
+- egcpm01.dmk - CP/M 3.0 plus. boot disk with Holte CP/M 3.0; Seagate ST225 and OMTI Controller
+
+    ![image](https://user-images.githubusercontent.com/55332675/220178600-dcbccd4b-59c5-4a9f-93eb-85c091bec062.png)
 - egcpm03.dmk - CP/M 3.0; system development boot disk; origin with Tandon TM252 harddisk
 - egcpm04.dmk - CP/M 3.0; system disk
 - egcpm06.dmk - test program using HD with Genie IIIs

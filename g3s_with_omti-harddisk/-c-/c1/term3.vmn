@@ -1,0 +1,48 @@
+-x
+#
+                     >>>>> TERM3 COMMUNICATIONS MENU <<<<<
+
+      ===================================================================
+       1 - Originate Phone Call (dial from directory)      (T3FILER) - 1
+       2 - Answer Phone & Enter:  Conversational Mode     (T3ANSWER) - 2
+       3 -                        Terminal Mode           (T3ANSWER) - 3
+       4 -                        Computer Command Line   (T3ANSWER) - 4
+       5 -                        Message System  (T3LOGIN/T3ENVSET) - 5
+       6 - Communications Control Menu                     (T3FILER) - 6
+           C - Communication Set Editor     Macro Segment Editor - M
+           T - Telephone Directory Editor   User Database Editor - U
+       7 - Originate Phone Call (for T3DO)                  (T3TERM) - 7
+       8 - Scan User Activity Log                           (T3NOTE) - 8
+       9 -                                                           - 9
+       0 - Initialize Modem and Telephone Interface         (T3INIT) - 0
+      ==========================>>> H - HELP <<<=========================
+                                              System File is $f1
+   
+           E - Edit System File                           (LZED) - E
+           S - Set System File                         (SETFILE) - S
+           V - Invoke VFILER        Scan Master Catalog (Discat) - D
+           Z - Enter Command Line
+#
+1 BASE:t3dial /m;if er;BASE:t3filer /t;fi
+2 BASE:t3answer;if er;BASE:t3filer /c;fi
+3 BASE:t3answer;if er;BASE:t3filer /t;fi
+4 BASE:t3answer;if er;BASE:dev c crtmod;fi
+5 BASE:t3answer;if er;BASE:login;BASE:t3envset;fi
+6 BASE:t3filer /m
+7 BASE:t3dial /m;if er;BASE:t3term /t;fi
+8 ROOT:vtype TERM3:activity.txt
+9
+0 BASE:t3init "Enter 1 for 300 bps, 2 for 1200, 3 for 2400: "
+c TERM3:;edcst;$d$u:
+m TERM3:;edtmc t3;$d$u:
+t TERM3:;edtxd;$d$u:
+u TERM3:;eduser;$d$u:
+s ROOT:setfile 1 "Enter Name of System File (fn.ft): "
+  BASE:vdo $f1
+e ROOT:LZED $f1
+v ROOT:vfiler
+d!CAT:;catscan "Define Search Mask (e.g., *.doc): ";$d$u:
+h!ROOT:help term3
+z!"$d$u:Command>"
+##
+

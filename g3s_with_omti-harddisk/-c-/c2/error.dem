@@ -1,0 +1,10 @@
+program Error_Demo;
+
+{$i ERROR.INC}
+
+var x : real;
+
+begin
+  ErrorPtr:=Ofs(ErrorProc);
+  x:=ln(-1);
+end.

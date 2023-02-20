@@ -1,0 +1,47 @@
+0 ! $"Enter ZFILER macro script: "
+A ! $d$u:;zex pkxarc $f
+B ! $d$u:;if ne $t z80;cls;echo n%>ot a z80 file;else;cls;c4:zas $n;echo e%>rrors, cancel link?;c4:zlink $n,c4:vlib/,c4:z3lib/,c4:z33lib/,c4:syslib/;era $n.* i;fi
+C ! $d$u:;CRUNCH $f $"Destination DU:? "
+D ! if eq $t lbr;$d$u:;ldir $f;else $d$u:;SDZ $f $l;fi
+E ! $d$u:;ZDE $f /N
+F ! dos:format a:;initdir 
+G ! dbase:;dbase asv
+H ! zhelp:ZHELP $"HELP on Letter: _
+I ! IF ~eq $t com and ~eq $t ar?;$d$u:;LT $f;else;echo ^A f%>ile %<$f%> is not viewable! ^B;fi
+J ! echo f%>ull file spec:%< $p;echo f%>ile directory:%< $d$u:;echo f%>ile name.....:%< $n;echo f%>ile type.....:%< $t
+K ! $d$u:;$!crunch $f $"Destination directory: " $"Comment in []? ";$h:
+L ! $d$u:;dos:LOADND $"Login and update which Drive/User? "
+M ! dos:;VMENU *.* MENU
+N ! $d$u:;NSWEEP;$h:
+P ! $d$u:;pascal:TURBO $f
+Q ! $d$u:;f0:SQ $f;$h:
+R ! IF ~eq $t com and ~eq $t ar? and ~eq ?z?;$d$u:;$!v $f;else;echo ^A f%>ile %<$f%> is not viewable! ^B;fi
+T ! $!v $p
+S ! if eq $t ?z? ;echo  PLEASE - N%>o %<crunched%>- files;else;$d$u:;SFCPC $f;fi
+U ! $d$u:;UNCR $f $"Destination DU? "
+X ! if ~eq $t com;echo n%>ot a %<com%> file;else;$d$u:;:$n $" Command Tail: ";$h:;fi
+V ! $d$u:;vlu;$h:
+W ! cd ws4;wsp $f
+Z ! $d$u:;$" Command to perform on file: " $f $" Tail: ";$h:
+#
+macros:
+       A. ARC-viewing/extracting        N. NSWEEP Multi-User op.  
+       B.                               O.
+       C. Copy from Filelist            P.Turbo Pascal 3 
+       D. Display  LBR/ARC/ARK          Q. Squeeze file
+       E. Edit file pointed to          R. Read with cntrl chars 
+       F. Diskette Formatieren          S. Show large ASCII File  
+       G. Dbase II                      T. Type it by V (.?Y? too)
+       H. HELP-DATABASE for ZCPR        U. Uncrunch standard+.?Y? 
+       I. Inspect Files with LT         V. VLU Library utility
+       J. File-Info                     W. Wordstar 4.0
+       K. Krunch the file               X. eXecute the file
+       L. Log in and update D/U         Y. 
+       M. ===> Menu-System <====        Z. perform command on file
+       
+                  ======= 0. on-line macro =======
+
+               ZFILER parameters for use with macro '0' 
+$!     ZEX 'GO'		$P  DU:FN.FT	$D  DRIVE $'..'  PROMPT  	$N  FN
+$".."  PROMPT  		$F  FN.FT	$U  USER    $H  HOME DU		$T  FT
+

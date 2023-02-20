@@ -1,0 +1,94 @@
+#x
+ Arrow Keys move Pointer                       Use "+" and "-" if More Files
+              +++ INTERACTIVE ASSEMBLY LANGUAGE DEVELOPMENT +++
+                                                   Current File is $f1
+      A - Assemble/Link/Load Current File (ZAS/ZLINK)
+      E - Edit $f1 (ZDE)
+      R - Run $n1.COM
+      S - Set Current File to Edit/Assemble/Link/Load/Run (SETFILE) - S
+
+    Pointer Filer
+      1 - Edit (NW)            Assemble/Link/Load Z80's (ZAS/ZLINK) - 2
+      3 - Assemble/Link/Load MAC'S (M80/L80)      ASM's (MAC/MLOAD) - 4
+      5 - Interactive (ZAS/ZLINK/WM)  Convert Intel to Zilog (ZCON) - 6
+      7 - Edit (LZED)                                  View (VTYPE) - 8
+      9 - Enter Library (NULU)                    Edit (WordMaster) - 0
+
+#
+a $d$u:;era $n1.bak;asm:zas $n1;if er;sak /p2 errors in assembly--cancel;else;asm:zlink $d:$n1,asm:grwlib/,asm:grxlib/,asm:vlib/,asm:z3lib/,asm:syslib/;era $n1.rel;fi
+e $d$u:;dos:zde $f1 /n
+r!$d$u:;$n1 "trailing parameters (<cr> if none) -- "
+s setfile 1 "Enter file name (fn.ft) to edit (and later run): "
+1 $d$u:;get 100 nw.com;poke 74e ff;poke 787 ff;go $pf
+2 if $pt=z80;$d$u:;era $pn.bak;zas $pn;if ~er;zlink $d:$pn,asm:grwlib/,asm:grxlib/,asm:vlib/,asm:z3lib/,asm:syslib/;era *.rel;else;sak /p2 errors;fi;else;sak /p2 not z80 type;fi
+3 if $pt=mac;$d$u:;era $pn.bak;m80 =$pn;sak /zp7 Errors, cancel link (^C)?;l80 /p:100,$pn,asm:vlib/s,asm:z3lib/s,asm:syslib/s,$pn/n/u/e;era $pn.rel;else;sak /p2 not mac type;fi
+4 if $pt=asm;$d$u:;era $pn.bak;mac $pn $$-spz;sak /zp7 Errors, cancel load (^C)?;mload $pn;era $pn.hex;else;sak /p2 not asm file type;fi
+5 $d$u:;zas $pn;if er;sak /p3 cancelled;wm $pf;else;zlink $d:$pn,asm:grwlib/,asm:grxlib/,asm:vlib/,asm:z3lib/,asm:syslib/;era $pn.rel;$pn "for running COM, prameters (<cr> if none)? ";fi
+6 $d$u:;asm:zcon $pf
+7 $d$u:;asm:lzed $pf
+8 vtype $pf
+9 if ex $d$u:$pn.lbr;$d$u:;nulu -o $pn -f;else;sak /p3 library file cannot be found;fi
+0 $d$u:;ws4:wsp $pf
+z!"$d$u:$c>"
+#x
+ Arrow Keys move Pointer                       Use "+" and "-" if More Files
+
+                          +++ HOUSEKEEPING MENU +++
+ Pointer File                         
+   C - Copy to another Directory   (CP)    P - Print (to printer)  (PRINT) 
+   E - Erase (de-allocate space)  (ERA)    R - Rename                (REN) 
+   N - Enter Library File        (NULU)    V - View (screen paged) (VTYPE) 
+
+ System Functions
+   F - Files Capable of Being       1 - Sort and Pack Directory (CLEANDIR)
+       Being Unerased  (UNERASE)    2 - Disk Catalog Menu    (MENU/DISCAT) 
+   U - Unerase Files   (UNERASE)    3 - Enter SHOW System Utility   (SHOW) 
+   W - File Manipulator (VFILER) 
+#
+c cp "Copy to Directory (DIR: or DU:): "=$d$u:$pf
+e echo $pf - delete (Y/N)?  ;if in;era $d$u:$pf;fi
+P poke fe37 "How many columns to print, in hex (50h=80, 64h=100)? ";print $pf "Options (<cr>=default, e=exact): ";poke fe37 50
+r ren "New Name of File (no wild cards): "=$pf
+v vtype $pf
+n if ex $d$u:$pn.lbr;$d$u:;nulu -o $pn -f;else;sak /p3 library file cannot be found;fi
+f!unerase *.* l
+u!unerase "Name of File to Recover (wild cards okay): "
+w vfiler $d$u:
+y show
+1 sap $d:
+2 katalog:;menu discat.mnu
+z!"$d$u:$c>"
+#x
+ Arrow Keys move Pointer                       Use "+" and "-" if More Files
+
+                          +++ WRITER'S WORKBENCH +++
+
+      0 - WordStar         Edit using Document Mode       Newword - 1
+      2 - V-Spell       Spelling Check and Correction   Word Plus - 3
+      4 - Style                   Writing                 Grammar - 5
+      6 - StarIndex                                Communications - 7
+      8 - ASCII to WordStar   File Conversion   WordStar to ASCII - 9
+
+      N - Number of Words in File       Print File using PropStar - P
+      M - Menu                  Housekeeping               VFILER - W
+
+                                                (Use ^Q to change file sort)
+#
+0 $d$u:;ws4:wsp $pf
+1 $d$u:;BASE:nw $pf
+2 $d$u:;era vspell.mis;PRIVATE:vs $pf;if ex vspell.mis;era vspell.mis;era BASE:vspell.bak;BASE:nw $pf;fi
+3 a$u:;era $u:errwords.txt;PRIVATE:spell $d:$pf $slic;review;if ex $u:errwords.txt;markfix $d:$pf $m#;$d:;BASE:nw $pf;else;$d:;fi
+4 a$u:;PRIVATE:cleanup $d:$pf $m#;$d:;BASE:nw $pf
+5 a$u:;PRIVATE:phrase $d:$pf passive.txt;$d:;BASE:nw $pf
+6 $d$u:;PRIVATE:si $pf
+7 MAIL:;ROOT:setfile 1 t3.mnu;ROOT:menu t3.mnu;$d$u:
+8 $d$u:;BASE:txttows $pf
+9 $d$u:;BASE:filtw $pf
+0 $d$u:;PRIVATE:ws $pf
+n $d$u:;BASE:wc $pf
+p $d$u:;BASE:ps $pf
+m:2
+w ROOT:vfiler $d$u:
+z!"$d$u:$c>"
+##
+

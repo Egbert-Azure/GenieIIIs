@@ -1,0 +1,66 @@
+.LQon
+
+Egberô Schr|eò                         427° Dorsten¬ deî 14.11.92
+                                            Joachimstr.18
+                                            tel.:(02362)75311
+                                            gesch.:(02365)494392
+
+
+Hallï Volker,
+
+sch|î daó Dõ Dicè maì wiedeò gemeldeô hast® Anbeé diå SAGÅ Disk'ó 
+V2¸  ­ V43® Damiô bisô Dõ nuî uí einigeó aktueller¬  aló  mancheò 
+Verteiler®  Diå  Disketteî sinä allå ií CPÃ  Vorteø  Format®  Daó 
+Formaô kannsô Dõ unteò K{mpæ CP/Í 2.² miô deí Programí PDRIVE.COÍ 
+abfrageî !
+
+Desweitereî  habå icè Diò diå offiziellå Kataloç-Disë  beigelegt® 
+Falló  Dõ Softwarå ben|tigst¬ kannsô Dõ Dicè nuî direkô  aî  micè 
+wenden.
+
+Folgendå Regelî sinä dabeé einzuhalten:
+Deò Verteileò schickô einå Katalogdisë aî diå m|glicheî Empf{ngeò 
+(weò zweé maì nichô antwortet¬ wirä nuò auæ Anforderunç bedient)® 
+Darauæ  wirä deò aktuellå Stanä beschriebeî (jetztº  V±-43¬  ZSUÓ 
+VOÌ É ±-1² auæ ¶ Disks¬ ZSUÓ VOÌ IÉ ±-1² auæ ¶ Diskó unä ZSUÓ VOÌ 
+IIÉ  ± unä ² auæ eineò Disk¬ Z3COMÓ auæ ´ Diskó unä ZHELPÓ auæ  ³ 
+Diskó « ± Katalogdisk).
+Deò Empf{ngeò suchô sicè anhanä deò ihí vorliegendeî Katalogfileó 
+diå  Anzahì unä diå Nummerî deò Diskó heraus¬ diå eò gernå  habeî 
+m|chte.
+Dieså  Anforderunç schickô eò aî deî Verteileò zusammeî  miô  deò 
+entsprechendeî  Anzahì  formatierteò Disketteî  pluó  Kosteî  f}ò 
+R}ckportï  unä Erstattunç deò Katalogdisë (Disë 1¬­ « Porto)¬  sï 
+daş deí Verteileò keinå Kosteî entstehen.
+Deò Verteileò kopierô daó Materiaì auæ diå Disktetteî unä schickô 
+dieså aî deî Empf{ngeò zur}ck.
+Disë  #3°  wirä nachgeliefert® ZHELPÓ kennå icè nocè  nicht¬  isô 
+abeò  aucè auæ ZSUÓ unä teilweiså V±-4³ enthalten® Icè  habå  Diò 
+meinå HLPFILES.LBÒ kopiert® Diå Lib® isô fasô vollst{ndig.
+
+HOLTE:
+
+Icè habå Diò maì einå Disë miô Holtå CP/Í unä deî Files¬ diå  icè 
+zuò   Systemerstellunç  benutztå  ¬  beigelegt®  Eó  w{rå   nichô 
+schlecht¬  wenî Dõ miò maì diå Holtå Sourcå-Codeó unä  Disk'ó  ií 
+Originalzustanä wiå siå Diò vorliegeî zusendeî w}rdest® Fritú haô 
+durcè h{ufigeó Umkopiereî unä Ver{nderî deò Sourceó eiî mittlereó 
+Chaoó verursachô unä z.B® eineî Fehleò iî deò DRVTBÌ kopiert.
+Wiå gesagtº alleó l{ufô prima¬ aucè Festplatteî ­  Formatierurng¬ 
+abeò anschlie~enä wirä "Synchronisierungsfehler¢ gemeldet.
+Kanî  daó aucè aî deí voî miò benutzteî INIT× liegeî  ??¿  Leideò 
+isô  INIT×  iî Ã geschriebeî unä davoî habå  icè  keineî  blasseî 
+Schimmer.
+
+Z3PLUS:
+
+Meineî  ALIAÓ File¬ G3SK.Z3T¬ ZFILER.CMÄ unä Z3PLUS.LBÒ habå  icè 
+Diò aucè maì kopiert.Š
+Icè hoffå bió bald
+
+
+Egbert
+
+PSº Falló Helmuô (Bernhardt© aî V2¸-4³ interessierô isô->¾  Diskó 
+bittå weitergebeî odeò micè anrufen.
+

@@ -1,0 +1,237 @@
+; MDRV.RSX		1988/08/30	HJD	M80	VERS 1.0
+;
+; assemble to .prl, rename to .rsx and attach to any program with gencom
+;
+; this is for H89 with magnolia CP/M+ and Logitech serial mouse on port E0
+;
+; NOTE: you must set the interrupt vector to 5 on that port.
+; (it's the center port on the h88-3 serial card)
+;
+; once attached a call to bdos function 151 (c=151) returns the address
+; of an area in memory which contains position / button status info.
+; it looks like this:
+;
+;XP:	dw	0	; integer: x position
+;YP:	dw	0	; integer: y position
+;B1:	dw	0	; integer: button 1
+;B2:	dw	0	; integer: button 2
+;B3:	dw	0	; integer: button 3
+;
+; Adresse Serieller Port bei Genie IIIs
+; D0 fuer Kanal A
+; D1 fuer Kanal B
+; 09.10.93
+; Egbert Schroeer
+;
+ 
+	.Z80
+	CSEG
+
+; rsx prefix
+serial:	db	0,0,0,0,0,0
+start:	jp	inst
+next:	jp	0
+prev:	dw	0
+remov:	db	0
+nonbnk:	db	0
+rsxnam:	db	'MOUSEDRV'
+loader:	db	0
+	dw	0
+
+VERSION	EQU	'1'		; VERSION
+MPORT	EQU	0D0H		; port mouse is on
+RST5	EQU	28H		; vector for mouse interupt
+
+;
+; one-time code to install the isr
+;
+inst:	ld	(ost),sp
+	ld	sp,mystack
+	push	hl
+	push	de
+	push	bc
+	push	af
+	ld	hl,mouse	; first check to see if we're in common
+	ld	de,0e000h
+	or	a
+	sbc	hl,de
+	jp	m,error1	; tell user the bad news, and set remove flag	
+
+blp:	ld	a,(blpcnt)	; save count
+	inc	a		; loop thru all banks
+	ld	(blpcnt),a	;
+
+	call	bnksel		; call bios
+
+	ld	hl,rst5		;
+	ld	de,mouse	;
+
+	ld	(hl),0c3h	; a jump
+	inc	hl		;
+	ld	(hl),e		; to
+	inc	hl		;
+	ld	(hl),d		; mouse
+	ld	a,(blpcnt)	; (get a)
+	cp	2		; in
+	jp	nz,blp		; each
+
+	ld	a,1		; back to code bank
+	call	bnksel		; call bios
+
+	ld	de,bdos151	; bypass this installer from now on
+	ld	hl,start	; bdos151 handles this rsx
+	inc	hl		;
+	ld	(hl),e		;
+	inc	hl		;
+	ld	(hl),d		;
+	LD	A,1		; enable UART interupts
+	OUT	(MPORT+1),A	; 
+	ld	c,9		; print message
+	ld	de,msg1		;
+	call	next		;
+	pop	af		;
+	pop	bc		;
+	pop	de		;
+	pop	hl		;
+	ld	sp,(ost)	;
+	jp	next		;
+
+error1:	ld	a,0ffh		; dump this rsx at next wboot
+	ld	(remov),a	;
+	ld	c,9		; print error message
+	ld	de,ermsg1	;
+	call	next		;
+	pop	af		;
+	pop	bc		;
+	pop	de		;
+	pop	hl		;
+	ld	sp,(ost)	;
+	jp	next		; exit to bdos
+
+bnksel:	ld	hl,(1)		; wboot address in hl
+	ld	de,78		; offset to jp bnksel
+	add	hl,de		; add offset
+	ld	(gobios+1),hl	; set-up the call
+gobios:	call	0		; becomes a call to bios
+	ret			;
+
+cr	equ	13
+lf	equ	10
+
+msg1:	db	cr,lf,'MOUSE RSX V3.101 installed.',cr,lf,'$'
+
+ermsg1:	db	cr,lf
+	db	'MOUSE RSX must be in common page (above E000H), load aborted.'
+	db	cr,lf
+	db	'$'
+
+blpcnt:	db	0ffh	; count thru banks
+
+XP:	dw	0	; integer: x position
+YP:	dw	0	; integer: y position
+B1:	dw	0	; integer: button 1
+B2:	dw	0	; integer: button 2
+B3:	dw	0	; integer: button 3
+
+count:	DB	4	; count # of bytes
+
+ost:	dw	0	; space for stack pointer
+	ds	32	; space for 16 words
+mystack	equ	$
+
+;
+; returns address of mouse table
+;
+bdos151:
+	ld	(blpcnt),a	; save a
+	ld	a,c		; check for function 151
+	cp	151		;
+	jp	nz,bexit	;
+	ld	hl,XP		; hl=address on mtbl
+	ld	a,(blpcnt)	;
+	ret			; return directly to caller
+
+bexit:	ld	a,(blpcnt)	; not a call to 151
+	jp	next		;
+
+;
+;	MOUSE.RSX SERVICE ROUTINE
+;
+MOUSE:	LD	(OST),SP	;
+	LD	SP,MYSTACK	;
+	PUSH	AF		; save reg's for return
+	PUSH	BC		; 
+	PUSH	HL		; 
+
+	IN	A,(MPORT)	; input the byte that's waiting
+	LD	C,A		; save in C
+
+	CP	128D		; is range in 127-136?
+	JP	M,SKIP		; 
+	CP	136D		; 
+	JP	P,SKIP		; 
+
+	LD	A,0		; reset count to 0
+	LD	(COUNT),A	; 
+
+	LD	A,135D		; 
+	SUB	C		; A:=135-C
+
+	LD	H,0		; always 0
+
+	LD	L,0		; button 1
+	RRA			; 
+	RL	L		;
+	LD	(B1),HL		; 
+	LD	L,0		; button 2
+	RRA			; 
+	RL	L		;
+	LD	(B2),HL		; 
+	LD	L,0		; button 3
+	RRA			; 
+	RL	L		;
+	LD	(B3),HL		; 
+
+SKIP:	LD	A,(COUNT)	; increment COUNT
+	INC	A		; 
+	LD	(COUNT),A	; 
+
+	CP	2		; second byte?
+	JP	NZ,SKIP1	; next test if not
+	LD	HL,(XP)		; get X position
+	LD	B,0		; set b to 0
+	BIT	7,C		;
+				; see if negetive offset
+	JP	Z,SKIPA		; no:  so b is correct
+	LD	B,0FFH		; yes: so b is worng, correct it
+SKIPA:	ADD	HL,BC		; update new position
+	LD	(XP),HL		; 
+	JP	EXIT		; done for now
+
+SKIP1:	CP	3		; third byte sent?
+	JP	NZ,EXIT		; nop: so exit
+	LD	HL,(YP)		; get current Y position
+	LD	B,0		; set b to 0
+	BIT	7,C		;
+				; see if negetive offset
+	JP	Z,SKIP1A	; no:  so b is correct
+	LD	B,0FFH		; yes: so b is wrong, correct it
+	OR	A		; clear carry
+SKIP1A:	SBC	HL,BC		;
+				; update new position
+	LD	(YP),HL		; 
+	JP	EXIT		; done for now
+
+EXIT:	LD	A,1		; enable UART interupts
+	OUT	(MPORT+1),A	; 
+
+	POP	HL		; restore reg's
+	POP	BC		; 
+	POP	AF		; 
+	LD	SP,(OST)	;
+
+	EI			; enable interupts
+	RETI			;
+
+	END
+

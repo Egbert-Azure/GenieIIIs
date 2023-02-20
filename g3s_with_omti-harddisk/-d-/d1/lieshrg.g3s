@@ -1,0 +1,39 @@
+10 REM ************************************
+20 REM Model 1 HRG 1b - Bildleser
+30 REM f}r Genie 3s
+40 REM Hartmut Obermann
+45 REM ge{ndert f}r Genie 3s 05.92 E. Schr|er
+50 REM ************************************
+60 CLEAR 20000 : CLS :HCLS
+70 DEFINT C-Z : DIMA$(191)
+80 PRINT:PRINTTAB(10)"* * * * * HRG 1b - L A D E R * * * *":PRINT
+90 PRINT"Mit diesem Programm k|nnen HRG-Bilder des Model 1 (HRG 1b)in die Genie 3s - HRG geladen und dann abgespeichert werden!":PRINT
+100 PRINT "Dateiname : ";:LINE INPUT NAM$
+110 PRINT"Laufwerk : ";:LINE INPUT LAUF$
+120 OPEN"R" , 1 , NAM$ + ":" + LAUF$
+130 FIELD 1, 64 AS B$(0), 64 AS B$(1), 64 AS B$(2), 64 AS B$(3)
+140 FOR S1=0 TO 191 STEP 4 : GET 1
+150 FOR S2=0 TO 3
+160 A$(S1+S2)=B$(S2)
+170 NEXT S2 : NEXT S1
+180 CLOSE : CLS : HON
+190 I=-1
+200 FOR V1=11 TO 0 STEP -1
+210 FOR V2=0TO191 STEP 12
+220 V=240-V2+V1
+230 X=0 : I=I+1
+240 FOR H = 0 TO 383 STEP 6 : X = X + 1
+250 A = ASC(MID$(A$(I),X,1))
+260 IF A AND 1 THEN HPLOT H ,V,2
+270 IF A AND 2 THEN HPLOT H+1,V,2
+280 IF A AND 4 THEN HPLOT H+2,V,2
+290 IF A AND 8 THEN HPLOT H+3,V,2
+300 IF A AND 16 THEN HPLOT H+4,V,2
+310 IF A AND 32 THEN HPLOT H+5,V,2
+320 NEXT H : NEXT V2 : NEXT V1
+330 HOFF : PRINT"Bild geladen!"
+340 PRINT"Unter welchem Namen soll das Bild gespeichert werden?"
+350 PRINT"<NAME/EXT:DNR> "; : LINEINPUT N$
+360 CLS :  HON : HSAVE N$
+370 HOFF : PRINT"Bild gespeichert!" : END
+

@@ -1,0 +1,156 @@
+{ ========================================================================= }
+{                    WINDOWG.BIB                                            }
+{ Bibliotheks-Modul fuer Windows unter Holte CP/M+                          }
+{ zusaetzlich wird, wie bei WINDOW(7).BIB die Routine WINDOW.PAR            }
+{ benoetigt. Es wurde versucht weitgehend die Syntax von                    }
+{ WINDOW.BIB einzuhalten.                                                   }
+{ ========================================================================= }
+{ Egbert Schroeer u. Volker Dose Januar bis Juni 1993                       }
+{ ========================================================================= }
+
+var     anystring          :      string[255];
+        buffer             :      array[0..2000] of byte;
+        TempScr            :      array[0..2000] of byte;
+        i,j                :      byte;
+        a1,b1,a2,b2,
+        WindowBreite,
+        WindowHoehe        : integer;
+
+
+(* Direkter BIOS-Aufruf ueber BDOS-Funktion 50 *)
+
+function UBIOS(fn,pa,pbc,pde,phl:integer):integer;
+var biospb : record
+               func,a   : byte;
+               bc,de,hl : integer;
+               end;
+    result : integer;
+begin
+  with biospb do begin
+    func:=fn; a:=pa;
+    bc:=pbc; de:=pde; hl:=phl;
+    end;
+  result:=0;
+  case fn of
+    2,3,7,13..15,17..19,24 : result:=BDOS(50,addr(biospb));
+    9,16,20,22,25          : result:=BDOSHL(50,addr(biospb));
+    else                     BDOS(50,addr(biospb));
+    end;
+  ubios:=result;
+  end;
+
+procedure Save_Screen(zeiger_buffer : integer);
+var   nixwert : integer;
+begin
+nixwert := ubios(30,0,22,0,zeiger_buffer);
+end;
+
+procedure Restore_Screen(zeiger_buffer : integer);
+var nixwert : integer;
+begin
+  nixwert := ubios(30,1,22,0,zeiger_buffer);
+end;
+
+procedure Reduzier_Window;
+
+begin
+  a1:=a1+1;
+  b1:=b1-1;
+  a2:=a2+1;
+  b2:=b2-1;
+end;
+
+(*****************************************************************************)
+(*        OpenWindow - Oeffnen eines Fensters                                *)
+(*****************************************************************************)
+{ Procedure  OpenWindow
+  eroeffnet auf dem Bildschirm einen Bereich mit neu definierten
+  Bildfenstergroessen. Alle Bildschirmausgaben nach Aufruf
+  dieser Funktion beziehen sich nur noch auf die neuen Bildschirm-
+  groessen.                                                         }
+
+procedure OpenWindow (Window_Number,top_line,bottom_line,
+                      left_column,right_column : byte);
+
+const   window_char        =      'F';           { Die uebergebenen Parameter }
+        set_top            =      'I';           { muessen mit 32 addiert     }
+        set_bottom         =      'J';           { werden, steht so im HOLTE  }
+        set_left           =      'K';           { Handbuch CPM3.DOC.         }
+        set_right          =      'L';           { Durch die Definition der   }
+        escape             =      #27;           { Konstanten innerhalb der   }
+                                                 { Prozedur kann sie einfach  }
+                                                 { 'so' mit $I eingebunden    }
+                                                 { werden                     }
+begin
+  a1 := top_line;        { zunaechst Daten sichern zur
+                           Initialisierung des eigentlichen Fensters }
+  b1 := bottom_line;
+  a2 := left_column;
+  b2 := right_column;
+
+  Cursor_Off;                { der stoert jetzt nur }
+
+  { Breite und Hoehe des Fensters ermitteln         }
+  { Davon 2 Zeichen fuer LinksOben, RechtsOben usw. }
+  { abziehen                                        }
+
+  WindowBreite := right_column - left_column-1;
+  WindowHoehe  := bottom_line - top_line-1;
+
+  write(escape,window_char,chr(Window_Number+32)); { Fenster fuer Rahmen    }
+  write(escape,set_top,chr(top_line+32));          { initialisieren         }
+  write(escape,set_bottom,chr(bottom_line+32));    {                        }
+  write(escape,set_left,chr(left_column+32));      {                        }
+  write(escape,set_right,chr(right_column+32));    {                        }
+  ClrScr;                                          { Fenster sauber machen  }
+                                                   { Rahmen zeichnen        }
+  write(LinksOben);
+  for i:=1 to WindowBreite do write(WaagrechtO);
+  writeln(RechtsOben);
+  for j := 1 to WindowHoehe do
+    begin
+      write(SenkrechtL);
+      gotoxy(WindowBreite+2,j+1);
+      writeln(SenkrechtR);
+    end;
+  write(LinksUnten);
+  for i:=1 to WindowBreite do write(WaagrechtU);
+  write(RechtsUnten);
+
+{ Und nun die Fenstergroesse reduzieren um den Rahmen zu erhalten }
+
+  Reduzier_Window;
+  write(escape,window_char,chr(Window_Number+32)); { Fenster fuer Rahmen    }
+  write(escape,set_top,chr(a1+32));                { initialisieren         }
+  write(escape,set_bottom,chr(b1+32));             {                        }
+  write(escape,set_left,chr(a2+32));               {                        }
+  write(escape,set_right,chr(b2+32));              {                        }
+  ClrScr;                                          { Fenster sauber machen  }
+  Cursor_On;       { den brauchen wir jetzt wieder }
+end;
+
+(*****************************************************************************)
+(*        ExitWindows - stellt urspruenglichen Bildschirminhalt her          *)
+(*****************************************************************************)
+
+procedure ExitWindow;
+const   window_char        =      'F';           { Die uebergebenen Parameter }
+        set_top            =      'I';           { muessen mit 32 addiert     }
+        set_bottom         =      'J';           { werden, steht so im HOLTE  }
+        set_left           =      'K';           { Handbuch CPM3.DOC.         }
+        set_right          =      'L';           { Durch die Definition der   }
+        escape             =      #27;           { Konstanten innerhalb der   }
+                                                 { Prozedur kann sie einfach  }
+                                                 { 'so' mit $I eingebunden    }
+                                                 { werden                     }
+begin
+  write(escape,window_char,chr(0+32));           {                        }
+  write(escape,set_top,chr(0+32));               {                        }
+  write(escape,set_bottom,chr(24+32));           {                        }
+  write(escape,set_left,chr(0+32));              {                        }
+  write(escape,set_right,chr(80+32));            {                        }
+  clrscr; (* alles sauber hinterlassen *)
+  Restore_Screen(addr(buffer)); (* urspr. Anzeige restaurieren *)
+end;
+
+

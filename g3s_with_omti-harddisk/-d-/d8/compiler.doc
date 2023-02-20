@@ -1,0 +1,693 @@
+Coronado Enterprises C TUTOR                July 7, 1986
+
+COMPILER.DOC file
+
+Notes on a few C compilers.
+
+     It is assumed that you have a C compiler and that you have
+somehow learned to use it.  Some helping hints are given below
+for some of the more popular compilers and even if your partic-
+ular compiler is not listed, some of the hints given for other
+compilers may help you with yours.  Some standards do tend to
+exist within compilers and compiler writers tend to do things
+basically the same way.  If notes are not given below about your
+compiler, we at Coronado Enterprises will be unable to help.  We
+have listed notes on all of the compilers we have available for
+evaluation or use.  These notes are not intended to be exhaustive
+or used as the basis for a final decision on your part to select 
+a given compiler.  Exhaustive notes and evaluations are given 
+regularly in computer publications.  If you are undecided as to 
+which compiler you should use, you are directed to these.
+
+******************************************************************
+
+The following compilers have been tested on all files in chapters
+1 through 13 and the results are noted.
+
+1. Aztec C86 version 3.20e (Commercial)    This is a very capa-
+      ble compiler that can do nearly anything you ask of it.
+      Even so, it is still reasonably small and can easily be 
+      used with a dual floppy machine.  It compiles very fast, 
+      but was not used enough to gain the experience to comment
+      very much on it and its capabilities.  It includes enough
+      additional utilities that it seems to have no limit.  The 
+      two smaller models were not available for evaluation at 
+      all.  Due to the complete lack of an index in the documen-
+      tation, and the fact that the documentation assumes a high
+      level of proficiency in C, this system is not recommended
+      for the beginner.
+
+2. Datalight C compiler - version 1.15    This compiler is very
+      inexpensive, but compiles very quickly to an unusually fast
+      executing file compared to its price.  However, it does not
+      handle I/O properly, (the putchar() does not output to the
+      monitor in programs that work with all other compilers), and
+      it causes the system to crash following an attempt to link
+      files with errors.  Due to these oversights on the part of 
+      the compiler writer, this implementation is not recommended
+      for any purpose.  If these shortcomings are fixed in future
+      releases, it will be a good system for use on a floppy only
+      system because the files are small.
+
+3. DeSmet C Compiler - version 2.51       This relatively inexpen-
+      sive compiler does an excellent job, especially when consid-
+      ering the price.  It compiles very fast and results in fast
+      executable files.  It does some things in an unstandard way
+      but all compilers do since there is no standard yet.  This
+      would be an excellent choice for beginning and for most of
+      your programming needs.  It is extremely easy to use.
+
+4. Ecosoft C compiler - ver 3.11 & 3.13    This compiler sells for
+      only $59.95 and is as complete a compiler as you can find if
+      you only need a small memory model.  Their small model uses
+      64K for program and another 64K for data, so the limitation
+      is not very severe, and this compiler should meet nearly all
+      of your needs.  It does have one small problem that is being
+      fixed for all future editions.
+
+      During a telephone conversation with Ecosoft, they acknowl-
+      edged the problem and told me if I would return the disks,
+      they would update them after the problem was fixed.  I did  
+      return them as they said, and they updated my disks to 
+      version 3.13, but with the problem still not fixed.  Another
+      phone call indicated that they had me listed for a free up-
+      date when it was fixed. By the time you read this, I expect
+      the problem to be history.
+
+      The Ecosoft compiler is probably the best value of all comp-
+      ilers tested here.
+      
+5. Lattice C compiler - version 2.15      This compiler has been 
+      replaced with version 3.00 below but since many copies were
+      sold, it is very popular.  If you have a choice, don't buy 
+      this one since there are far better compilers available for
+      the money.
+
+6. Lattice C compiler - version 3.00      This is a very capable
+      compiler that still has the ability to be run conveniently
+      with only two floppy disks.  If you want a high end compiler
+      to use on a dual floppy machine, this is probably your best
+      choice.  The documentation is nearly worthless, and you will
+      be left with a mess trying to get it set up until you gain
+      some experience programming in C.
+
+7. Microsoft C compiler - version 3.0     This is absolutely the
+      top of the line compiler and should be your choice if you
+      will be engaged in very serious programming.  It seems to 
+      have essentially no limitations except that a hard disk is
+      required to use it due to the large files.  The documen-
+      tation that comes with this compiler is probably the best
+      I have ever seen for any compiler for any machine.  It is
+      simply fantastic.  It even has a complete definition of the
+      C programming language.
+
+8. MIX C compiler - version 1.0.0       This is an inexpensive,
+      yet very capable compiler that comes highly recommended for
+      the beginning C programmer because it is so easy to use.  
+      It was used to develop the vast majority of the example 
+      programs in this tutorial and it never failed to do any-
+      thing that I called upon it to do.  It does suffer one big
+      problem however, and that is the fact that the resultant
+      code is very slow running.  It is probably about one tenth 
+      the speed of the others, unless you go to the trouble to 
+      use the speedup utility included with the compiler.  Using
+      it will get the speed up to nearly the speed of the other
+      compilers.  It is very simple to use and it would be the
+      recommended compiler for use in learning to program in
+      C, and especially if you are limited to floppies on your
+      machine.  It is definitely worth the $39.95 purchase price.
+
+
+************** Aztec C86 version 3.20e (Commercial) *****************
+
+Note; The following suggested setup only uses the small memory and
+      program model which is sufficient for nearly all of your
+      programming needs.  It is suggested that you simply use this
+      configuration and as you gain experience with C, add some of
+      the other features.
+
+      (suggested floppy disk setup)
+  Contents of Drive A
+COMMAND.COM
+CCL.BAT          (as listed below)
+EDIT.COM         (your editor, whatever you use)
+STDIO.H          (From the Aztec disks)
+CTYPE.H          (From the Aztec disks)
+*.C              (the files you wish to compile)
+
+  Contents of Drive B 
+CC.EXE           (from the Aztec disks)
+AS.EXE           (from the Aztec disks, may need to move to a:)
+LN.EXE           (from the Aztec disks)
+C.LIB            (from the Aztec disks)
+M.LIB            (from the Aztec disks)
+
+     (suggested hard disk setup)
+Put all above files in one directory, and remove the references to 
+drive B in the batch file below.
+
+
+     (Start of batch file CCL.BAT)
+REM THIS IS THE AZTEC C COMPILER
+IF EXIST %1 GOTO ERROR
+EDIT %1.C
+B:CC %1.C
+IF ERRORLEVEL 1 GOTO CLERR
+B:LN %1.O B:M.LIB B:C.LIB
+IF ERRORLEVEL 1 GOTO CLERR
+%1
+PAUSE
+ERASE %1.O
+ERASE %1.EXE
+ERASE %1.BAK
+GOTO DONE
+
+:ERROR
+REM DO NOT INCLUDE THE .C EXTENSION
+PAUSE
+GOTO DONE
+
+:CLERR
+REM COMPILE OR LINK ERROR
+PAUSE
+
+:DONE
+    (end of CCL.BAT file)
+
+The following problems were found when using the Aztec C86
+compiler on the files in chapters 1 through 13.  The files
+included in chapter 14 were not compiled with this compiler.
+
+Chapter 5 - BACKWARD.C  This compiler uses more than 8 characters
+            of the variable name.  Change both calls to the func-
+            tion to read the same, forward_and_backward (lines
+            8 and 19).
+
+Chapter 9 - SINGLEIO.C  No getch() function. The manual describes
+            how to read in a character without waiting for the 
+            carriage return on pages "libov.19" through "libov.21".
+            It is not a simple thing to do nor is it in any way
+            standard (as compared to other systems).  It will not
+            be elaborated on here.
+
+Chapter 9 - BETTERIN.C  No Getch() function.  See above.
+
+Chapter 11 - UNION1.C  The bytes have ff in high order bits if the 
+             MSB of the byte is on.  Refer to text about this.
+
+Chapter 13 - BITOPS.C  The bytes have ff in high order bits if the
+             MSB of the byte is on.  Refer to UNION1.C note.
+
+Chapter 13 - UPLOW.C  Change function name to mix_up_the_chars.
+
+
+
+************* DeSmet C Compiler - version 2.51 **********************
+
+Note; The following setup can be run on a single floppy system, but 
+      you may want to move some of the files to another drive.
+
+  Contents of drive A
+COMMAND.COM
+C88.EXE            (From the DeSmet disks)
+GEN.EXE            (From the DeSmet disks)
+ASM88.EXE          (From the DeSmet disks)
+STDIO.H            (From the DeSmet disks)
+BIND.EXE           (From the DeSmet disks)
+CSTDIO.S           (From the DeSmet disks)
+CCL.BAT            (As defined below)
+
+A hard disk setup would be the same.
+
+  (Start of batch file CCL.BAT)
+REM DESMET C COMPILER
+IF EXIST %1 GOTO ERROR
+REM THE NEXT LINE CALLS WHATEVER EDITOR YOU USE
+EDIT %1.C
+C88 %1
+IF ERRORLEVEL 1 GOTO CLERR
+BIND %1
+IF ERRORLEVEL 1 GOTO CLERR
+%1
+PAUSE
+ERASE %1.EXE
+ERASE %1.BAK
+ERASE %1.O
+GOTO DONE
+
+:ERROR
+REM DO NOT INCLUDE THE .C EXTENSION
+PAUSE
+GOTO DONE
+
+:CLERR
+REM COMPILE OR LINK ERROR
+PAUSE
+
+:DONE
+  (End of batch file CCL.BAT)
+
+Problems encountered with DeSmet C on files in chapters 1 - 13.
+The files in chapter 14 were not attempted with this compiler
+and will be left up to the user to try.
+
+Chapter 5 - BACKWARD.C  This compiler uses more than eight charac-
+            ters of the variable name.  Change both calls to the
+            function so they read the same, forward_and_backward
+            (lines 8 and 19).
+
+Chapter 9 - SIMPLEIO.C  The function getchar() reads in immediately
+            which is different from all other compilers.  The dis-
+            cussion in the text therefore does not agree with this
+            compilers operation.
+
+Chapter 9 - SINGLEIO.C  There is no getch() function, but getchar()
+            does what it is supposed to do.  Sustitute getchar() 
+            for getch() in line 10 and remove the putchar(c) from
+            the next line and the program will act as defined in
+            the text.
+
+Chapter 9 - BETTERIN.C  Same as for SINGLEIO.C above.
+
+Chapter 13 - CHARCLAS.C  Remove the #include "ctype.h" from the 
+            second line.  It is not needed with this compiler.
+
+Chapter 13 - UPLOW.C  Remove the #include "ctype.h" from the second
+            line.  It is not needed with this compiler.  Also change
+            the function name to mix_up_the_chars because this com-
+            piler uses more than 8 characters for a variable name.
+      
+
+
+************** Ecosoft C compiler - version 3.11 & 3.13 *************
+
+    (recommended setup)
+Exactly as listed in the manual - The documentation is excellent and
+very clear.  Only the hard disk setup was tested.
+
+     (start of batch file used - CCL.BAT)
+IF EXIST %1 GOTO ERROR
+CED %1.C
+CC %1
+IF ERRORLEVEL 1 GOTO CLERR
+%1
+ERASE %1.EXE
+ERASE %1.OBJ
+ERASE %1.BAK
+GOTO DONE
+
+:ERROR
+REM DO NOT INCLUDE THE .C EXTENSION
+PAUSE
+GOTO DONE
+
+:CLERR
+REM COMPILE OR LINK ERROR
+PAUSE
+
+:DONE
+    (end of batch file used)
+
+
+Required changes for use with Ecosoft C compiler - ver 3.11 & 3.13
+
+Note; During compilation of a few of the files you will get a small
+      number of warnings.  These warnings are obvious and are meant
+      to be an aid to you in discovering possible errors in your code.
+      One of the most obvious is when a floating point number is 
+      assigned to an integer.  This is done as an illustration for
+      you, but the compiler generates a warning and continues.  The 
+      fact that this happens is a positve vote for this compiler.
+
+Chapter 5 - BACKWARD.C  This compiler used more than 8 characters for
+            a variable name.  Change both calls to the function to 
+            read the same, forward_and_backward. (lines 8 and 19)
+
+Chapter 10 - READTEXT.C and READGOOD.C  Both of these files use the
+            function fscanf() and look for a -1 at the end of the 
+            file.  The end of file does not return a -1 and the loop
+            continues indefinitely.  This is the compiler error
+            mentioned before and they say they are fixing it.
+            Recomendation; Do not use this construct at this time.
+
+Chapter 11 - UNION1.C  The bytes have ff in the high order bits if 
+            the MSB is on.  Refer to text about this.
+
+Chapter 12 - All three files.  Add the line #include "malloc.h" to
+            the beginning of each file.  This will define the type
+            of return malloc will generate and will allow the pro-
+            grams to operate as described.  Ecosoft is very picky
+            about the constructs used, and requires the header to
+            check for problems. 
+
+Chapter 13 - BITOPS.C  The bytes have ff in the high order bits if
+            the MSB is on.  Refer to text about this.
+
+Chapter 13 - UPLOW.C  Change function name to mix_up_the_chars
+
+Chapter 14 - As of this writing, none of these files have been com-
+            piled with this compiler.
+
+
+
+************** Lattice C compiler - version 2.15 ********************
+
+Note; The following suggested setup only uses the small memory and
+      program model which is sufficient for nearly all of your 
+      programming needs.  It is suggested that you simply use this
+      configuration and as you gain experience with C, add some of 
+      the other features.
+      
+      (suggested floppy disk setup)
+  Contents of Drive A
+COMMAND.COM
+CCL.BAT          (as listed below)
+EDIT.COM         (your editor, whatever you use)
+STDIO.H          (From the Lattice disks)
+DOS.H            (From the Lattice disks)
+CTYPE.H          (From the Lattice disks)
+*.C              (the files you wish to compile)
+CS.OBJ           (From the Lattice disks)
+
+  Contents of Drive B 
+LC1.EXE          (From the Lattice disks)
+LC2.EXE          (From the Lattice disks)
+LINK.EXE         (From your DOS system disks)
+LCMS.LIB         (From the Lattice disks)
+LCS.LIB          (From the Lattice disks)
+
+     (suggested hard disk setup)
+Put all above files in one directory, and remove the references to 
+drive B in the batch file below.
+
+
+      (start of batch file CCL.BAT)
+REM C COMPILER, LATTICE VERSION 2.15
+IF EXIST %1 GOTO EXTERR
+REM THE NEXT LINE CALLS WHATEVER SCREEN EDITOR YOU USE
+EDIT %1.C
+B:LC1 %1
+IF ERRORLEVEL 1 GOTO P2ABT
+B:LC2 %1
+IF ERRORLEVEL 1 GOTO WAIT
+REM THIS IS THE C LINKER
+B:LINK CS+%1,%1,NUL,B:LCMS+B:LCS;
+IF ERRORLEVEL 1 GOTO LKERFND
+REM THE NEXT LINE IS THE EXECUTION LINE
+%1
+PAUSE
+ERASE %1.EXE
+ERASE %1.OBJ
+ERASE %1.BAK
+GOTO DONE
+
+:EXTERR
+REM YOU PROBABLY INCLUDED THE .C EXTENTION, DO NOT INCLUDE IT
+REM IT WILL CAUSE THE LINKER STEP TO FAIL
+PAUSE
+GOTO DONE
+
+:LKERFND
+REM LINK ERROR(S) FOUND
+PAUSE
+GOTO DONE
+
+:P2ABT
+REM PASS 2 ABORTED DUE TO PASS 1 ERRORS
+PAUSE
+GOTO DONE
+
+:WAIT
+REM PASS 2 ERROR(S) FOUND
+PAUSE
+:DONE
+    ( end of batch file used )
+
+The following problems were found when using the Lattice C
+ compiler on the files included on this disk.
+
+All files - Warning: No STACK segment.
+             This message occurs with every file, ignore it.
+             It allows you to convert the resultant file to a
+             *.COM file whick loads faster. (use EXE2BIN.EXE)
+
+Chapter 5 - FLOATSQ.C  Warning 85: function return value mismatch
+             This appears to be a bug in the compiler but it 
+             doesn't affect the operation of the program.
+
+Chapter 11 - NESTED.C  Add the following line as the first line of
+             the program to increase the internal stack size.
+                int _stack = 4000;
+
+Chapter 11 - UNION1.C  (This program doesn't work with this compiler)
+             According to all of the rules for use of C, this 
+             file should work just like the text says. Compiling
+             it and running it with the other compilers resulted 
+             in the following;
+
+                C       C       0
+             89AB      AB      89
+             134A      4A      13
+             9CE9      E9      9C
+             2688      88      26
+             B027      27      B0
+             39C6      C6      39
+             C365      65      C3
+             4D04       4      4D
+
+Note; All files in Chapter 14 compile correctly with this compiler.
+      To link the Visual Calculator use;
+
+      link cs+vc+data+file+video,vc,,lcms+lcs;
+
+
+ 
+************** Lattice C compiler - version 3.00 ********************
+
+Note; The following suggested setup only uses the small memory and
+      program model which is sufficient for nearly all of your 
+      programming needs.  It is suggested that you simply use this
+      configuration and as you gain experience with C, add some of 
+      the other features.
+      
+      (suggested floppy disk setup)
+  Contents of Drive A
+COMMAND.COM
+CCL.BAT          (as listed below)
+EDIT.COM         (your editor, whatever you use)
+STDIO.H          (From the Lattice disks)
+DOS.H            (From the Lattice disks)
+CTYPE.H          (From the Lattice disks)
+*.C              (the files you wish to compile)
+CS.OBJ           (From the Lattice disks)
+
+  Contents of Drive B
+LC1.EXE          (From the Lattice disks)
+LC2.EXE          (From the Lattice disks)
+LINK.EXE         (must be IBM version 2.1 or later)
+LCMS.LIB         (From the Lattice disks)
+LCS.LIB          (From the Lattice disks)
+
+     (suggested hard disk setup)
+Put all above files in one directory, and remove the references to 
+drive B in the batch file below.
+
+
+      (start of batch file CCL.BAT)
+REM C COMPILER, LATTICE VERSION 3.00
+IF EXIST %1 GOTO EXTERR
+REM THE NEXT LINE CALLS WHATEVER SCREEN EDITOR YOU USE
+EDIT %1.C
+B:LC1 %1
+IF ERRORLEVEL 1 GOTO P2ABT
+B:LC2 %1
+IF ERRORLEVEL 1 GOTO WAIT
+REM THIS IS THE C LINKER
+B:LINK CS+%1,%1,NUL,B:LCMS+B:LCS;
+IF ERRORLEVEL 1 GOTO LKERFND
+REM THE NEXT LINE IS THE EXECUTION CALL
+%1
+PAUSE
+ERASE %1.EXE
+ERASE %1.OBJ
+ERASE %1.BAK
+GOTO DONE
+
+:EXTERR
+REM YOU PROBABLY INCLUDED THE .C EXTENTION, DO NOT INCLUDE IT
+REM IT WILL CAUSE THE LINKER STEP TO FAIL
+PAUSE
+GOTO DONE
+
+:LKERFND
+REM LINK ERROR(S) FOUND
+PAUSE
+GOTO DONE
+
+:P2ABT
+REM PASS 2 ABORTED DUE TO PASS 1 ERRORS
+PAUSE
+GOTO DONE
+
+:WAIT
+REM PASS 2 ERROR(S) FOUND
+PAUSE
+:DONE
+    ( end of batch file used )
+
+The following problems were found when using the Lattice C
+ compiler (version 3.00) on the files included on this disk.
+
+Chapter 5 - FLOATSQ.C  Warning 85: function return value mismatch
+             This appears to be a bug in the compiler but it 
+             doesn't affect the operation of the program.
+
+Chapter 11 - NESTED.C  Add the following line as the first line of
+             the program to increase the internal stack size.
+                int _stack = 4000;
+
+Chapter 11 - UNION1.C   The bytes have ff in high order bits if
+             the MSB of the byte is on.  Refer to text about this.
+
+Chapter 13 - BITOPS.C   The bytes have ff in high order bits if
+             the MSB of the byte is on.
+
+
+******************** Microsoft Version 3.00 *************************
+
+   (recommended setup)
+Exactly as listed in the manual - The documentation for this compiler
+is very clear, and if you follow the instructions as given by Micro-
+soft, you will have no problem configuring your system. 
+
+   (start of batch file used )
+IF EXIST %1 GOTO NOEXT
+EDIT %1.C
+MSC %1;
+IF ERRORLEVEL 1 GOTO ERROR
+LINK %1;
+IF ERRORLEVEL 1 GOTO ERROR
+%1
+PAUSE
+ERASE %1.EXE
+ERASE %1.OBJ
+ERASE %1.BAK
+GOTO DONE
+
+:NOEXT
+REM DO NOT INCLUDE THE .C EXTENSION
+PAUSE
+GOTO DONE
+
+:ERROR
+REM COMPILE OR LINK ERROR FOUND
+PAUSE
+
+:DONE
+   ( end of batch file )
+
+Note; The above batch file assumes a hard disk is being used.
+      The Microsoft compiler is extremely capable but because 
+      of that, it is also very large and would be very diffi-
+      cult to use without a hard disk.  I would not recommend
+      that you try to use this compiler unless you have a hard
+      disk.  It is possible to use with a floppy based system, 
+      but there would be much disk swapping leading to much
+      frustation.
+
+
+
+Required changes for use with Microsoft C ver 3.0
+
+Chapter 5 - BACKWARD.C  This compiler uses more than 8 characters
+            of the variable name.  Change both calls to the function
+            to read the same, forward_and_backward (lines 8 and 19).
+
+Chapter 10 - READTEXT.C  Apparently the system clears the buffer
+             before reading into it, so it only outputs an extra
+             blank line instead of the word "lines." as described
+             in the text.
+
+Chapter 11 - READGOOD.C  Notice that the extra blank line is not
+             displayed here.
+
+Chapter 11 - NESTED.C     *** STACK OVERFLOW ***
+             This message occurs during running of the program
+             due to a lack of stack space because nearly every
+             C compiler defaults to a stack size of 2048 bytes.
+             To fix it, change the LINK call to
+                 LINK %1 /STACK:4000;
+             for this program only.
+            
+Chapter 11  UNION1.C    The bytes have ff in high order bits if
+            the MSB of the byte is on.  Refer to text about this.
+
+Chapter 13  UPLOW.C     Change function name to mix_up_the_chars
+
+Chapter 13  BITOPS.C    The bytes have ff in high order bits if
+            the MSB of the byte is on.
+
+Chapter 14  LIST.C & LISTF.C   Removing all references to the print
+            file pointer "print_file_point" and using the standard
+            predefined pointer "stdprn" for all print operations
+            causes immediate print rather than bufferred print. The
+            LIST.EXE on the distribution disk uses the standard
+            pointer.  The method of printing in the files is used
+            by most C compilers, but the standard method may be a
+            part of the upcoming ANSI standard.
+
+Chapter 14  VC.C, FILE.C, DATA.C, VIDEO.C, and STRUCT.DEF
+            Remove all references to "prtfile" and use "stdprn" in 
+            lines 123 and 135 of VC.C and in line 170 of FILE.C to
+            cause immediate printing instead of delayed buffered 
+            printing.  The VC.EXE on the distribution disk was done
+            this way and was compiled with the MS 3.00 C compiler.
+            You can use the files as is if you don't mind the funny
+            printing method.
+
+Note;  To link VC.EXE use  link vc+data+file+video;
+
+
+
+************** MIX C compiler - version 1.0.0 ***********************
+
+      (suggested floppy disk setup)
+  Contents of Drive A
+COMMAND.COM
+CCL.BAT          (as listed below)
+EDIT.COM         (your editor, whatever you use)
+STDIO.H          (copied from STDIO on dist diskette)
+RUNTIME.OVY      (from your distribution diskette)
+SMALLCOM.OVY     (from your distribution diskette)
+CLIB.MIX         (from your distribution diskette)
+*.C              (the files you wish to compile)
+
+  Contents of Drive B
+Exact copy of your MIX distribution diskette
+
+
+   (start of batch file used CCL.BAT)
+REM MIX C COMPILER
+REM THE NEXT LINE CALLS WHATEVER FULL SCREEN EDITOR YOU USE
+EDIT %1.C
+B:CC %1
+B:LINKER %1
+%1
+   ( end of batch file used )
+
+
+Note; The following problems were noted when compiling the files
+      in chapters 1 to 13 with this compiler.  The files in 
+      chapter 14 were not compiled with this compiler.
+
+Chapter 9 - SINGLEIO.C  The system supplies a Linefeed for you so
+            it doesn't quite work like the book says.
+
+Chapter 9 - BETTERIN.C  The system supplies a linefeed for you so
+            it doesn't quite work like the book says.
+
+Chapter 13 - CHARCLAS.C  Remove #include "ctype.h" from program.
+
+Chapter 13 - UPLOW.C  Remove #include "ctype.h" from program.
+
+

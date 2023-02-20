@@ -1,0 +1,94 @@
+
+NOTEPAD DOCUMENTATION - by Steve Strommen, 12/31/83
+
+ABSTRACT
+
+NOTEPAD is designed to give you an easy way to create, modify,
+store and print short notes to yourself with a minimum of effort. 
+This documentation should help you get started using NOTEPAD
+immediately.
+
+Notes can be used to provide online documentation for other files
+on a disk, or can be used just to jot down ideas or a things to
+do list.  In any case, each note is up to 20 lines long, and a
+directory is kept of all notes on a disk and the date that they
+were last saved to disk.  Editing a note is very easy because all
+four cursor keys and several control keys are defined.
+
+OPERATING INSTRUCTIONS
+
+Each time NP is run, you are prompted for the current date.  The
+month, day and year should each be enterred as numbers, and the
+year should be only the last two digits of the current year.
+
+After the date is entered, a menu is displayed on which the
+following selections appear:
+
+F - Find a note.  This is used to retrieve a note from the disk
+and display it on the screen for viewing, revision, or printing. 
+You will be prompted for the name of the note, and your answer
+must correspond with a note name in the directory (see D below). 
+If the name you enter does not exist in the directory, a message
+will say so.
+
+N - Start a new note.  This is used to start editing a new note
+that does not yet appear in the directory.  You will be prompted
+for a name.  A default name is provided; it is the current date. 
+After you provide the name, you get 20 blank lines on the screen
+in which to write your note.
+
+Z - Discard (zap) a note.  This removes the note from the
+directory and from the diskette.  You will be prompted for a
+name; if your answer is not in the directory, nothing will
+happen. 
+
+D - Display notebook contents.  This displays a list of names of
+notes and the date they were saved to disk.  Pay attention to
+which letters in a notename are uppercase and lowercase.  Help is
+different from HELP is different from help.
+
+R - Rename a note.  This renames a note on the diskette and in
+the directory.  You will be prompted for a note name.
+
+***IMPORTANT***
+
+To terminate the program, you must press ESC while the main menu
+is displayed.
+
+***************
+
+Several control keys are defined while NOTEPAD is editing a note.
+
+1. Cursor keys:
+   ctl-h: back one space
+   ctl-j: down one line
+   ctl-k: up one line
+   ctl-l: forward one space
+
+   ctl-a: to far left
+   ctl-e: to far right
+   ctl-t: to top
+   ctl-b: to bottom
+ 
+2. Insert and delete:
+   DEL: delete previous character
+   ctl-o: insert a blank line
+   ctl-c: delete a line
+   ctl-r: toggle insert mode on/off.  Note that insert mode is
+     not very fast and may drop characters.  Also, there is no
+     word wrap at the end of a line.  Normal mode is to overwrite.
+
+3. Utility
+   ctl-s: save note to disk with default file extension .TXT.
+   ctl-p: print note to list device
+   ESC:   return to the main menu - NOTE NOT SAVED
+   RETURN: Cursor to beginning of next line
+
+A NOTE ABOUT FILES
+
+Notes are always stored on and read from the default disk. 
+NOTEPAD itself need not be on the default disk, but it uses a
+directory file called NOTE.DIR which is created on the default
+disk if it is not already there.  It is recommended that notes
+not be named with a disk prefix like b: because this could cause
+confusion.  in

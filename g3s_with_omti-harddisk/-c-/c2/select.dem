@@ -1,0 +1,22 @@
+program SELEKT_Demo;
+
+(*$I READCHAR.INC *) (* Ihre angepasste Tastatureingabe *)
+(*$I SELECT-1.BIB *)
+
+const Menue : array[1..5] of string[10] =
+              ('Punkt 1','Punkt 2','Punkt 3','Punkt 4','Ende');
+
+var   Wahl : integer;
+
+begin
+  ClrScr; Wahl:=1;
+  Selekt(1,1,SizeOf(Menue[1]),Menue,5,Wahl);
+  gotoxy(20,10);
+  case Wahl of
+    1..5 : writeln('Gewaehlt wurde  >',Menue[Wahl],'<');
+    0    : writeln('Das Menue wurde verlassen');
+    -1   : writeln('Das Menue wurde nach links verlassen');
+    -2   : writeln('Das Menue wurde nach rechts verlassen')
+    else writeln('Es wurde um Hilfe gerufen')
+  end
+end.

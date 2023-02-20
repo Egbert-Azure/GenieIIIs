@@ -1,0 +1,58 @@
+(****************************************************************************)
+(* Testprogramm fuer QFILE.INC                                              *)
+(* Loeschen ausgewaehlter Dateien                                           *)
+(****************************************************************************)
+
+(*$I c5:READCHAR.INC *) {Tastaturanpassung, siehe Turbo-Heft 3              }
+(*$I c5:WINDOW.PAR   *) {Spezielle Anpassung der Windows an Rechner         }
+(*$I c5:WINDOW7.BIB  *) {Fenster auf jedem Rechner, siehe Turbo-Heft 3      }
+(*$I c5:SELECT-2.BIB *) {Vert. Menueauswahl aus bis zu 256 Punkten, Turbo 6 }
+(*$I c5:QSORT.BIB    *) {Quicksort fuer Felder, siehe Turbo-Heft 4          }
+(*$I c5:CPM-80.BIB   *) {Betriebssystemspez. Funktionen, siehe Turbo-Heft 2 }
+(*$I c5:QFILE.INC    *) {Auswahl aus einem Directory, siehe Turbo-Heft 6    }
+(*$I c5:GETFIRST.INC *) {holt das erste Element aus einer Menge von Bytes   }
+
+var f : file; Zg,i : byte; JaNein:char;
+    D1 : Directory; WildC : DateiString; BezugsLaufwerk : string[2];
+begin
+  ClrScr; InitWindows;
+  openwindow(1,1,80,4);
+  write('*** A C H T U N G *** - ');
+  writeln('Dieses Demoprogramm loescht ausgewaehlte Dateien ');
+  if ParamCount>0
+  then WildC:=ParamStr(1)
+  else begin write('Bitte Dateispezifikation eingeben: '); read(WildC) end;
+  openwindow(1,4,17,24); OpenWindow(18,4,44,24); openwindow(45,4,80,24);
+  ChangeWindow(2);
+  DirectoryLesen(WildC,D1);
+  QueryFile(19,true,false,D1);
+  if D1.Flags=[]
+    then begin
+           ChangeWindow(4);
+           writeln('Keine Datei vorhanden');
+           writeln('der ausgewaehlt!')
+         end
+    else with D1 do begin
+           ChangeWindow(3);
+           for i:=0 to Size do
+             if i in Flags then writeln(Name[i]);
+           writeln; write('Wirklich loeschen? (J/N) ');
+           read(kbd,JaNein); ChangeWindow(4);
+           if upcase(JaNein)='J'
+           then begin
+                  while Flags<>[] do begin
+                    GetFirst(Flags,Zg);
+                    if Drive=0 then BezugsLaufwerk:=''
+                                  else BezugsLaufwerk:=chr(Drive+64)+':';
+                    {folgende Anweisung ist nur bei CPM-Version noetig: }
+                    if pos(' ',Name[Zg]) <>0 then
+                      delete(Name[Zg],pos(' ',Name[Zg]),9-pos(' ',Name[Zg]));
+                    assign(f,BezugsLaufwerk+Name[Zg]);
+                    writeln(Name[Zg],'  wird geloescht');
+                    erase(f);
+                  end; (*while*)
+                end
+           else writeln('Keine Datei geloescht');
+         end; (* with *)
+  ExitWindows; Gotoxy(80,24);
+end.

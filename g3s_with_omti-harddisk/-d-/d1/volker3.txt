@@ -1,0 +1,46 @@
+.LQon
+Egberô Schr|eò                         427° Dorsten¬ deî 26.12.92
+                                            Joachimstr.18
+                                            tel.:(02362)75311
+                                            gesch.:(02365)494392
+                                (diese Nr® {nderô sicè aâ 4.1.93)
+
+Hallï Volker,
+
+leideò  konntå icè Dicè telefoniscè nichô erreichen®  Hoffentlicè 
+hasô Dõ Weihnachteî guô }berstandeî ?
+Zun{chsô diå guteî Nachrichtenº Deò MÉ-Ã Compileò miô deò Versioî 
+3.18É  isô  unteò K{mpæ CP/Í 3.° lauff{hiç (ohnå  diå  Interruptó 
+abzuschalten).
+Eó isô miò nacè langeí Probiereî unä Sucheî gelungeî daó Programí 
+FORMAT.Ã  zõ  compiliereî  unä  eineî  lauff{higeî  COÍ-Filå   zõ 
+erstellen®  Eigentlicè  muş maî miô Formaô aucè  diå  Festplattå 
+initilisiereî  k|nnen¬ abeò diå miò vorliegendå  Versioî  enth{lô 
+nuò deî Codå f}ò deî WÄ-Controller® Welchå Fileó miô FORMAT.Ã  zõ 
+linkeî  sinä  unä welchå Librarù benutzô wurdå stehô  ií  Sourcå-
+Code.
+INITW.Ã isô iî deò Versioî 2.° eindeutiç fehlerhaft® Icè habå Diò 
+maì diå voî miò erzeugtå NEWLIBC.REÌ beigelegt® Siå enth{lô jetzô 
+diå  bisheò iî LIBCAP.REÌ fehlendeî Routineî MOVMEÍ  unä  SETMEM® 
+Maî kanî nuî INITW.Ã fehlerfreé linken¬ nacè deò Message¬ daş diå 
+Festplattå  nuî initialisierô wird¬ h{ngô sicè daó Programí  abeò 
+auf® Besitzô Dõ diå Vorg{ngeò-Versioî 1.° ?¿ Icè werdå aucè Fritú 
+nochmaló  interviewen¬  oâ  eò nichô mehò  Informationeî  zõ  deî 
+Sourceó  besitzt¬ insbesonderå miô welcheî  Bibliothekeî  gelinkô 
+wurde.
+Aucè beé PCCOPY.Ã kommå icè bió jetzô nichô weiter® Iî deò ersteî 
+Januaò-Wochå  erhaltå  icè  eiî Bucè  auó  deí  Verlaç  R|ckrath¬ 
+welcheó  voî Klauó K{mpæ verzapfô wurdå "Kommentierteó  CP/Í  2.² 
+Assembleò-Listing"® Wenî eò daó maì f}ò CP/Í 3.° gemachô h{tte.
+Gleichzeitiç habå icè maì einå Anfragå gestarteô oâ {hnlicheó voî 
+Thomaó  Holtå  zõ  Papieò gebrachô wurde¬  denî  ohnå  eiî  weniç 
+Hintergrundinformationeî  kommô  maî miô deî Sourcå  Codeó  nichô 
+sehò weit.
+
+Icè  legå  Diò  maì  einå  Disë  miô  deò  neueî  Bibliotheë  unä 
+deî Sourceó bei.
+
+Bió bald
+
+Gruş Egbert
+

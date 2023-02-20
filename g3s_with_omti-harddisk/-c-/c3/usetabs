@@ -1,0 +1,5 @@
+.. To print a file that contains "tab" characters:
+..      A> bradford usetabs myfile
+.mdt "\ta "
+.mnt9
+cument.  It is loca

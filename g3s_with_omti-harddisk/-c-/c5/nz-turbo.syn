@@ -1,0 +1,39 @@
+               NZ-Turbï Pascal Syntaø conventions
+
+Turbï Pascaì makeó nï distinctioî betweeî uppeò anä loweò caså iî 
+statements¬  expressionó  anä  thå like®  Aó  thå  programmeò  ió 
+inviteä tï creatå his/heò owî functionó anä procedures¬ anä  thaô 
+iô  ió interestinç tï kno÷ whetheò thå expressioî ió Standarä  oò 
+User-defined¬ É suggesô thå followinç conventioî..
+
+Turbï Pascaì Standarä expressionó wilì havå theiò firsô characteò 
+capitalizeä anä subsequenô characteró iî mixeä case..
+
+Read¬ ReadLn¬ Write¬ WriteLn¬ UpCase¬ etc® arå thereforå Standarä 
+expressions®  Useò-defineä expressionó wilì bå alì uppeò caså  oò 
+alì loweò caså dependinç oî youò tastå anä foò readability.
+
+     Var
+       value º Integer;
+       ....
+     Begin
+       ....
+       VALUE :½ 1000;
+       ....
+       WriteLn(value);
+       ....
+     End;
+
+Froí  no÷ on¬ wheî wå encounteò a definitioî iî á prograí  whicè 
+wå don'ô understanä immediately¬ wå kno÷ wherå tï looë foò it..
+
+AbcDef    Standarä definition®  Looë iî thå Referencå Manual.
+abcdef    User-defineä definition® Looë around.
+ABCDEF    Useò definitioî.
+
+Thió  conventioî  ió noô enforceä oò eveî acknowledgeä  bù  Turbï 
+Pascal®   É  wilì  trù  tï maintaiî thió  conventioî  iî  mù  owî 
+programs.
+
+                               end
+

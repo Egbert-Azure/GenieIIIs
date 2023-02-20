@@ -1,0 +1,138 @@
+Egberô Schr|eò                         427° Dorsten¬ deî 14.02.93
+                                            Joachimstr.18
+                                            tel.:(02362)75311
+                                            gesch.:(02365)499649
+
+Hallï Volker,
+
+vieleî Danë f}ò daó BOOÔ-Eproí ­ 10¬­ DÍ f}ò Deinå Unkosteî liegeî beé.
+Iî deî n{chsteî 1´ Tageî werdå icè daó Teiì einsetzen¬ denî dazõ  solltå 
+maî  sicè Zeiô unä Mu~å nehmen¬ zumaì icè danî aucè deî Transfeò  meineó 
+Geniå 3ó iî eiî PC-XÔ Klappgeh{uså vornehmeî will.
+PCCOPÙ  funktionierô  wieder®  Eó  kanî sein¬ daş  icè  aî  deò  Librarù 
+und/odeò  Ã-Sourceó  nocè einå Ver{nderunç vorgenommeî  habå  unä  dieså 
+nichô auæ Diskettå gesicherô wurde®
+   
+C-Compiler:
+Icè  habå Diò jetzô deî SMALÌ Ã Compileò f}ò Z3pluó kopiert®  Beé  eineí 
+Versucè diå Routinå STDIO.È voî Holtå maì auæ diå Schnellå zõ }bernehmeî 
+biî  icè  gescheitert®  Daó erforderô alsï docè  eiî  Eindenkeî  iî  diå 
+Sprachå C® Ií Bucè Ã-Tooló ­ Markô ¦ Technik¬ ISBÎ ³-8909°-19°-5¬ stolzå 
+78¬­  DÍ ­ habå icè nocè einigeó zõ BDÓ Ã ií Kapiteì GREĞ  gefundeî  unä 
+Diò  kopiert® Somiô kannsô Dõ nuî aucè diå Bedeutunç deó  Holtå  FGREP.Ã 
+bzw® voî GREP.Ã erkennen® Vielleichô kommeî wiò damiô weiteò (wurdå  voî 
+miò nocè nichô getestet)® BITSÙ isô }brigenó keiî M{dcheî-Name¬  sonderî 
+eiî  Computeò ¨ siehå dazõ aucè Vorstellunç deò "Computeò Oma¢  ií  CLUÂ 
+Info)®  Innerlicè widerstrebô eó miò diå Holtå Ã-Sourceó  ungenutzô  voò 
+sicè hiî schlummerî zõ lassen.
+
+
+Windo÷ Technië unteò Holtå CP/M+
+Daó Park-Programí machô sicè aucè miô Deineí Nameî ganú gut.
+Icè  habå  Diò  maì meinå Window.BIÂ Dateé  kopiert®  Hieò  wirä  Windo÷ 
+Technië ohnå Holtå M|glichkeiô eingesetzt® Diå Bibliotheë isô nocè nichô 
+ganú  fehlerfrei®  Irgendwiå wirä iî deî  Windowó  diå  Tastatuò-Eingabå 
+nichô  mehò  erkannt® WINTEST± bauô ² Windowó auæ deí  Monitoò  auæ  unä 
+beschreibô dieså abwechselnä miô willk}rlicheî Zeichen® Allerdingó  l{~ô 
+sicè  diå  Sachå aufgrunä deó Fehlers¬ deî icè  nocè  nichô  lokalisierô 
+habe¬  nichô mehò stoppen¬ abeò aló Demï kanî maî damiô schoî  erkennen¬ 
+waó icè unteò Windo÷-Technië verstehe® WINDOW2.PAÓ solì einå Anzahì  voî 
+Windowó  ueberlappenä darstellen® Danî solltå eó m|glicè seiî  wahlweiså 
+iî  verschiedenå Fensteò zõ schreiben® Abeò aucè hieò isô nocè deò  Wurí 
+drin®  Sobalä  icè  diå Fehleò lokalisierô habe¬ werdå  icè  micè  daraî 
+versucheî  diå  Holtå  Windo÷-Technië  dariî  einzubauen®  Solltesô   Dõ 
+angesichtó  deò Bibliotheë innerlicè deî Huô voò miò zieheî ­­­ lasó  eó 
+sein¬ aucè icè kanî Routineî klauen® Diå Geschichtå wurdå sï odeò {hlicè 
+iî  eineí CHIĞ Speziaì ver|ffentlicht® Mittlerweilå weió icè meinå  neuå 
+T{tigkeiô  ií  Wiss® Informationsdiensô aucè privaô zõ  sch{tzeî  ­  maî 
+kommô aucè aî sï mancè' altå Computeò Informationeî heraî.
+
+Turbï Pascaì 3.0
+Icè habå Diò einå MSDOÓ 360Ë Diskettå miô TURBO-Pascaì 3.0± Á beigelegt.
+Oâ  maî diå ACCESS.BOØ unteò CP/Í nutzeî kanî ???® Auæ jedeî Falì  l{ufô 
+CALC.PAÓ unä LISTER.PAS® Damiô hasô Dõ aucè einmaì einå MSDOÓ Diskette.
+Diå Turbï ACCESÓ Boø f}ò CP/Í wirä voî Helmuô Jungkunú nocè angeboten.
+
+Wordstaò 4.0
+Wordstaò  4.°  wirä  voî Jungkunú aucè nocè verkaufô  ­  allerdingó  f}ò 
+stolzå  250¬-®  Wenî maî bedenkt¬ daş meiî heutå Worä  Perfecô  5.±  f}ò 
+Windowó  f}ò 390¬­ bekommt¬ haltå icè daó f}ò etwaó  }bertrieben¬  zumaì 
+maî seitenó deó Softwarå Herstelleró keinå Unterst}tzunç mehò bekommô  ­ Šodeò  ??®  Druí  habå  icè Diò maì einå Kopie V®  4.°  f}ò  Holtå  CP/Í 
+beigeleçt.
+
+FONT14
+Gehô  miô meineí Monitoò nichô sï wiå maî eó sicè vorstellt®  Viá  M684µ 
+habå  icè eè nuò 1° -?¿­ Scanlineó einstelleî k|nnen® Beé mehò habå  icè 
+L}ckeî beé deò Grafië-Darstellung®
+Icè  habå 'eè deî Eindruck¬ daş meiî Videï Chiğ einå leichtå Mackå  hat® 
+Daó  Teiì musó ersô etwaó warmlaufeî bevoò einå vern}nftigå  Darstellunç 
+aí Monitoò ankommt.
+  
+CLUÂ Artikel
+Gutå  Idee¬  wiò  schreibeî eineî Lobhudeì-Artikeì CP/Í«  eø  Holtå  « 
+Installatioî  Festplattå in'ó CP/Í (Problemå INIT× etc.© «  Einbaõ  OMTÉ 
+Controller®  Deî  Artikeì  k|nntå maî Herrî Holtå  zusendeî  (wirä  micè 
+wahrscheinlicè  aî einigå Diplomarbeiteî erinnerî "hiermiô  bedankå  icè 
+micè  besonderó  beé Herrî Professoò  blablabla")®  Folgendå  Gliederunç 
+k|nntå icè miò denken:
+
+1® Einleitung
+   enth{lô  unseò Anliegeî -¾ Installatioî voî Holtå CP/M« auæ Geniå  3ó
+   méô spezielleò Hardware-Konfiguration.
+   schreibtº Egbert
+
+2® Die Betriebssysteí Komponenten
+   enth{lô MAC-Filå Beschreibunç zuò Systemgenerierung    
+   schreibtº Volker
+
+3® Die Utilities
+   enth{lô Beschreibunç deò erweitertån Systemkomponenteî (C-sources©
+   unä Utilitieó iî C
+   schreibtº Egbert
+
+4® Diå Grafik-M|glichkeiten
+   enth{lô Beschreibunç deò M|glichkeiteî Geniå 3ó Grafië anzusteuern
+   schreibtº Volkeò u® Egberô ??
+
+5® Weiteòe M|glichkeiteî deó Systems
+   hieò  k|nneî solchå Sacheî wiå FREMD.COÍ unä  PARK.COÍ  untergebrachô 
+   werden.
+   schreibtº Volkeò u® Egbert
+
+7® Daó Holtå CP/Í+ Handbucè
+
+Dieó  nuò  maì  aló  Vorschlag®  Icè  begebå  micè  an'ó  Schreibeî  deò 
+Einleitung.
+
+Apropï  CLUÂ Artikelº
+
+­  Icè habå Diò aucè zuò allgemeineî Belustigunç unä aló  Rechtfertigunç 
+f}ò  Deinå  Liebstå  ("Waó  machsô  Dõ  eigentlicè  deî  ganzeî  Taç  aí 
+Computer"©  daó Programí WATOR.PAÓ kopiert® Eó geh|rô iî  diå  Kategoriå 
+Computeò  Simulationeî  ­ hieò \kï-System® Dazõ gaâ eó iî  Spektruí  deò 
+Wissenschafô verschiedenå Artikel¬ diå danî iî deî COMPUTER
+Kurzweiì  B}cherî sp{teò zusammengefassô wurden® Icè habå diå Sachå  zuí 
+F}lleî deò INFÏ Seiteî zusammengetragen® Daó Programí voraâ f}ò Dich.
+
+Aló letzteó f}ò Dicè etwaó Hardwarå ­ neiî nocè keinå Festplatte® Iî deò 
+letzteî Wochå fieleî einigå SIMMó ¨ 1MÂ -¾ 4*256K© beé eineí  Rechneò 
+Umbaõ aî unä icè denkå miò daó dieså Teilå beé Diò guô aufgehobeî  sind® 
+Falló Dõ keinå Verwendunç daf}ò hast¬ giâ siå bittå Helmuô weiter.
+ŠDFUE:
+Viá  Patteø-Ä  ­ Verzeihunç Dateø-Ğ ­ biî icè maì zuò Mailboø  deó  NCÃ 
+gelangô  (Gastzugang)®  Scheinô  ganú netô zõ sein®  Eigenå  Ã-Eckå  unä 
+Dr.Doâb'ó Journaì !!
+Au~erdeí habå icè C.A.T® aló Gasô kontaktiert® Aucè nichô schlecht¬ abeò 
+monatlichå Geb}hr® Icè k|nntå aucè iî diå USÁ zõ GEniå gelangen¬  bringô 
+daó  waó  f}ò  CP/Í  odeò  Z3PLUÓ ?¿  Icè  w}rdå  micè  danî  beé  GEniå 
+}beò  meinå Kreditkartå registriereî lasseî unä k|nntå sï problemloó  aî 
+Softwarå gelangen®
+]beò  deî gro~eî Teicè habå icè micè aucè schoî maì beé  deò  Washingtoî 
+Posô eingelogt® Tolì diå aktuellsteî Meldungeî zõ seheî !!
+
+
+Bió bald
+
+ Egbert
+
+

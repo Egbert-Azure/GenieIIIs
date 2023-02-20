@@ -1,0 +1,177 @@
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-
+
+[.]           [..]          banner        [d0]          [d1]        
+[d10]         [d11]         [d12]         [d13]         [d14]       
+[d2]          [d3]          [d4]          [d5]          [d6]        
+[d7]          [d8]          [d9]          dir-d.txt     index.html  
+       20 file(s)      10.969 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d0
+
+[.]             [..]            ackerman.$$$    an.c            banner        
+bench.c         checkprn.c      checkprn.cpm    cmp30.c         danalt.as     
+dhry.c          drache.c        environ         erato.c         fgrep.c       
+fib.c           fkey.c          fkey.cpm        fkeyg.as        fkeytest.c    
+fkeytest.cpm    gratest.c       gratest.cpm     hanoi.c         index.html    
+liessect.c      liessect.cpm    manchmal.c      masken.lib      pause.c       
+pause.cpm       pcc.c           pcx.c           pcxbsp.c        pcxput.bak    
+pcxput.c        pcxshow.c       pcxshow.cpm     pflanze.c       pmaset.c      
+printdat.c      printdat.cpm    prttest.c       prttest.cpm     r-file.c      
+r-file.cpm      t-fseek.c       t-fseek.cpm     tenlines.txt    test1.c       
+       50 file(s)     275.496 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d1
+
+[.]              [..]             access.txt       adress.doc     
+appendix.a       appendix.b       arccpm.doc       arthead.txt    
+banner           bawk.doc         bcomp21.doc      bib.cpm        
+bios.txt         brad2.doc        club801.txt      club802.txt    
+cpm3.doc         cpm31.doc        cpmhelp.txt      cpmround.btn   
+ctinhalt.txt     datcopy.doc      db2shl30.doc     dbquick.txt    
+ddtz-n.doc       ddtz.doc         dmanager.ad      editnd.doc     
+fatcat.ws        fcp.doc          form.txt         genie.new      
+geniecpm.txt     geniecpm.ws      grafik.txt       grafik2.txt    
+grafik3.txt      gst.doc          hdback40.cmd     hdback40.doc   
+hdback40.for     hitech.txt       htc-ovl.doc      index.html     
+internet.btn     jungkunz.cpm     kaempf.txt       libz01.doc     
+liesbild.g3s     lieshrg.g3s      mailutil.doc     makedos.txt    
+mf.ws            msdos-d.doc      newbas12.doc     notepad.doc    
+orderfrm.doc     output.txt       queue.doc        rcp.doc        
+read.me          scb.txt          shutils.doc      slr180.doc     
+t-feier.doc      t-msdos.doc      tcj.tzt          tcsrc14.doc    
+theinst.doc      tpatch.doc       trstune.txt      umap18.doc     
+unix.txt         uucp.txt         uzi-util.doc     volker.txt     
+volker11.txt     volker12.txt     volker13.txt     volker14.txt   
+volker2.txt      volker2_1.txt    volker3.txt      volker4.txt    
+volker5.txt      volker6.txt      volker7.txt      volker8.txt    
+volker9.txt      wash.doc         xinu.doc         yasbec2.txt    
+z80dis22.doc     zerr.doc         zfiler.old       zflrcmd.doc    
+zmac17.doc       zpm3.txt         zpm3ldr.txt      zxriop.doc     
+      100 file(s)   1.824.359 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d10
+
+[.]           [..]          1mal1.c       ascii.c       ascii.cpm   
+ball.c        ball1.c       ball1.cpm     ball2.c       banner      
+dmdo.c        fcopy.c       fcopy.cpm     fcopy.obj     index.html  
+schnitt.c     sincurve.c    sintab.c      tab8.c        v-util.c    
+view.c        view.cpm      zahlensp.c    zeilen.c      zufall.c    
+       25 file(s)      88.220 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d11
+
+[.]             [..]            banner          index.html      pcxem.pcx     
+snoopy.pcx      space.pcx       startrek.pcx    
+        8 file(s)      58.976 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d12
+
+[.]           [..]          banner        index.html    
+        4 file(s)       3.142 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d13
+
+[.]           [..]          banner        index.html    
+        4 file(s)       3.142 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d14
+
+[.]           [..]          banner        index.html    
+        4 file(s)       3.142 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d2
+
+[.]           [..]          banner        index.html    
+        4 file(s)       3.140 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d3
+
+[.]             [..]            -info.015       artillry.pas    baccarat.pas  
+banner          bjgame.pas      blackbox.pas    block.pas       boggle.pas    
+chucklck.pas    cribbage.pas    cribbage.ps2    cribbage.ps3    dodge.pas     
+drucker.pas     guessit.pas     hangman.pas     hanoi.pas       hib.pas       
+horserac.pas    index.html      keno.pas        kismet.pas      lander.doc    
+lander.pas      landinst.dat    life.pas        makefile.pas    makehang.pas  
+menue.pas       numcnvrt.pas    overundr.pas    pascal.pas      pasgame.doc   
+pdtins.dta      plife.pas       schieb.pas      snake.pas       superh.pas    
+telephon.pas    twinkle.pas     words.dat       wumpus.pas      
+       44 file(s)     306.136 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d4
+
+[.]             [..]            banner          bascom.cpm      basiclib.rel  
+baslib.rel      bcbc.bas        bcbc.cpm        bcbc.doc        bcbc.inf      
+bcbc.lib        bcbc.pro        bcbclib.src     bcload          biosddef.bas  
+biosdpb.bas     biosstat.bas    brun.cpm        cb80.cpm        cb80.irl      
+cb80.ov1        cb80.ov2        cb80.ov3        cbas.cpm        cbas2.cpm     
+cbck.cpm        cbrun2.cpm      cbxref.bas      cbxref.int      cbxref.rel    
+civilw.bas      comp.sub        crun.cpm        datver.bas      dphdef.bas    
+druck.bas       ebasic.cpm      enterp.bas      erun.cpm        f1.cpm        
+feder.bas       fremedit.bas    fritz.bas       header.bas      index.html    
+ins             l80.cpm         maske1.dum      maske2.dum      maskgen.bas   
+mbasic.cpm      othello.bas     othello.doc     othello.int     overlayb.cpm  
+rantest.bas     sb.lbr          sbasic.cpm      sequenz.bas     sequenz.num   
+staranl.bas     stargame.bas    startrek.bas    startrek.new    startrek.old  
+test.bas        testen          teststar.bas    userlib.rel     w-edit.bas    
+w.bas           wbedit.bas      wc.bas          
+       73 file(s)     967.544 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d5
+
+[.]             [..]            banner          index.html      menu42.lbr    
+notepad.lbr     qcode.lbr       uucpsrc.lbr     vfiler.cmd      vmenu27.lbr   
+vmenufun.lbr    work-vmn.lbr    ws4prndv.lbr    zfilrcmd.for    zmang-20.lbr  
+       15 file(s)     533.430 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d6
+
+[.]             [..]            banner          club80.lbr      index.html    
+pcxshow.lbr     schieb.lbr      startrek.lbr    
+        8 file(s)     122.851 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d7
+
+[.]            [..]           banner         curve1.c       curve1.cpm   
+index.html     quick-c.lbr    turbo-c.lbr    world.h        xymax.c      
+       10 file(s)      57.853 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d8
+
+[.]             [..]            amort           anyfile.c       backward.c    
+banner          betterin.c      bigarray.c      bigdynl.c       bitops.c      
+breakcon.c      chap1.txt       chap10.txt      chap11.txt      chap12.txt    
+chap13.txt      chap14.txt      chap2.txt       chap3.txt       chap4.txt     
+chap6.txt       chap7.txt       chap8.txt       chap9.txt       charclas.c    
+charout.c       chrstrg.c       comments.c      compares.c      compiler.doc  
+cryptic.c       data.c          defin.c         define.c        dosex.c       
+dowhile.c       dumbconv.c      dynlink.c       dynlist.c       file.c        
+files577.txt    files578.txt    firstex.c       floatsq.c       forloop.c     
+formout.c       goodform.c      gotoex.c        help            ifelse.c      
+index.html      inmem.c         intarray.c      intasign.c      intin.c       
+intro.txt       list.c          list.cpm        listf.c         lottypes.c    
+macro.c         mortypes.c      multiary.c      nested.c        notes577.txt  
+oneint.c        passback.c      payment         pointer.c       pointer2.c    
+printdat.c      printext.bat    read.me         readchar.c      readgood.c    
+readline.c      readtext.c      recurson.c      rrrrrrrr        scope.c       
+shifter.c       simpleio.c      singleio.c      special.c       squares.c     
+stringin.c      strings.c       struct.def      struct1.c       struct2.c     
+struct3.c       sumsqres.c      switch.c        tabcont.txt     tempconv.c    
+test            trivial.c       twoway.c        uglyform.c      union1.c      
+union2.c        uplow.c         vc.c            vc.doc          video.c       
+whatnext.c      while.c         wrtmore.c       wrtsome.c       
+      109 file(s)     580.891 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-d-\d9
+
+[.]             [..]            askpoint.c      banner          bnkbios.mzc   
+boot.mzc        booter.mzc      bootgen.sub     boothd.sub      chario.mzc    
+cpm3.sub        diskio1.mac     diskio1.mzc     driver.mzc      drvtbl1.mzc   
+font12.mzc      gencpm.dat      hd2             hd2.mzc         hdboot.mzc    
+hdbooter.mzc    hdcpm3.sub      hddtbl.asm      holte-c.lbr     hsys2         
+hsys3           hsys4b          index.html      ldrbiohd.mzc    ldrbios.mzc   
+mic-holt.lbr    modebaud.mzc    move.mzc        scb.mzc         
+       34 file(s)     704.280 bytes used
+Total files listed:
+      512 file(s)     5.543.571 bytes used
+                    8.478.978 K bytes free

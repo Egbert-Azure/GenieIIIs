@@ -1,0 +1,27 @@
+(* Global Variables *)
+
+{ The first three variables provide pointers to the record types
+  of the Z-System structures for eventual assignment. }
+
+var
+  ENVPTR  : ^envrec;
+  MSGPTR  : ^msgrec;
+  MCLPTR  : ^mclrec;
+
+{ These are the Absolute (External) variable assignments which
+  give the Turbo Pascal program access to everything we know. }
+
+  WBOOTV  : Integer 	Absolute $0001;
+  IOBYTE  : Byte    	Absolute $0003;
+  CDISK   : Byte    	Absolute $0004;
+  BDOSV   : Integer 	Absolute $0006;
+  FCB1    : fcb     	Absolute $005C;
+  FCB2    : fcb     	Absolute $006C;
+  TBUFF   : String[126] Absolute $0080;
+  DBUFF   : Sector      Absolute $0080;
+
+{ This is the one which tells Turbo Pascal about the NZ-System. }
+
+  Z3EADR  : Integer 	Absolute $0109;
+
+

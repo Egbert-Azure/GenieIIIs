@@ -1,0 +1,551 @@
+.
+DATEX-P: ungueltiger Befehl
+SET 2:0,5:1,12:1
+
+
+R 45221040880
+
+
+DATEX-P: Verbindung hergestellt mit 45 2210 40055  - Sammelanschluss
+         (004) (n, Gegenstelle zahlt, Paket-Laenge: 128)
+
+RNN/NGW  PORT/PSA=008/014 LCG/I=00/004 CG=44236590313 CD=45221040055 ID=1644
+U#=xth33927,ccip8mqr
+
+ ** Thank you for choosing GEnie **
+
+  The Consumer Information Service
+       from General Electric
+        Copyright (C), 1993
+
+GEnie Logon at: 15:27 EST on: 930719
+Last Access at: 15:17 EST on: 930719
+
+$     PRIME TIME Rate in Effect     $
+
+No letters waiting.
+
+
+       GEnie Announcements
+
+  1. A Special Thanks From John Barber...........................
+  2. Tonight: GE-MUG Education RTC w\special guest Mary Beam.....MAC
+  3. Last chance to register for CA$H and connect time prizes....BACKGAMMON
+  4. Meet the CONNECT MAGAZINE staff LIVE........................BBS
+  5. Frequent Flier programs - More BANG for your BUCKS - RTC ...TRAVEL
+  6. Andy McFadden on data compression LIVE TONIGHT in...........A2PRO
+  7. Rabbit and Rodent Chat Featuring a Special Guest 7/23 In....PET
+  8. Online COOKING CLASS RTC 7/21 in............................FOOD
+  9. EdHak 3.0, Edit Anything with the Atari ST/TT/Falcon........ST
+ 10. EXTRA Special Disney RTC - TONIGHT - Lots of inside info....DISNEY
+ 11. NEW PLAYER'S NIGHT, Tuesday, July 20th, in..................GEMSTONE
+ 12. Take A COURSE Online This Summer............................CALC
+ 13. More great graphing PostScript GRAYS on the.................PSRT
+ 14. IBM finally got it right and releases three new ThinkPads...LAPTOPS
+ 15. U2, Neil Young, more reviewed in HI-TECH HOME #14...........MUSIC
+
+Enter #, <H>elp, or <CR> to continue?
+
+GEnie                                TOP                             Page    1
+                           GE Information Services
+
+ 1.   About GEnie                        2.   Communications (GE Mail & Chat)
+ 3.   Computing Services                 4.   Travel Services
+ 5.   Finance & Investing Services       6.   Online Shopping Services
+ 7.   News, Sports & Features            8.   Multi-Player Games
+ 9.   Career/Professional Services      10.   Business Services
+11.   Leisure Pursuits & Hobbies        12.   Education Services
+13.   Entertainment Services            14.   Symposiums on Global Issues
+15.   Research & Reference Services     16.   Leave GEnie (Logoff)
+
+Enter #, <H>elp?M1405;1
+
+Entering the Internet RoundTable area.
+
+Welcome to the Internet RoundTable, a most excellent place on GEnie!
+
+The 35-character limit on outbound Internet mail has been removed as of July
+15, 1993.  The new limit is only 400 characters.
+
+
+(Press Control-S to STOP, Control-Q to RESUME)
+
+Welcome to the Internet RoundTable, a most excellent place on GEnie!
+
+Within the Internet RoundTable you will find discussions and files related to
+the Internet, Usenet News, FTP (File Transfer Protocol), Electronic Mail, and
+Networking, for all computing platforms.
+
+The level of discussion will range from the beginner to the advanced levels,
+and this is a great way to learn more with your fellow GEnie members.
+
+The RoundTable consists of many parts:
+
+* The BULLETIN BOARD contains many discussions about the Internet.
+* The LIBRARY OF FILES contains many downloadable files including
+  USENET News digests for many news groups.
+* The CONFERENCE AREA is where people such as yourself attend
+  TUTORIALS and question & answer sessions about the Internet.
+
+In addition the menu shows options for ordering files and directories from the
+various "anonymous FTP" servers on the Internet, and for requesting other
+special services at standard GEnie connect-time rates.
+
+If you have any questions please choose option 6 and leave us a message.
+
+Your host sysop is Andy Finkenstadt, GE Mail address ANDY
+
+We highly recommend choosing option 4 "About the RoundTable" and option 5
+"RoundTable News" on your first visits.  The choose option 1 "Internet Bulletin
+Board" to enter the discussion area.
+
+
+Usage charges started
+GEnie
+   Internet RT Bulletin Board
+
+Hello E.SCHROEER
+
+ Bulletin Board Initialized.
+
+ All messages will be updated as if you had read them,
+ except for the ones in Category 1, Topic 1.
+
+ This may take a few minutes to complete.  Please wait for
+ the Bulletin Board prompt.
+
+ At the prompt, please take a moment to set your Bulletin
+ Board "Nickname" with the NAMe command.
+
+ Thank you.
+
+
+Category  1 Welcome to the Internet RoundTable.  New members "READ 1" Please.
+
+1. CATegories      10. INDex of topics
+2. NEW messages    11. SEArch topics
+3. SET category    12. DELete message
+4. DEScribe CAT    13. IGNore category
+5. TOPic list      14. PROmpt setting
+6. BROwse new msgs 15. SCRoll setting
+7. REAd messages   16. NAMe used in BB
+8. REPly to topic  17. EXIt the BB
+9. STArt a topic   18. HELp on commands
+Enter #, <Command> or <HEL>p
+1 ?1. CATegories      10. INDex of topics
+2. NEW messages    11. SEArch topics
+3. SET category    12. DELete message
+4. DEScribe CAT    13. IGNore category
+5. TOPic list      14. PROmpt setting
+6. BROwse new msgs 15. SCRoll setting
+7. REAd messages   16. NAMe used in BB
+8. REPly to topic  17. EXIt the BB
+9. STArt a topic   18. HELp on commands
+Enter #, <Command> or <HEL>p
+1 ?PRO NON
+
+Prompt type permanently set
+
+1 ?NAM
+
+Name currently reads: E.SCHROEER
+Enter Nickname (Maximum 12 chars) ?ES
+
+Name now reads: E.SCHROEER [ES]
+
+1 ?nam
+
+Name currently reads: E.SCHROEER [ES]
+Enter Nickname (Maximum 12 chars) ?Ecki
+
+Name now reads: E.SCHROEER [Ecki]
+
+1 ?
+1 ??
+
+Unrecognized command - [?]
+
+1 ?
+1 ?
+1 ?
+
+Unrecognized command - []
+
+1 ?stop
+
+Exiting...
+
+
+GEnie                            INTERNET-RT                         Page 1405
+                             Internet RoundTable
+
+ 1.   Internet Bulletin Board
+ 2.   Internet Conference Room
+ 3.   Internet Library of Files
+ 4.   About the Internet RoundTable
+ 5.   RoundTable News (930504)
+ 6.   Send Mail to RoundTable Staff
+ 7.   Internet Mail
+ 8.   Download Sysop's Treat File
+ 9.   Unix RoundTable
+10.   Search the Internet for a file
+11.   Request a file from the Internet
+12.   What is my Internet Address
+
+Enter #, <P>revious, or <H>elp?read 1
+
+This command is no longer supported.  Please use the MAIL or M200 keyword to
+move to GE Mail, and select the appropriate menu item.
+
+Enter #, <P>revious, or <H>elp?7
+
+No such page.
+
+GEnie                            INTERNET-RT                         Page 1405
+                             Internet RoundTable
+
+ 1.   Internet Bulletin Board
+ 2.   Internet Conference Room
+ 3.   Internet Library of Files
+ 4.   About the Internet RoundTable
+ 5.   RoundTable News (930504)
+ 6.   Send Mail to RoundTable Staff
+ 7.   Internet Mail
+ 8.   Download Sysop's Treat File
+ 9.   Unix RoundTable
+10.   Search the Internet for a file
+11.   Request a file from the Internet
+12.   What is my Internet Address
+
+Enter #, <P>revious, or <H>elp?M685;1
+
+Entering the CP/M RoundTable area.
+
+
+=======================================
+
+             Welcome to the
+
+            CP/M RoundTable!
+
+Supporting all varieties of CP/M, ZCPR3
+            ZSDOS and Z3PLUS
+
+=======================================
+
+ File/B.B. Help: File #7300 CPMHELP.TXT
+   General help: Send GEmail to CPM$
+
+
+Welcome to the CP/M RoundTable!
+*******************************
+
+For IMPORTANT information please use selection #4, About the RoundTable from
+the main CP/M RoundTable menu at Page 685.
+
+*********************************
+   W E L C O M E   A B O A R D !
+*********************************
+Chances are this is your first time here so jump right in and feel out your new
+message system.  Although you'll find that the menus are pretty straight
+forward, let me offer FOUR pointers for using this system:
+
+1) If you haven't recieved your manual, type MANUAL at the next GEnie prompt.
+You may either DOWNLOAD the manual or ORDER a manual for delivery. There are
+HELP FILES on most all the menus.  If a menu doesn't seem to have a HELP
+option, try typing HELP anyway.
+
+2) The real brawn of the CP/M RoundTable Bulletin Board is in the finely-tuned
+Command Structure we use.  Commands may be selected either by entering the
+corresponding number (found on the the Bulletin Board Full Prompt menu) - OR -
+by typing the actual command.  Only the first three letters are actually
+required.  You can mix any combination of command words and numbers.  You'll
+want to become familiar with the BB Command Mode if you plan to actively
+participate in the discussions.
+
+3) To get here DIRECTLY when you logon to GEnie, add the following to the end
+of your GEnie U#: ';685' (without the quotes). You can add a menu command to it
+if you like -> 'XYZ#####,XXXXX;685,1' will automatically put you into the CP/M
+RoundTable Bulletin Board every time you logon.
+
+4) IF YOU HAVE A PROBLEM -> At any menu page type 'PO' (which stands for POrt#.
+ Hopefully it won't be used enough to win the obvious nickname!). Note the Port
+and MRC number GEnie displays - and the time - then type FEEDBACK at any menu
+page to report your problem.  Depending on the nature of your problem, you may
+want to tell us the type of modem and software you are using.
+
+You'll only see this bulletin just this one time, so if you have any problems
+at all, don't by shy!  ASK!
+
+GEnie
+    CP/M User Group Bulletin Board
+
+Hello E.SCHROEER
+
+ Bulletin Board Initialized.
+
+ All messages will be updated as if you had read them,
+ except for the ones in Category 1, Topic 1.
+
+ This may take a few minutes to complete.  Please wait for
+ the Bulletin Board prompt.
+
+ At the prompt, please take a moment to set your Bulletin
+ Board "Nickname" with the NAMe command.
+
+ Thank you.
+
+Category  1 Welcome and Announcements
+
+1. CATegories      10. INDex of topics
+2. NEW messages    11. SEArch topics
+3. SET category    12. DELete message
+4. DEScribe CAT    13. IGNore category
+5. TOPic list      14. PROmpt setting
+6. BROwse new msgs 15. SCRoll setting
+7. REAd messages   16. NAMe used in BB
+8. REPly to topic  17. EXIt the BB
+9. STArt a topic   18. HELp on commands
+Enter #, <Command> or <HEL>p
+1 ?PRO NON
+
+Prompt type permanently set
+
+1 ?NAM
+
+Name currently reads: E.SCHROEER
+Enter Nickname (Maximum 12 chars) ?ES
+
+Name now reads: E.SCHROEER [ES]
+
+1 ?nam
+
+Unrecognized command - [NAM]
+
+1 ?nam
+
+Name currently reads: E.SCHROEER [ES]
+Enter Nickname (Maximum 12 chars) ?Ecki
+
+Name now reads: E.SCHROEER [Ecki]
+
+1 ?stop
+
+Exiting...
+
+
+GEnie                                CPM                             Page  685
+                               CP/M RoundTable
+
+ 1.   CP/M Bulletin Board
+ 2.   CP/M Real-Time Conference
+ 3.   CP/M RT Libraries
+ 4.   About the RoundTable
+ 5.   RoundTable News (930629)
+ 6.   Take a CP/M RT Survey
+
+Enter #, <P>revious, or <H>elp?3
+
+GEnie
+                       CP/M RoundTable Software Library
+                            Library: ALL Libraries
+
+ 1.   Description of this Library
+ 2.   Directory of Files
+ 3.   Search File Directory
+ 4.   Browse through Files
+ 5.   Upload a New File
+ 6.   Download a File
+ 7.   Delete a File You Own
+ 8.   Set Software Library
+ 9.   Save Current Software Library
+10.   Instructions for Software Exchange
+11.   Directory of New Files
+12.   Join/Ignore Library Category
+
+Enter # or <P>revious?4
+
+
+Start browse backwards from what file
+number or <RETURN> for ALL?
+
+ALL Libraries.
+
+ *********************************
+Number: 8163  Name: JTHLIB16.LBR
+Address: BRIAN-CPM                Date: 930711
+Approximate # of bytes: 15744
+Number of Accesses: 2  Library: 33
+Description:
+Custom routines originally developed for use in REMIND and ZP fill
+somewhat special purpose needs by doing things slightly differently
+than the corresponding standard library routines or by providing
+new services that I found useful and worth sharing.  Vers 1.6 adds
+a new routine, ZMVDFN, that expands a ZCPR3 FCB du:fn.ft to a
+memory buffer in a similar the way that ZPRDFN displays a ZCPR3
+FCB du:fn.ft.  See JTHLIB16.HZP.
+Keywords: HAZEN,ZP,REMIND,JTHLIB,SYSLIB,Z3LIBREL,ASSEMBLY,SOURCE
+ ---------------------------------
+
+File: JTHLIB16.LBR
+is a BINARY File.
+
+Press <RETURN> to skip, <D>ownload, <L>ist, or <Q>uit.
+?d
+
+Select Download Protocol
+
+1. XMODEM
+2. XMODEM (w/1K blocks)
+3. YMODEM
+4. ZMODEM
+
+Enter # or <RETURN> to skip?4
+
+File is ready.  Start your ZMODEM receive file.
+rz
+
+<B>rowse, <R>epeat, or <Q>uit?b
+
+ *********************************
+Number: 8162  Name: REMIND21.LBR
+Address: BRIAN-CPM                Date: 930711
+Approximate # of bytes: 42496
+Number of Accesses: 2  Library: 33
+Description:
+ZCPR3+DOS_clock appointment reminder utility displays and can print
+a calendar for the current month plus a sorted and paged list of
+dated appointment reminder lines from a text datafile, starting
+with any currently dated reminders and including upcoming reminders
+for the current month, a specified month, one screen of reminders
+or all upcoming reminders.  Language-dependent text overlay.
+Sorted file can now retain all entries.  See REMIND21.HZP.
+Keywords: REMINDER,MINDER,APPOINTMENT,SCHEDULE,CALENDAR
+ ---------------------------------
+
+File: REMIND21.LBR
+is a BINARY File.
+
+Press <RETURN> to skip, <D>ownload, <L>ist, or <Q>uit.
+?
+
+Skipping file ...
+ *********************************
+Number: 8161  Name: CDFZDB10.LBR
+Address: BRIAN-CPM                Date: 930711
+Approximate # of bytes: 23424
+Number of Accesses: 2  Library: 33
+Description:
+ZCPR3+DOS clock utility converts records in comma-delimited (CDF)
+file format to ZDB (Zcpr3 name and address DataBase)-format
+records and writes or appends the new records to a ZDB-format
+datafile.  Can import  CDF files made from dBASEII or other ZDB
+datafiles into a ZDB datafile.  Preserves last-modified dates when
+included in CDF records in the form "YY/MM/DD", otherwise uses
+current system date.  See CDFZDB10.HZP.
+Keywords: CDF,DBASE,ZDB,MERGE,DATABASE
+ ---------------------------------
+
+File: CDFZDB10.LBR
+is a BINARY File.
+
+Press <RETURN> to skip, <D>ownload, <L>ist, or <Q>uit.
+?
+
+Skipping file ...
+ *********************************
+Number: 8160  Name: ZDB21.LBR
+Address: BRIAN-CPM                Date: 930711
+Approximate # of bytes: 77312
+Number of Accesses: 2  Library: 33
+Description:
+ZCPR3 name and address database manager is small, very fast and
+easy to use.  Requires a VLIB4D+ graphics Z3TCAP.  Can print
+envelopes and labels with USPS DPBC barcodes and can write all or
+part of the database to ADR, CDF (MailMerge) or WSF output text
+datafiles.  Has name and zipcode indexes, fast name searches and
+telephone (modem) dialer.  Automatic record dating if system
+(ZSDOS/DateStamper/CPM+) clock is present.  See ZDB21.HZP/NZW.
+Keywords: NAME,ADDRESS,DATABASE,ZSDOS,CDF,DIALER,BARCODE,ZIP
+ ---------------------------------
+
+File: ZDB21.LBR
+is a BINARY File.
+
+Press <RETURN> to skip, <D>ownload, <L>ist, or <Q>uit.
+?
+
+Skipping file ...
+ *********************************
+Number: 8159  Name: ZSIM22.ZIP
+Address: BRIAN-CPM                Date: 930707
+PI=a%53# of bytes: 374L3SHH*5Iof Accesses: 7  Library: 38
+Description:
+ZSIM is a Z80 emulator in conjunction with a CP/M 80 BIOS, ie, it simulates a
+Z80 machine that can run CP/M.  Together with the original CP/M operating
+system you have a full Z80-CP/M machine.
+  ZSIM uses CP/M format disks, a ramdisk and a harddisk.  Supported disk
+formats are CP/M 86 single and double sided, but you can install any CP/M
+format PC drives can physically read.  The harddisk is in an MS-DOS file.  A
+sample harddisk containing the SMALL-C compiler is included.
+  ZSIM is free for personal use.  Sources of the CP/M BIOS are included.
+Keywords: SIMULATE,EMULATE,DOS,MS-DOS,IBM,22NICE
+ ---------------------------------
+
+File: ZSIM22.ZIP
+is a BINARY File.
+
+Press <RETURN> to skip, <D>ownload, <L>ist, or <Q>uit.
+?q
+
+Quitting ...
+GEnie
+                       CP/M RoundTable Software Library
+                            Library: ALL Libraries
+
+ 1.   Description of this Library
+ 2.   Directory of Files
+ 3.   Search File Directory
+ 4.   Browse through Files
+ 5.   Upload a New File
+ 6.   Download a File
+ 7.   Delete a File You Own
+ 8.   Set Software Library
+ 9.   Save Current Software Library
+10.   Instructions for Software Exchange
+11.   Directory of New Files
+12.   Join/Ignore Library Category
+
+Enter # or <P>revious?bye
+
+Choice no good, Please try again.
+
+Enter # or <P>revious?m1
+
+Usage charges stopped
+
+GEnie                                TOP                             Page    1
+                           GE Information Services
+
+ 1.   About GEnie                        2.   Communications (GE Mail & Chat)
+ 3.   Computing Services                 4.   Travel Services
+ 5.   Finance & Investing Services       6.   Online Shopping Services
+ 7.   News, Sports & Features            8.   Multi-Player Games
+ 9.   Career/Professional Services      10.   Business Services
+11.   Leisure Pursuits & Hobbies        12.   Education Services
+13.   Entertainment Services            14.   Symposiums on Global Issues
+15.   Research & Reference Services     16.   Leave GEnie (Logoff)
+
+Enter #, <H>elp?16
+
+Thank you for choosing GEnie.
+Have a nice day!
+
+Online: 12 minutes, 4 seconds.
+
+OFF AT 15:39EST 07/19/93
+DATEX-P: Ausloesung - Anforderung durch Gegenstelle
+
+
+DATEX-P: 44 2365 90313
+

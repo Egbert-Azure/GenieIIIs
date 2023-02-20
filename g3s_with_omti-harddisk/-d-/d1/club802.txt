@@ -1,0 +1,158 @@
+.lqon
+.mb 3
+.cw 12
+.PL 62
+.rm 65
+.HEGrafik auf dem Genie IIIs                               Seite #
+.H1
+
+WDÒ Grafië Fileó unä HRÇ Modeì ± Grafië Files
+.cw 8
+                     Egberô Schr|er¬ Februaò 1993
+.cw 12
+
+Ií Laufå deò Jahrå unä auó guteî alteî Computercluâ Zeiteî  habeî 
+sicè docè beé deí eiî odeò andereî Grafië Fileó angesammelt¬  diå 
+maî nichô mehò misseî m|chte® Solleî diå verloreî gehen¬ nuò weiì 
+maî  deî  Rechneò wechselô ¿ Nat}rlicè nicht® Ií  folgendeî  zweé 
+Basiã Programmå zuí Einleseî voî WDÒ Grafië-Fileó unä HRÇ-Grafië-
+Fileó ií Modeì ± Formaô iî diå Grafië deó Geniå IIIs.
+Beé  deî  Grafië Fileó ií WDÒ Formaô  sinä  einigå  Informationeî 
+verborgen¬  diå maî zuò optimaleî Darstellunç auæ deò Grafië  deó 
+Geniå IIIó heranzieheî kann® 
+Dieó wirä iî deò Unterroutinå "Monitoò einstellen¢ erledigt.
+Zuò gef{lligeî Beachtunç aucè diå Erroò Routinå zuò Fehlerbehand
+lung.
+  
+10° REÍ ************************************
+11° REÍ BILÄ ² (LESER© *
+12° REÍ F}Ò Geniå IIIó  *
+13° REÍ MIÔ RDÌ-Basiã *
+14° REÍ W.BACË MAÉ 8µ ge{® 5/9² E.Schr|eò *
+15° REÍ ************************************
+16° CLEAÒ 100° º OÎ ERROÒ GOTÏ 6501° º CLÓ º HCLÓ º HON
+17° DEFINÔ Á-Ú º DEFFNAT$(Z,S)=CHR$(28)+STRING$(Z,26)+
+    STRING$(S,25© º NG$=CHR$(22)
+18° GOSUÂ 801° º 'Titel
+19° PRINÔ "DATEINAMÅ º ";:LINÅ INPUÔ NAM$
+20° PRINT"LAUFWERË º ";:LINÅ INPUÔ LAUF$
+21° OPEN"I¢ ¬ ± ¬ NAM¤ « ":¢ « LAUF¤ º CLS
+22° LINÅ INPUÔ #1,N¤ º IÆ N$<>"BILD"ANÄ N$<>"BILD¢ THEÎ 220
+23° LINÅ INPUÔ #1,R$
+24° LINÅ INPUÔ #1,V¤ º VE¥ ½ VAL(MID$(V$,2,3))
+25° LINÅ INPUÔ #1,H¤ º HO¥ ½ VAL(MID$(H$,2,3))
+26° LINÅ INPUÔ #1,D¤ º LINÅ INPUÔ #1,D$
+26µ GOSUÂ 5010
+27° FOÒ Ö ½ ° TÏ VE%
+28° IÆ EOF(1© THEÎ CLOSÅ º GOTÏ 400
+29° LINÅ INPUÔ #± ¬ A¤ º Ø ½ 1
+30° FOÒ È ½ ° TÏ HO¥ STEĞ ¶ º Ø ½ Ø « 1
+31° Á ½ ASC(MID$(A$,X,1)© ­ 3² º IÆ Á ½ ° THEÎ 380
+31² V2¥ ½ VE¥ ­ V
+32° IÆ Á ANÄ ± THEÎ  HPLOÔ È ,V2%,2
+33° IÆ Á ANÄ ² THEÎ  HPLOÔ H+1,V2%,2
+34° IÆ Á ANÄ ´ THEÎ  HPLOÔ H+2,V2%,2
+35° IÆ Á ANÄ ¸ THEÎ  HPLOÔ H+3,V2%,2
+36° IÆ Á ANÄ 1¶ THEÎ HPLOÔ H+4,V2%,2
+37° IÆ Á ANÄ 3² THEÎ HPLOÔ H+5,V2%,2
+38° NEXÔ È ¬ V
+40° IÆ INKEY$="¢ THEÎ 400
+50° END
+500° REÍ Monitoò einstellen
+501° IÆ HO¥ ¼ VE¥ THEÎ 502° ELSÅ 5040
+502° VE%=VE¥-± º IÆ HO¥-VE¥ ¼ ° THEÎ 5020
+503° CMD"##,h¢ º RETURNŠ504° IÆ HO¥ ½ VE¥ THEÎ CMD"##,v¢ º RETURN
+505° IÆ HO¥ ¾ 51± ANÄ VE¥ ¾ 23¹ THEÎ CMD"##,x¢ º RETURN
+506° IÆ HO¥ ¼ 51² ANÄ VE¥ ¼ 24° THEÎ CMD"##,h¢ º RETURN
+507° RETURN
+800° REÍ Zeichensatú ladeî unä Programmtiteì ausgeben
+801° CMD"z,y¢ º HCODE"script/rzs"
+802° CMD"##,h¢ º HCLÓ º Z=6³ º S=6
+803° HBIÇ 55,220,1,2,1,"Bilä ­ Lader"
+804° HTEXÔ 45,150,2,"nacè eineò Ideå voî W® Back"
+805° HTEXÔ 60,100,2,"WDÒ ­ Computeò ­ Club"
+806° HCODÅ "normal/rzs"
+807° FOÒ X=° TÏ 250° º NEXÔ X
+808° HCLÓ º RETURN
+
+600° § hieò stehô Routinå "Filå ausw{hlen"
+
+700° § hieò stehô Routinå "Infï zõ WDÒ-File"
+701° § Infï zõ Fileó werdeî ausgegeben:
+       HOÎ 0,1
+       H¤ -¾ horizontal
+       V¤ -¾ vertikal
+       N¤ -¾ Dateé-Art
+       R¤ -¾ Infï zõ Bilä (Rechneò Typ)
+
+6500° § Erroò Routine
+6501° IÆ V>VE¥ THEÎ RESUMÅ 400
+6502° IÆ ERR/2+1=µ THEÎ RESUMÅ 380
+6503° X=1
+6504° FE$(1)="Fehleò #"+STR$(ERR/2+1)+¢ iî Zeile"+STR$(ERL)+
+      ¢ (bittå notieren)"
+6505° FE$(2)="Eingabå º 1=nochmal¬ 2=weitermachen¬ 3=Neustart,
+      4=Men}"
+6506° PRINÔ FNAT$(Z,S);CHR$(30);NG$;FE$(X);NG$;CHR$(7);
+6507° GOSUÂ 6508° º GOTÏ 65060
+6508° FOÒ Y=± TÏ 10° º X$=INKEY¤ º XX=VAL(X$)
+6509° IÆ XX>=± ANÄ XØ <=´ THEÎ PRINÔ FNAT$(Z,S);CHR$(30);
+6510° IÆ XX=± THEÎ RESUMÅ ELSÅ IÆ XX=² THEÎ RESUMÅ NEXT
+6511° IÆ XX=³ THEÎ 16° ELSÅ IÆ XX=´ THEÎ 65140
+6512° NEXÔ Ù º IÆ X=± THEÎ X=² ELSÅ X=1
+6513° RETURN
+6514° CLOSÅ º RUN"menu/bas"
+6515° RUN
+
+Unä  aló Listinç ² daó Programí zuí direkten“ Einleseî voî  Grafië 
+Fileó ií Modeì ± HRÇ Format.
+
+1° REÍ ************************************
+2° REÍ Modeì ± HRÇ 1â ­ Bildleser
+3° REÍ f}ò Geniå 3s
+4° REÍ Hartmuô Obermann
+4µ REÍ ge{nderô f}ò Geniå 3ó 05.9² E® Schr|er
+5° REÍ ************************************
+6° CLEAÒ 2000° º CLÓ :HCLS
+7° DEFINÔ Ã-Ú º DIMA$(191)
+8° PRINT:PRINTTAB(10)"ª ª ª ª ª HRÇ 1â ­ Ì Á Ä Å Ò ª ª ª *":Š   PRINT
+9° PRINT"Miô dieseí Programí k|nneî HRÇ-Bildeò deó Modeì ± (HRÇ  1b)
+   iî diå Geniå 3ó ­ HRÇ geladeî unä danî abgespeicherô werden!":
+   PRINT
+10° PRINÔ "Dateinamå º ";:LINÅ INPUÔ NAM$
+11° PRINT"Laufwerë º ";:LINÅ INPUÔ LAUF$
+12° OPEN"R¢ ¬ ± ¬ NAM¤ « ":¢ « LAUF$
+13° FIELÄ 1¬ 6´ AÓ B$(0)¬ 6´ AÓ B$(1)¬ 6´ AÓ B$(2)¬ 6´ AÓ B$(3)
+14° FOÒ S1=° TÏ 19± STEĞ ´ º GEÔ 1
+15° FOÒ S2=° TÏ 3
+16° A$(S1+S2)=B$(S2)
+17° NEXÔ S² º NEXÔ S1
+18° CLOSÅ º CLÓ º HON
+19° I½-1
+20° FOÒ V1=1± TÏ ° STEĞ -1
+21° FOÒ V2=0TO19± STEĞ 12
+22° V=24°-V2+V1
+23° X=° º I=I+1
+24° FOÒ È ½ ° TÏ 38³ STEĞ ¶ º Ø ½ Ø « 1
+25° Á ½ ASC(MID$(A$(I),X,1))
+26° IÆ Á ANÄ ± THEÎ HPLOÔ È ,V,2
+27° IÆ Á ANÄ ² THEÎ HPLOÔ H+1,V,2
+28° IÆ Á ANÄ ´ THEÎ HPLOÔ H+2,V,2
+29° IÆ Á ANÄ ¸ THEÎ HPLOÔ H+3,V,2
+30° IÆ Á ANÄ 1¶ THEÎ HPLOÔ H+4,V,2
+31° IÆ Á ANÄ 3² THEÎ HPLOÔ H+5,V,2
+32° NEXÔ È º NEXÔ V² º NEXÔ V1
+33° HOFÆ º PRINT"Bilä geladen!"
+34° PRINT"Unteò welcheí Nameî solì daó Bilä gespeicherô werden?"
+35° PRINT"<NAME/EXT:DNR¾ "» º LINEINPUÔ N$
+36° CLÓ º  HOÎ º HSAVÅ N$
+37° HOFÆ º PRINT"Bilä gespeichert!¢ º END
+
+Daó war's.
+
+Bittå  aî  allå Grafië Fan'ó miô MSDoseº Schreibô docè  maì  einå 
+Routinå zuí Abspeicherî voî Grafikeî auæ deí PÃ ií WDÒ-Formaô !!
+
+Egbert
+
+   

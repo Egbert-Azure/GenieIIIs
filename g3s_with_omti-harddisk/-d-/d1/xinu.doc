@@ -1,0 +1,25 @@
+
+
+                              XINU
+
+                       (Xinu Is Not UNIX)
+
+The  files which make up the XINU Operating System were typed  in 
+from  the book:  Operating System Design,  The XINU Approach,  by 
+Douglas Comer.   The Code is Copyright (c) 1984 by Bell Telephone 
+Laboratories,  Incorporated.   All  rights reserved.  ISBN  0-13-
+637539-1.   Originally designed for DEC LSI-11 computers,  it can 
+be ported to any computer with moderate modifications.   The  TTY 
+code  most  specifically.   While  developing the code  for  your 
+computer,  it would be advantagious to use the printf from your C 
+Compiler until all the code is debugged.  Your first project will 
+be the context switcher and interupt handler,  which will have to 
+be written in assembler.   This code is quite useless without the 
+book,  so I would suspect that you will be ordering it.   If your 
+interested in Operating System Design, it is quite an addition to 
+your library.   Call Prentice Hall 1-201-767-5049 (Thru 5052) for 
+current price and ordering.  Good Luck.
+
+UNIX is a trademark of Bell Laboratories.
+DEC, LSI-11 are trademarks of Digital Equipment Corporation.
+

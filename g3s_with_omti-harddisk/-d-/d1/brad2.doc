@@ -1,0 +1,172 @@
+--------------
+
+FOR A FAST DEMO OF THE BRADFORD PRINTING PROGRAM:
+     A> BRADFORD MX BRADDEMO   (for Epson MX-compatible printers)
+     A> BRADFORD FX BRADDEMO   (for Epson FX-compatible printers)
+     A> BRADFORD ST BRADDEMO   (for Star Gemini-10x and 15x)
+
+--------------
+
+INTRODUCTION
+Greetings!  These are the instructions for version 2.0 of
+Bradford, the printing program.  Bradford prints WordStar and 
+ASCII files in very high quality, in a large variety of fonts
+(typestyles).  It also allows you to give commands, either on 
+the system command line or within your document, to control how 
+your document will be printed.
+
+This version of Bradford is far more versatile, and often much 
+faster, than previous versions, so you might want to give it a 
+look even if you've tried an earlier version of Bradford.
+
+SETTING UP
+Bradford works with three types of printers:
+Type MX -- compatible with the Epson MX-80 or IBM Graphics Printer.
+Type FX -- compatible with the Epson FX-80 or IBM Proprinter.
+Type ST -- Star Gemini-10x and compatibles
+
+There are three "configuration files" on your disk, one for each 
+printer.  These files are called MX, FX, and ST.  There is also a 
+file called CONFIG.BF.  You must take these two steps before 
+using Bradford:
+1) Rename the old CONFIG.BF to CONFIG.OLD
+2) Rename your printer's configuration file to CONFIG.BF.
+
+Now you are ready to use Bradford.  Use the command
+     A> bradford braddemo
+to print the demonstration file.  (Don't type the "A>".)
+
+THE FONTS
+There are many files on your disk that end in ".BF2".  These are 
+the font files.  The part of the name before the ".BF2" is the 
+name of the font.  Bradford reads one of these files in order to 
+print in the corresponding font.
+
+Notice that there's a font called "select".  Let's print the file 
+called ASCII in the "select" font.
+     A> bradford ascii .fnselect
+Notice that we included a special Bradford command on the command 
+line.  This told Bradford to read the new font before printing 
+our document.  Bradford has a very large number of commands that 
+can be used in this way.
+
+PRINTING THIS FILE
+If you want to use Bradford to print this instruction file, use 
+this command at the system prompt:
+     A> bradford brad2.doc .mo1 .dcc
+
+PRINTING WORDSTAR FILES
+Bradford has a special facility to print WordStar files.  Use
+this command to print a WordStar file:
+     A> bradford ws.bf myfile
+Substitute the name of your file for the word "myfile".
+
+USING BRADFORD COMMANDS
+A command can be used in any of three ways:
+(1) Put it on the command line after the name of your document, 
+preceded by a period, as demonstrated above.
+(2) Include it in your document, on a line by itself, preceded by 
+a period.
+(3) Include it in your document, within a line of text, preceded 
+by a backslash (\) and followed by a space.
+The file BRADDEMO demonstrates methods (2) and (3) of using 
+commands.
+
+PARTIAL LIST OF COMMANDS
+Here's a list of some of the commands available with Bradford.  
+If part of a command must be typed exactly as shown, we'll show 
+it in capital letters.  If you should substitute your own 
+information for part of a command, we'll show that part in lower-
+case letters.  Remember that comands must be put on the command 
+line preceded by a period, or in your document as described 
+above.  See the file BRADDEMO for some examples of how to use 
+commands.
+
+FNfontname   Selects the specified font.
+POvalue      Sets the left margin to the specified value (0-79)
+             Normally 8
+MRvalue      Sets the right margin to the specified value (1-80)
+             Normally 73
+MTvalue      Sets top margin to specified value (0-65)
+             Normally 3
+MBvalue      Sets bottom margin to specified value (0-65)
+             Normally 8
+HMvalue      Sets horizontal magnification (width) (1-9)
+             Normally 2
+STL          Print the document flush-left
+             (This is the normal setting)
+STJA         Print the document justified.  (Must double space 
+             between paragraphs before using this.)
+STC          Print the document centered
+STR          Print the document flush-right
+PLvalue      Set page length in lines for odd-sized paper (1-254)
+             Normally 66
+MO1          Print in monospace instead of proportional space
+MO0          Resume proportional space printing
+UL1          Begin underlining 
+UL2          Begin double underlining
+UL0          Stop underlining  
+DK3          Begin boldface printing
+DK0          Resume non-boldface printing
+SUB          Begin subscript printing
+SUP          Begin superscript printing
+SU0          Resume mid-line (standard) printing
+
+MORE ABILITIES
+If you decide that you wish to continue using Bradford after a 
+reasonable trial period, you are expected to "register" your copy 
+by purchasing a manual.  Additional features and abilities 
+explained in the manual include:  print multiple copies, print 
+selected range of pages, pause before each new page, high-speed 
+draft mode, change spacing between characters, headers and 
+footers, conditional and unconditional page breaks, a very 
+thorough system of macros, changing the command characters, 
+overstriking, custom configuration files, and page and chapter 
+numbering.
+
+IF YOU WISH TO ORDER A MANUAL
+You can get the printed Bradford 2.0 manual (well over 50 pages 
+of text) for $25, which includes postage.  It's a very well 
+written manual, not full of hard-to-understand terminology.  Or 
+get both the latest manual and the latest version of the disk(s)
+for a total of $39.95.  Please send your check or money order
+(in U.S. dollars) to:
+     Concom Enterprises
+     Post Office Box 5056
+     Champaign, IL 61820, USA
+Add $3 for air mail outside North America.
+You may print the enclosed file "orderfrm.doc" for a convenient
+order form.
+
+ANY QUESTIONS
+If Bradford seems to be severely malfunctioning, it's more likely
+a problem with my explanation than with the program.  Please let 
+me know if you can't get the program to work, and I will try to 
+solve your problem.  You may ask me questions by mail or on the 
+GEnie or CompuServe information services.  (My name is Aaron 
+Contorer, and you can look up my electronic mail address on-
+line.)
+
+Technical support -- advice on how to get Bradford to do 
+something in particular -- will be given only to registered 
+Bradford 2.0 users (those who have purchased at least a manual).
+
+BRADFORD 1 OWNERS
+If you have purchased the manual for Bradford 1.20 or earlier, 
+you are entitled to a $10 discount on one copy of Bradford 2 with 
+manual.  Just enclose the original title page of your old manual 
+with your order.  (Your order will also be checked against a 
+database of registered Bradford 1 users.)  Thank you for your 
+patronage; it is because of your support and kind correspondence 
+that I decided to do this whole thing again.
+
+BRADFONT AND UNFONT
+These are programs for use in making your own font.  Use the command
+     A> unfont fontname
+to read the font file "fontname.bf2" and create the editable text file
+"fontname.bff".  You can then edit this file with a text editor, and
+turn it back into a font file with the command
+     A> bradfont fontname
+This process is explained in more detail in the manual.
+
+

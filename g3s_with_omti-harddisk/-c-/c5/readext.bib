@@ -1,0 +1,254 @@
+(****************************************************************************)
+(* CHIP-SPECIAL-Bibliotheksmodul READEXT.BIB                                *)
+(*                                                                          *)
+(* Komfortable Prozeduren zum Einlesen von Zeichen und Strings              *)
+(****************************************************************************)
+(* v Warnton : boolean; (mit true initialisiert)                            *)
+(*     wenn true akk. Signal bei Bereichsueberschreitungen etc.             *)
+(* v EndeZeichen : set of char; (mit [#27, #13] initialisiert)              *)
+(*     Menge der Zeichen mit welcher die Read-Prozeduren  verlassen werden  *)
+(*     koennen. Erweiterbar z.B. mit: EndeZeichen:=EndeZeichen + [^E,^X]    *)
+(* v LetztesZeichen : char; (nicht initialisiert)                           *)
+(*    Enthaelt immer das letzte Zeichen, mit welchem die letzte Read-       *)
+(*     Prozedur verlassen wurde.                                            *)
+(****************************************************************************)
+(* Einlesen von Strings mit Editiermoglichkeiten                            *)
+(*                                                                          *)
+(* xp,yp : Anfangs-Koordinaten.                                             *)
+(* LW    : einzulesender String, mua vor Aufruf von READSTR  init-          *)
+(*         tialisiert werden.                                               *)
+(* l     : Lange desselben. Auf keinen Fall: sizeof(LW)-l > 1 !             *)
+(*                                                                          *)
+(* Mogliche Editierkommandos:                                               *)
+(*         Pfeiltaste (Cursor zeichenweise bewegen)                         *)
+(*         Ctrl-Pfeiltaste (Cursor wortweise bewegen)                       *)
+(*         Home, End (Cursor an Zeilenanfang bzw. -ende)                    *)
+(*         ^Y : Zeile loschen,  ^T: Wort loschen, ^R Wiederherstellen       *)
+(****************************************************************************)
+(* p ReadReal(VAR r : real; l, n :byte);                                    *)
+(* p ReadInt(VAR i : integer; l:byte);                                      *)
+(* p ReadByte(VAR b : byte; l:byte);                                        *)
+(*                                                                          *)
+(*     Diese Prozeduren eignen sich zum Einlesen der entsprechenden         *)
+(*     Datentypen.                                                          *)
+(*     Die einzulesende Variable mua vorher initialisiert werden!           *)
+(*     Die Zahlen werden immer rechtsbundig in einem Feld der Breite l aus- *)
+(*     gegeben. Die Editiermoglichkeiten beschraenken sich hier auf zeichen-*)
+(*     weise loeschen oder Loeschen der ganzen Zahl mit ^Y.                 *)
+(*     Fur jeden der Datentypen findet eine Bereichsuberpruefung statt. Die *)
+(*     Prozeduren lassen nur Eingaben innerhalb des gueltigen Bereichs zu.  *)
+(*     Bei ReadReal muss als weiterer Parameter die Zahl der Nachkommastel- *)
+(*     len angegeben werden                                                 *)
+(****************************************************************************)
+
+
+
+(**************************** READCHAR.INC **********************************)
+
+{3.0 An dieser Stelle muss die Includedatei READCHAR.INC eingelesen werden.
+     Einfaches Einbinden mit per Includeanweisung geht nicht, da keine
+     verschachtelten Includes zugelassen sind.                           }
+
+procedure LiesZeichen(Var c : char); (* zur Tastaturanpassung (Turbo-Special 3)           *)
+
+begin
+  read(kbd,c);
+     { case c of hier noch Holte Codes definieren
+        geht aber auch so !!
+        ? : c:=^E; (* Cursor hoch *)
+        ? : c:=^X; (* Cursor tief *)
+        ? : c:=^S; (* Cursor links*)
+        ? : c:=^D; (* Cursor rechts *)
+        ? : c:=^A; (* Wort links *)
+        ? : c:=^F; (* Wort rechts *)
+        ? : c:=^T; (* Wort l\schen *)
+        ? : c:=^Y; (* Zeile l\schen *)
+        ? : c:=^C; (* Seite tief *)
+        ? : c:=^H; (* Zeichen links vom Cursor l\schen *)
+        ? : c:=^G; (* Zeichen unter Cursor l\schen *)
+     end }
+end; (* LiesZeichen *)
+
+(************************* Ende READCHAR.INC ********************************)
+
+
+CONST  WarnTon : boolean = TRUE;
+       EndeZeichen : set of char = [#27, #13];
+
+VAR    LetztesZeichen : char;
+
+
+Procedure Beep;
+  begin if WarnTon then write(^G) end;
+
+VAR neu : boolean;
+
+procedure ReadStr(var LW; l : integer);
+  var i : integer; x,xp,yp,t : byte; c, d:char;
+      Walt : String[80] absolute LW;
+      W    : String[80];
+  const Buchstaben : set of char =
+          [#48..#57,#65..#90,#97..#122,#128..#154,#225];
+  begin
+    if whereX+l > 80 then l:=80-WhereX;
+    if ord(Walt[0])>l then Walt[0]:=chr(l);
+    W:=Walt;
+    neu:=true; xp:=WhereX; yp:=WhereY; x:=whereX; write(w);
+    for i:=1 to l-length(w) do write('_'); x:=x + length(w);
+    gotoxy(x,yp);
+    repeat
+      LiesZeichen(c);
+      case c of
+        ^S     : if x>xp then begin x:=pred(x); gotoxy(x,yp) end else Beep;
+        ^D     : if x<xp+length(w) then begin x:=succ(x); gotoxy(x,yp) end
+                                   else Beep;
+        ^A     : begin
+                   while (x>xp) and not (w[x-xp] in Buchstaben)
+                     do x:=pred(x);
+                   while (x>xp) and (w[x-xp] in Buchstaben)
+                     do x:=pred(x);
+                   gotoxy(x,yp)
+                 end;
+        ^F     : begin
+                   while (x<xp+length(w)) and (w[x-pred(xp)] in Buchstaben)
+                     do x:=succ(x);
+                   while (x<xp+length(w)) and not (w[x-pred(xp)] in Buchstaben)
+                     do x:=succ(x);
+                   gotoxy(x,yp)
+                 end;
+        ^Y     : begin
+                   w:=''; x:=xp; gotoxy(x,yp);
+                   for i:=1 to l do write('_'); gotoxy(x,yp);
+                 end;
+        ^H     : if x>xp then begin
+                   delete(w,x-xp,1); x:=pred(x); gotoxy(x,yp);
+                   write(copy(w,succ(x-xp),length(w))); write('_');
+                   gotoxy(x,yp);
+                 end else Beep;
+        ^G     : if x<xp+length(w) then begin
+                   delete(w,succ(x-xp),1);
+                   write(copy(w,succ(x-xp),length(w))); write('_');
+                   gotoxy(x,yp);
+                 end else Beep;
+        ^T     : begin
+                   t:=x;
+                   while (t<xp+length(w)) and (w[t-pred(xp)] in Buchstaben)
+                     do t:=succ(t);
+                   while (t<xp+length(w)) and not (w[t-pred(xp)] in Buchstaben)
+                     do t:=succ(t);
+                   delete(w,succ(x-xp),t-x);
+                   write(copy(w,succ(x-xp),length(w)));
+                   for i:=1 to t-x do write('_'); gotoxy(x,yp);
+                 end;
+        ^Q      : begin
+                    LiesZeichen(c);
+                    case c of
+                      ^S,'S','s' : begin x:=xp; gotoxy(x,yp) end;
+                      ^D,'D','d' : begin x:=length(w)+xp; gotoxy(x,yp) end;
+                    end; (* case *)
+                  end;
+        ^R      : begin
+                    W:=Walt; x:=xp; gotoxy(x,yp); write(W);
+                    for i:=1 to l-length(w) do write('_'); x:=x + length(w);
+                    gotoxy(x,yp)
+                  end;
+        #21, #32..#255 :
+                 if length(w)<l
+                   then begin
+                     if neu then begin
+                       w:=''; x:=xp; gotoxy(x,yp);
+                       for i:=1 to l do write('_'); gotoxy(x,yp);
+                     end;
+                     insert(c,w,succ(x-xp));
+                     write(copy(w,succ(x-xp),length(w)));
+                     x:=succ(x); gotoxy(x,yp);
+                   end
+                   else Beep;
+      end;
+      neu:=false;
+    until c in EndeZeichen;
+    Walt:=W; LetztesZeichen:=c;
+ end; (* ReadStr *)
+
+
+
+
+TYPE ZahlTyp = (Real_, Integer_, LongInt_, ShortInt_, Byte_, Word_);
+     STR255 = STRING[255];
+
+PROCEDURE LiesZahl(VAR RStrAlt : STR255; l, n :byte; Typ: ZahlTyp);
+  VAR C         : Char;
+      RStr      : str255;
+      xp, yp    : byte;
+      Punkt     : boolean;
+{3.0} Max, Min  : INTEGER;
+
+  function BereichOK(TestStr:STR255) : boolean;
+    VAR Code     : integer;
+        TempReal : real;
+    begin
+      val(TestStr,TempReal,Code);
+      BereichOK:= (Code=0) and (TempReal<=Max) and (TempReal>=Min);
+      if Typ=Real_ then BereichOK:=Code=0;
+    end;
+
+  BEGIN
+    xp:=WhereX; yp:=WhereY; RStr:=RStrAlt;
+    case Typ of
+{3.0} Integer_  : begin max:=32767; min:=-32767 end;
+      Byte_     : begin max:=255; min:=0 end;
+    end;
+    while RStr[1]=#32 do delete(RStr,1,1);
+    if not BereichOK(RStr) then RStr:='0';
+    Punkt:=pos('.',RStr)<>0;
+    gotoxy(xp,yp); write(RStr:l);
+    repeat
+    repeat LiesZeichen(C) until C in ['0'..'9','-','.',^H,^Y,^R]+EndeZeichen;
+    case C of
+      '0'..'9' : if length(RStr)<l
+                   then
+                     if RStr='0'
+                     then RStr:=C
+                     else
+                       if BereichOK(RStr+C)
+                       then RStr:=RStr+C
+                       else Beep;
+      '-'      : if (RStr='0') and not (Typ in [Word_,Byte_])
+                 then RStr:='-' else Beep;
+      '.'      : if not Punkt and (Typ=Real_) then
+                   if length(RStr) < l
+                   then begin RStr:=RStr+C; Punkt:=true end else Beep;
+      ^R       : RStr:=RStrAlt;
+      ^H       : if length(RStr)>1
+                   then begin
+                     if RStr[length(RStr)]='.' then Punkt:=false;
+                     RStr:=copy(RStr,1,pred(length(RStr)))
+                   end
+                   else RStr:='0';
+       ^Y       : BEGIN RStr:='0'; Punkt:=false END;
+    end; (* case *)
+    gotoxy(xp,yp); write(RStr:l);
+    until c in EndeZeichen;
+    RStrAlt:=RStr; LetztesZeichen:=c;
+  end; (* ReadReal *)
+
+PROCEDURE ReadReal(VAR r : real; l, n :byte);
+  var S : STR255; Code : integer;
+  BEGIN
+    str(r:l:n,s); LiesZahl(s,l,n,Real_); val(s,r,Code);
+  END;
+
+PROCEDURE ReadInt(VAR i : integer; l:byte);
+  var S : STR255; Code : integer;
+  BEGIN
+    str(i:l,s); LiesZahl(s,l,0,Integer_); val(s,i,Code);
+  END;
+
+
+PROCEDURE ReadByte(VAR b : byte; l:byte);
+  var S : STR255; Code : integer; i:integer;
+  BEGIN
+    i:=b; str(b:l,s); LiesZahl(s,l,0,byte_); val(s,i,Code); b:=i;
+  END;
+
+

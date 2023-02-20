@@ -1,0 +1,92 @@
+; PROGRAM::  SETATR
+; AUTHOR::   JOE WRIGHT
+
+; GENERALIZED SET ATTRIBUTES TEST
+
+esc	equ	27
+fcb	equ	5ch
+cr	equ	13
+lf	equ	10
+
+	ext	z3vinit, cls, vprint, setatr
+	ext	stndend
+	ext	pafdc, cout
+
+	jp	start
+	db	'Z3ENV'
+	db	1
+	dw	0
+
+start::	call	z3vinit
+	call	cls
+
+; We will take a number in A and interpret its low order three
+; bits as Blink, Underline and Reverse video attributes.
+; In the case of ASCII we will OR these attributes 
+
+	xor	a
+	call	this
+
+	call	vprint
+	db	'Normal',0
+
+	ld	a,1
+	call	this
+	call	setatr
+	call	vprint
+	db	'Blink',0
+
+	ld	a,2
+	call	this
+	call	setatr
+	call	vprint
+	db	'Reverse',0
+
+	ld	a,3
+	call	this
+	call	setatr
+	call	vprint
+	db	'Blink/Reverse',0
+
+	ld	a,4
+	call	this
+	call	setatr
+	call	vprint
+	db	'Underscore',0
+
+	ld	a,5
+	call	this
+	call	setatr
+	call	vprint
+	db	'Blink/Underscore',0
+
+	ld	a,6
+	call	this
+	call	setatr
+	call	vprint
+	db	'Reverse/Underscore',0
+
+	ld	a,7
+	call	this
+	call	setatr
+	call	vprint
+	db	'Blink/Reverse/Underscore',0
+
+	call	norm		; Back to Normal
+	jp	stndend		; Whatever User thinks normal is
+
+this::	push	af
+	call	norm
+	call	vprint
+	db	cr,lf,lf,0
+	pop	af
+	call	pafdc
+	call	vprint
+	db	' This is ',0
+	ret
+
+norm::	xor	a
+	jp	setatr
+
+	end
+

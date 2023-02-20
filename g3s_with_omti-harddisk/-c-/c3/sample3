@@ -1,0 +1,15 @@
+.ml20   We're setting the left margin here,
+.mr60   and the right margin here.
+.str
+This line is on the right side.
+This one too.
+
+.stc
+This line is centered.
+
+.stl
+Most text starts at the left margin.
+This is a typical line.
+
+e
+.. playing w

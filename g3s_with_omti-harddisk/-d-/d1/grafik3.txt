@@ -1,0 +1,654 @@
+.mb 3
+.cw 12
+.PL 66
+.rm 68
+.HEGenie IIIs Grafik unter Holte CP/M +                Seite #
+
+Grafië deó Geniå IIIó unteò Holtå CP/M+
+.cw 8
+Volkeò Dose¬ Egberô Schr|er¬ Juné-August 1994
+.cw 12
+
+1® Grundlagen
+
+Deò zweitå Beitraç zuò kleineî Artikelseriå }beò diå Ansteuerunç deò 
+Grafië deó Geniå IIIó unteò CP/Í zeigtå diå M|glichkeiteî miô  Turbï 
+Pascal® Hieò sinä nuî M|glichkeiteî zuò Programmierunç iî ANSÉ-C.
+
+Thomaó  Holtå selbsô haô vielå Utilitieó iî Ã  programmiert¬  nutztå 
+dazõ abeò deî MIÃ Compileò voî Rose® Dieseò isô zwaò f}ò diå  unter
+schiedlichsteî Rechneò nocè zõ kaufen¬ allerdingó l{~ô Herò Roså miô 
+sicè nichô }beò deî Preió redeî unä sï bleibô dieseò Ã-Compileò  miô 
+ca®  400¬­ iî deò heutigeî CP/Í Welô unbeachtet» schade®  Holtå  haô 
+miô  deò ]berlassunç deò Sourcå Codeó deó Geniå 3ó f}ò deî  Cluâ  8° 
+aucè diå Ã-Routineî zuò Graphië-Ansteuerunç zuò Verf}gunç  gestellt® 
+Deshalâ  f{llô diå Entscheidunç neuå Wegå miô deí jetzô  PÄ-Compileò 
+voî  Hitecè zõ geheî leicht¬ zumaì dieseò deî ANSÉ  Standarä  unteò
+st}tzt.
+
+Diå  erstå  Arbeit¬ diå maî nuî erledigeî mu~¬  isô  diå  Erstellunç 
+eineò  Librarù f}ò deî Ã-Compileò auó deî Holte'scheî MIÃ  Routinen® 
+Diå eigentlichå Graphikfunktionalit{ô isô já ií BIOÓ  implementiert® 
+Deí Ã-Compileò wirä halô nuò iî deî Funktioneî gesagt¬ welchå  BIOÓ-
+Funktioî zõ nutzeî isô unä wie® Dazõ einigå Beispiele:
+
+.cw 10
+/******************************************************************************
+ª Ã Ì Ï Ó Å Ğ Ì ª Ì É Â Ğ Ì Ï Ô ° ± µ ª Ô è ï í á ó   È ï ì ô å ª  ¸ ¶ ° ´ ° 1*
+*******************************************************************************
+*
+ª Versioî 1.° bù Thomaó Holte.
+*
+ª Closeó graphiã screen.
+*/
+
+closepì ()
+{
+  systeí  (25¬ 0)»  /ª disablå outpuô oî graphiã screeî oæ phoeniø Geniå IIIó */
+}
+
+
+/******************************************************************************
+*  P O I N T  *  L I B P L O T 0 3 5  * T h o m a s   H o l t e * 8 6 0 4 0 1 *
+*******************************************************************************
+*
+* Version 1.0 by Thomas Holte.
+*
+* Plots point (x,y).
+*/
+
+point (x, y)
+  int x, y;
+{
+  system (27, 0x11, 0, y, x);	/* plots point on phoenix Genie IIIs */
+}
+
+
+/******************************************************************************Š*  L I N E  *  L I B P L O T 0 2 5  *  T h o m a s   H o l t e  * 8 6 0 4 0 1 *
+*******************************************************************************
+*
+* Version 1.0 by Thomas Holte.
+*
+* Draws a line from (x1,y1) to (x2,y2).
+*/
+
+line (x1, y1, x2, y2)
+  int x1, y1, x2, y2;
+{
+  /* common line drawing routine */
+/*
+  int dx, dy, px, py;
+  int x = x1;
+  int y = y1;
+  int p = 0;
+
+  if (x2 >= x1)
+  {
+    px = x2 - x1 + 1;
+    dx = 1;
+  }
+  else
+  {
+    px = x1 - x2 + 1;
+    dx = -1;
+  }
+
+  if (y2 >= y1)
+  {
+    py = y2 - y1 + 1;
+    dy = 1;
+  }
+  else
+  {
+    py = y1 - y2 + 1;
+    dy = -1;
+  }
+
+  point (x, y)» /ª wurdå já iî POINT.Ã definierô ¡ */
+
+  if (py <= px)
+  {
+    while (x != x2)
+    {
+      if ((p += py) >= px)
+      {
+	p -= px;
+	y += dy;
+      }
+
+      point (x += dx, y);
+    }
+  }
+  else
+  {
+    while (y != y2)
+    {Š      if ((p += px) >= py)
+      {
+        p -= py;
+	x += dx;
+      }
+
+      point (x, y += dy);
+    }
+  }
+*/
+
+  /* line drawing routine on phoenix Genie IIIs */
+  system (29, 0x11, 0, &x1);
+}
+/*=====================================================================*/
+.cw 12
+ 
+Dieså Librarù miô Nameî HOLTE.LIÂ enth{lô diå vollå Grafikfunktiona
+lit{ô  deó Geniå 3ó ­ selbstverst{ndlicè miô deî Windowó Optioneî  -
+unä isô auæ eineò deò V0xø Disk'ó (f}ò Z3PLUÓ User© odeò direkô  beé 
+unó erh{ltlich.
+
+.cw 10
+
+/*****************************************************************************/
+/ª  Funktionsprototypeî deò Grafiklibrarù f}ò Geniå IIIó  miô  Holtå         */
+/ª  CP/M +.                                             HOLTE.LIB-File       */
+/*****************************************************************************/
+/*      Volker Dose, Egbert Schroeer                                         */
+/*      function window not included                                         */
+ 
+void erase (void);			/* loescht HRG Seite 0               */
+void openpl (void);			/* loescht HRG Seite 0               */
+                                        /ª und schaltet aî                   */
+void closepl (void);			/* schaltet HRG Seite 0 aus	     */
+void point (int x, int y);		/* setzt einen Punkt (639,449)       */
+
+/* zieht Linie (links,unten,rechts,oben)      */
+void line (int x1, int y1, int x2, int y2);
+
+/* Kreisbogen (mittel_x,y,start_x,y,end_x,y   */	
+void arc (int x, int y, int x0, int y0, int x1, int y1);
+
+void circle (int x, int y, int r);      /* Kreis (mittel_x,y,radius)	     */
+void move (int x, int y);		/* Grafikcursor nach (x,y)	     */
+void cont (int x, int y);		/* draw line from (X,Y) to (x,y)     */
+void unpoint (int x, int y);		/* loesche einen Punkt (639,449)     */
+
+voiä unlinå (inô x1¬ inô y1¬ inô x2¬ inô y2)»        /ª loeschô einå Linå    */
+
+/* loescht einen Kreis mittelpunkt_x,y radius     */
+void uncircle (int x, int y, int r);   
+
+/* loescht einen Kreisbogen mittelpunkt_y,y radius    */
+void unarc (int x, int y, int x0, int y0, int x1, int y1);
+
+void uncont (int x, int y);		/* undraw line from (X,Y) to (x,y)   */
+/*=====================================================================*/
+.cw 12
+ 
+Nat}rlicè wirä aucè ­ wiå beé deò Programmierunç unteò Turbï  Pascaì 
+­  einå  M|glichkeiô gebraucht¬ uí }beò deî BIOÓ-Aufruæ  }beò  BDOÓ-ŠFunktioî 5° zõ realisieren® BIOS3.Ã befindeô sicè iî deò  HOLTE.LIB¬ 
+BIOS3.È   wirä aló Headeò Filå iî daó entsprechendå Programí  einge
+bundeî werdeî (s.a® Disë V057)® Zus{tzlicè sinä diå 'system()§ Funk
+tioneî  deò originaì Holtå Librarù eingebunden¬ uí diå  Spezialfunë
+tioneî deó BIOÓ nutzeî zõ k|nnen.
+.cw 10
+
+/* BIOS-Aufruf fuer CP/M Plus ueber die BDOS-Funktion 50 */
+
+/* CP/M-80 BIOS entry points */
+#define BOOT    0		/* perform cold start initialization    */
+#define WBOOT   1		/* perform warm start initialization    */
+#define CONST   2		/* check for console input char ready   */
+#define CONIN   3		/* read  console character in	        */
+#define CONOUT  4		/* write console character out	        */
+#define LIST    5		/* write list    character out	        */
+#define AUXOUT  6		/* write auxiliary output character     */
+#define AUXIN   7		/* read  auxiliary input  character     */
+#define HOME    8		/* move to track 00 on selected disk    */ 
+#define SELDSK  9		/* select disk drive		        */
+#define SETTRK 10		/* set track  number		        */
+#define SETSEC 11		/* set sector number		        */
+#define SETDMA 12		/* set DMA address		        */
+#define READ   13		/* read  specifidd sector	        */
+#define WRITE  14		/* write specified sector	        */
+#define LISTST 15		/* return list status		        */
+#define SECTRN 16		/* translate logical to physical sector */
+#define CONOST 17		/* return output status of console	*/
+#define AUXIST 18		/* return input  status of aux. port    */
+#define AUXOST 19		/* return output status of aux. port	*/
+#define DEVTBL 20		/* return address of char. I/O table	*/
+#define DEVINI 21		/* initialize char. I/O devices		*/
+#define DRVTBL 22		/* return address of disk drive table	*/
+#define MULTIO 23		/* set number of logically consecutive  */
+				/* sectors to be read or written	*/
+#define FLUSH  24		/* force physical buffer flushing for   */
+				/* user-supported deblocking		*/
+#define MOVE   25		/* memory to memory move		*/
+#define TIME   26		/* time set/get signal			*/
+#define SELMEM 27		/* select bank of memory		*/
+#define SETBNK 28		/* specify bank for DMA operation	*/
+#define XMOVE  29		/* set bank when a buffer is in a bank  */
+				/* other than 0 or 1			*/
+#define USERF  30		/* reserved for system implementor	*/ 
+
+
+#ifndef uchar
+#define uchar unsigned char
+#endif
+
+/* function prototypes */
+unsigned bios(uchar nummer, ...);
+unsigned bioshl(uchar nummer, ...);
+/*=====================================================================*/
+.cw 12
+
+Uí  keiî Plagiaô zõ begehenº Aî BIOS3.* waò Alexandeò  Schmiä  nichô 
+ganú unbeteiligt®
+.paŠ2® Programmierunç deò Grafik
+
+Diå  Voraussetzungeî  sinä nuî implementiert® Eó folgô  eiî  kleineó 
+Beispielprogramm¬ daó einigå Grafikspielereieî erzeugt.
+
+Daó Programí GRATESÔ zeigô dabeé allå M|glichkeiteî deò Grafik®  Diå 
+Punktå werdeî nuò normierô gesetzô bzw® gel|scht¬ daó schaffô Kompa
+tibilit{ô  zwischeî  Rechnerî miô  verschiedeî  Zeichens{tzeî  (z.B® 
+FONT1´ unä FONT12© unä Kreiså werdeî immeò normierô gezeichnet.
+
+.cw 10
+/ª GRATEST.C Beispielprogramí miô deî 
+   derzeiôigen Grafikm|glichkeiteî */
+
+#include <stdio.h>
+#include <time.h>
+#include <grafik.h>
+
+
+int main(void);
+int rand();
+
+
+int zaehler, radius, x0, y0, x1, y1;
+int max_x,max_y,max_int;
+
+#define sub 0x1a
+
+
+/* draws a box (lower_left to upper_right)   */
+void box(int xb0, int yb0, int xb1, int yb1)
+{
+	line(xb0,yb0,xb1,yb0);		/* links unten nach rechts unten */
+	line(xb1,yb0,xb1,yb1);		/* rechts unten nach rechts oben */
+	line(xb1,yb1,xb0,yb1);		/* rechts oben nach links oben   */
+	line(xb0,yb1,xb0,yb0);		/* links oben nach links unten   */
+}
+	    
+
+/* undraws a box ( lower_left to upper_right */
+void unbox(int xb0, int yb0,int xb1, int yb1)
+{
+	unline(xb0,yb0,xb1,yb0);	/* links unten nach rechts unten */
+	unline(xb1,yb0,xb1,yb1);	/* rechts unten nach rechts oben */
+	unline(xb1,yb1,xb0,yb1);	/* rechts oben nach links oben   */
+	unline(xb0,yb1,xb0,yb0);	/* links oben nach links unten   */
+}
+	 
+
+
+int main(void)
+{
+
+	x0 = 0; y0 = 0; x1 = 100; y1 = 100;
+	putch(sub);
+	puts("Hallo Welt, wie geht's denn so ? ");   
+
+
+	openpl();
+	line(x0,y0,x1,y1);Š	line(100,100,620,400);	
+	circle(300,140,30);
+	box(30,30,240,100);
+	box(240,100,639,300);
+	box(250,110,629,290);
+	box(260,120,619,280); 
+	box(270,130,609,270);
+	
+	erase();
+	for (radius =5; radius <200; radius +=2)
+	circle(320,220,radius);
+
+	for (radius = 5; radius < 200; radius +=2)
+	uncircle(320,220,radius);
+		
+
+	move (330,280);
+	srand (2204);
+	for (zaehler = 0; zaehler <120; zaehler ++)
+	{
+		x0 = rand() / 52;
+		y0 = rand() / 80;
+	 		cont(x0,y0);
+	}
+	
+	move(330,280);
+	srand(2204);
+	for (zaehler = 0; zaehler <121; zaehler ++)
+	{
+		x0 = rand() / 52;
+		y0 = rand() / 80;
+	 		uncont(x0,y0);
+	}
+		
+	srand(2204);
+	for (zaehler =0; zaehler < 52; zaehler ++)
+	{
+		x0 = rand() / 52; x1 = rand() / 52;
+		y0 = rand() / 80; y1 = rand() / 80;
+		box(x0,y0,x1,y1);
+	}
+		 
+	srand(2204);
+	for (zaehler =0; zaehler < 52; zaehler ++)
+	{
+		x0 = rand() / 52; x1 = rand() / 52;
+		y0 = rand() / 80; y1 = rand() / 80;
+		unbox(x0,y0,x1,y1);
+	}
+
+	srand(2204);
+	for (zaehler = 0; zaehler < 80; zaehler ++)
+	{
+		x0 = rand() / 52; y0 = rand() / 80;
+		radius = ( rand() / 1000 ) + 5;
+		circle(x0, y0, radius);
+	}	 
+	
+	srand(2204);Š	for (zaehler = 0; zaehler < 80; zaehler ++)
+	{
+		x0 = rand() / 52; y0 = rand() / 80;
+		radius = ( rand() / 1000 ) + 5;
+		uncircle(x0, y0, radius);
+	}	
+	
+	srand(2204);
+	for (zaehler = 0; zaehler < 1500; zaehler ++)
+	{
+		x0 = rand() / 52; y0 = rand() / 80;
+		point(x0,y0);
+	}	
+
+	srand(2204);
+	for (zaehler = 0; zaehler < 1500; zaehler ++)
+	{
+		x0 = rand() / 52; y0 = rand() / 80;
+		unpoint(x0,y0);
+	}	
+		
+	puts("Fertig, Taste um zurueck ins Betriebssystem !!");
+	getch();
+
+	closepl();
+
+}
+/*=================================================================*/
+.cw 12
+
+Jetzô  sollteî  diå  Grundlageî klaò sein¬  uí  eiî  komplexereó  Ã-
+Programí vorzustellen¬ deî PCØ ­ Reader.
+
+.cw 10 
+/* ------------------------------------------------------------------- */
+/* dispcx.c   -   Read & Display a *.PCX graphics file in Microsoft's  */
+/* Quick C in EGA and in Borland's Turbo C 2.0 and equivilents with    */
+/* all supported BGI graphics modes (VGA/EGA/CGA/Herc).                */
+/* ------------------------------------------------------------------- */
+/* Original by                      :  M. CLYNES   07-24-89            */
+/* Borland Compiler Enhancements by :  J. Braatz   02-16-92            */
+/* Adapted to Club-80 Terminal by   :  A. Schmid   06-07-93            */
+/* adapted to Genie IIIs by	    :  E. Schroeer 18-11-93            */
+/* ------------------------------------------------------------------- */
+/* WARNING Only with LIBZ and HOLTE !!!                                */
+
+#include <stdio.h>
+#include <conio.h>
+#include <grafik.h>
+
+#define YMAX	 449	/* Genie IIIs xmax=639,ymax=449 */
+#define XMAX     639
+
+char inversfl='N';
+int  xoff=0,yoff=0;
+int  eof_flag=0;
+
+struct pcxheader{
+       char manufact;	  /*  0    Hersteller-ID           */
+       char version;	  /*  1    Versionsnummer          */
+       char encode;       /*  2                            */Š       char bpp;          /*  3                            */
+       int xmin;          /*  4, 5 Bildgroesse             */
+       int ymin;          /*  6, 7      "                  */
+       int xmax;          /*  8, 9      "                  */
+       int ymax;          /* 10,11      "                  */
+       int hres;          /* 12,13 Aufloesung der Hardware */
+       int vres;          /* 14,15     "       "      "    */
+       char colormap[48]; /* 16-63                         */
+       char reserved;     /* 64    momentan reserviert     */
+       char ebene;        /* 65    Zahl der Farbebenen     */
+       int bpline;        /* 66,67 Byte pro Zeile je Ebene */
+       int paletinfo;     /* 68,69 Art des Bildes          */
+       char blank[58];    /* derzeit keine Informationen   */
+       } header;
+
+/*========================================================================*/
+/*   gobal decoded data   char decodebuff[200];                           */
+/*========================================================================*/
+/* Decode a line of .PCX                                                  */
+/* This procedure reads one encoded line from the image file              */
+/* 0 = valid data stored                                                  */
+/* EOF = out of data in file                                              */
+
+decodepcx(decodebuff, bytesline, fp)
+char *decodebuff;                                 /* where to place data */
+int bytesline;                                    /* # of bytes per line */
+FILE *fp;                                         /*  image file handle  */
+{
+  int data;
+  int cnt;
+
+  while(bytesline > 0 ){
+    cnt = 1;
+    if(EOF == (data = getc(fp))) return(EOF);   /* retrive a data byte */
+    if(0xc0 == (0xc0 & data)){
+      cnt = 0x3f & data;                        /* get repeat count */
+      if(EOF == (data = getc(fp))) return(EOF);  /* get real data */
+      }
+
+    while(cnt--){                         /* expand data into buffer */
+      if(data==0x1A) eof_flag=1; else eof_flag=0;
+      if(eof_flag && data==0x1A) data=0;
+      *decodebuff = data;
+      ++decodebuff;
+      --bytesline;
+      }
+    }
+  return(0);                                  /* file read status */
+  }
+/* decodepcx()  end */
+
+
+/*========================================================================*/
+/*                   read .PCX header into structure                      */
+/*========================================================================*/
+readheader(fp)
+FILE *fp;
+{
+  int count;Š  char *loader;
+
+  loader = (char *) &header;
+
+  for(count = 0; count < 128; ++count){
+     *loader = (char)fgetc(fp);
+     ++loader;
+     }
+
+/* Note: For Borland Compiler users, the following will need to be     */
+/* changed to outtext() if you want to see the header information on   */
+/* Hercules monitors (with the old herc.bgi driver)                    */
+
+  printf("Encoding type %d\n",header.encode);
+  printf("Window X-min = %4d,  Y-min = %4d\n",header.xmin, header.ymin);
+  printf("Window X-max = %4d,  Y-max = %4d\n",header.xmax, header.ymax);
+  printf("Hres = %4d,  Vres = %4d\n",header.hres, header.vres);
+  printf("# bytes per/scan line %4d   \n\n",header.bpline);
+  printf("Bild (i)nvers oder (n)ormal einlesen ? ");
+  inversfl=getch() & 0x5f;
+
+  return(header.bpline);
+}
+
+/*========================================================================*/
+/*                      pixel line dump                                   */
+/*========================================================================*/
+/* DUMP A RASTER LINE TO DISPLAY                                          */
+/* pixeldump((pointer buffer), (# of BYTES), (Y line on screen to dump))  */
+/*========================================================================*/
+
+pixeldump(rdbuff, bytes, line)
+char *rdbuff;
+int line, bytes;
+
+{
+  unsigned x;
+  unsigned char byte, loop;
+
+  bytes = (bytes * 8);
+  
+/* Sehr grosses Bild in X-Richtung komprimieren */
+
+  if (header.xmax-header.xmin+xoff>XMAX*2){   
+    for(x = xoff; x < (bytes/2)+xoff; ++rdbuff){
+      if (inversfl=='I')
+        byte = ~(*rdbuff);
+      else
+        byte = *rdbuff;
+      for (loop = 0x80; loop > 0; loop >>= 1){
+        if (loop & byte) point(x, YMAX-line);
+        loop >>= 1;
+        if (loop & byte) point(x, YMAX-line);
+        ++x;
+        }
+      }
+    }
+  else{
+    for(x = xoff; x < bytes+xoff; ++rdbuff){Š      if (inversfl=='I')
+        byte = ~(*rdbuff);
+      else
+        byte = *rdbuff;
+      for (loop = 0x80; loop > 0; loop >>= 1){
+        if (loop & byte) point(x, YMAX-line);
+        ++x;
+        }
+      }
+    }
+  }
+/* pixeldump() End */
+
+
+/*========================== MAIN() =====================================*/
+
+int main( argc, argv )
+int argc;
+char *argv[2];
+{
+  int line, status, bytesline;
+  char decodebuff[200],ch;
+  FILE *fp;
+  
+  z3vinit();
+
+  argc = argc;                          /* Nuke's Compiler warning   */
+  
+  cls();
+   
+  if((fp = fopen(argv[1],"rb")) == NULL){
+    printf("ERROR: FILE '%s' CANNOT BE OPENED.\n",argv[2]);
+    exit(0);
+    }
+  bytesline = readheader(fp);
+  printf("\n\nOffset aus dem Header nehmen ?");
+  ch=getch() & 0xDF;
+  if((ch=='J') || (ch=='Y') || (ch==0x0D)){
+    xoff=header.xmin;
+    yoff=header.ymin;
+    }
+  else{
+    printf("\n  X-Offset: "); scanf("%d",&xoff);
+    printf("\n  Y-Offset: "); scanf("%d",&yoff);
+    }
+  line = yoff;
+  status = 0;
+  
+  printf("\n\nBildschirm vor dem Laden loeschen ? ");
+  if((ch=getch() & 0xDF)=='J') erase();
+  openpl();
+  cls();
+                          
+  while(status != EOF){    /* do EXTRA READS to srink vertical */
+    if ((header.ymax-header.ymin+yoff)>YMAX*2){     /* sehr grosses Bild */
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);Š      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+
+      pixeldump(decodebuff, bytesline, line);
+      ++line;
+      }
+    else if (header.ymax-header.ymin+yoff>YMAX){    /* grosses Bild */
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      status = decodepcx(decodebuff, bytesline, fp);
+      pixeldump(decodebuff, bytesline, line);
+      ++line;
+      }
+    else  	/* Bild laesst sich mit Aufloesung darstellen */  
+      status = decodepcx(decodebuff, bytesline, fp);
+      pixeldump(decodebuff, bytesline, line);
+      ++line;
+      pixeldump(decodebuff, bytesline, line);
+      ++line;
+    }
+    gotoxy(24,25);
+    fprintf(stderr,"PRESS 'ENTER' to continue");
+    getch();
+    closepl();
+  }
+/* End of main() */
+.cw 12
+.paŠDieså  Beispielå sollteî eigentlicè ausreichenä sein¬ uí eigenå  Ex
+perimentå  zõ  starten®  Ger}chteî zufolgå solì eó  já  nocè  einigå 
+anderå  Geniå  IIIó Besitzeò ií Cluâ geben® Raffô eucè maì  auæ  unä 
+nehmô Kontakô auf.
+Daó  Holtå CP/Í pluó f}ò deî Geniå IIIó Computeò isô leideò niå  miô 
+seineî hervorragendeî Zusatzfunktioneî programmtechniscè  ausgenutzô 
+worden®  Deò  Rechneò  isô  wohì  zõ  eineò  Unzeiô  auæ  deí  Markô 
+erschienen¬  aló schoî diå MSDOSå Wellå }beò alleó hereinbrach®  Auó 
+heutigeò   Sichô  bedauerlich¬  abeò  sï  bleibô  unó   eiî   weiteó 
+Bet{tigungsfeld ­ solangå diå Rechneò lauff{hiç sind.
+
+Juni-August '9´
+
+Egberô Schr|eò¬ Volkeò Dose  

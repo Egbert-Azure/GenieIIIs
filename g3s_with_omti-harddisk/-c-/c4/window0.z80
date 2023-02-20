@@ -1,0 +1,18 @@
+; Dieses Programm schaltet Fenster 0 wieder ein, wenn ein anderes Fenster
+; selektiert wurde.
+
+esc	equ	1bh
+bdos	equ	  5
+prtstr	equ	  9
+
+	org	100h
+start	ld	de,firststr
+	ld	c,prtstr
+	call	bdos
+	ret
+
+firststr
+	db	esc,'F',20h
+	db	'$'
+	end	start
+			

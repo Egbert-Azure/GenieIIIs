@@ -1,0 +1,35 @@
+
+CP/M 3.1 - Betriebssystemaufrufe mit Turbo-Pascal
+
+Turbo-Pascal 3.00A (Version CP/M-80) laeuft auch, wie hinlaenglich bekannt
+sein sollte unter CP/M 3.1 (bzw. CP/M plus, wie das Betriebssystem auch oft
+bezeichnet wird).
+
+Mit Turbo-Pascal ist es unter anderem moeglich, Betriebssystemaufrufe direkt
+ueber die Befehle 'Bdos' und 'BdosHL' zu starten. Damit muss der Programmie-
+rer, moechte er Bdos-Funktionen in seine Programme einbinden, staendig das
+Handbuch mit der Liste der Funktionsnummern neben sich haben.
+
+Komfortabler sind da schon Funktionsnamen, die die Wirkung der Bdos-Aufrufe
+in sich tragen .... aber wem sage ich das.
+
+Entstanden sind die Funktionen, weil ich einen direkten Zugriff auf das
+Disketten-Directory brauchte, um Wildcards '*.*', '*.PAS' oder 'TEST??.PAS'
+in Dateinamen angeben zu koennen. Mit den Funktionen in 'CPM31.INC' ist dies
+moeglich.
+
+Als Anwendungen bieten sich Programme an, die mehr als nur eine Datei bear-
+beiten sollen (z.B. Kopieren, Uebertragen, Konvertieren .... ). Soll dem An-
+wender vor der Eingabe eines Dateinamens die Moeglichkeit eines Directories
+gegeben werden, um Fehleingaben zu vermeiden, so ist dies auch einfach zu
+bewerkstelligen.
+
+Die beiliegenden Beispiele zeigen einige Anwendungen:
+- DIR.PAS  -  Darstellung eines Directories mit Suchmaske
+- SEND.PAS -  Uebertragungsprogramm mit Wildcards
+- ERAX.PAS -  Loeschprogramm
+
+
+Viel Spass beim Ausprobieren und Weiterentwickeln
+
+

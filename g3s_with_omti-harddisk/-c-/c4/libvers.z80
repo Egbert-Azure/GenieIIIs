@@ -1,0 +1,72 @@
+; Print the Version Number and ID Strings from libraries.	16 Aug 90
+;=========================================================================
+; Assemble this, then link with all libraries as:
+;	ZML LIBVERS,DSLIB/,VLIB/,Z3LIB/,SYSLIB/
+; Then Execute the LIBVERS.COM to display the versions of each library.
+;					Harold F. Bower
+;=========================================================================
+; Routines/Data to be gathered from library modules:
+
+	EXT	VERSION		; SYSLIB Version string
+	EXT	Z3LVER		; Z3LIB Version string
+	EXT	VVERS		; VLIB Version string
+	EXT	DVERS		; DSLIB Version string
+
+	EXT	@B2HL,PRINT,PSTR,COUT,CRLF	; Use these from SYSLIB
+
+; ASCII Character Constants
+
+CR	EQU	13		; Carriage Return
+LF	EQU	10		; Line Feed
+TAB	EQU	09		; Tab character
+
+;........................................................................
+
+START:	CALL	PRINT		; Opening banner
+	DEFB	CR,LF,'Versions of selected libraries are:',CR,LF
+	DEFB	'SYSLIB --> ',0
+
+	CALL	VERSION		; Get BCD Version of SYSLIB
+	CALL	DOBCDV		; ..and print
+	LD	HL,VERSION+4
+	CALL	PSTR		; Print the ID string
+
+	CALL	PRINT		; Now show Z3LIB
+	DEFB	CR,LF,'Z3LIB  --> ',0
+	CALL	Z3LVER		; Get BCD Version of Z3LIB
+	CALL	DOBCDV		; ..and print
+	LD	HL,Z3LVER+4
+	CALL	PSTR		; Print the ID String
+
+	CALL	PRINT		; Now show VLIB
+	DEFB	CR,LF,'VLIB   --> ',0
+	CALL	VVERS		; Get BCD Version of VLIB
+	CALL	DOBCDV		; ..and print
+	LD	HL,VVERS+4
+	CALL	PSTR		; Print the ID String
+
+	CALL	PRINT		; Finally show DSLIB
+	DEFB	CR,LF,'DSLIB  --> ',0
+	CALL	DVERS		; Get BCD Version of DSLIB
+	CALL	DOBCDV		; ..and print
+	LD	HL,DVERS+4
+	CALL	PSTR		; Print the ID String
+	JP	CRLF		; ..and exit on a new line
+
+;.....
+; Print Version number as "n.n" as returned from call, followed by CRLF.
+
+DOBCDV:	LD	A,H
+	CALL	@B2HL		; Convert digit to Hex digit
+	CALL	COUT		; .print first digit
+	LD	A,'.'
+	CALL	COUT
+	LD	A,L		; Get second digit
+	CALL	@B2HL		; .convert to Digit
+	CALL	COUT		; ..and print
+	CALL	PRINT		; Go to a new line and indent
+	DEFB	CR,LF,TAB,0
+	RET			; ...and return
+
+	END
+

@@ -1,0 +1,15 @@
+program CHOOSE_Demo;
+
+(*$I READCHAR.INC *) (* Ihre angepasste Tastatureingabe *)
+(*$I CHOOSE.BIB   *)
+
+const Menue : array[1..5] of string[10] =
+              ('Punkt 1','Punkt 2','Punkt 3','Punkt 4','Ende');
+
+var   Wahl : integer;
+
+begin
+  ClrScr; Wahl:=1;
+  Choose(1,1,16,SizeOf(Menue[1]),Menue,5,Wahl,false);
+  gotoxy(20,5); writeln('Gewaehlt wurde  >',Menue[Wahl],'<');
+end.

@@ -6,7 +6,7 @@
 
 1. Die Harddiskroutine fuer `10MByte Platte` mit 2 Koepfen und 612 Cylindern wird jetzt eingebunden. Die Routinen sind die BIOS Sources von Helmut Bernhardt aus `HD2.MAC`. Der `DPB` wurde mit `XCPM3.LIB` aus `HDDTBL.ASM` errechnet.
 2. Die `RAM-Floppy` hat 770Kbyte Speicher bekommen, um den 1 MB Speicher Umbau zu unterstuetzen. Deshalb wurde die XMOVE-Funktion in DRIVER.MAC zusaeztlich geandert
-3. Am 21.12.93 auf `Seagate ST 225` mit 2 Partitionen a 10.4 MB eingestellt und Ramdisk auf 55K reduziert
+3. Am 21.12.93 auf `Seagate ST 225` mit 2 Partitionen a 10.4 MB eingestellt und Ramdisk auf 55K reduziert zum Betrieb ohne 1MB Erweiterung
 
 ``` as
 ;******************************************************************************

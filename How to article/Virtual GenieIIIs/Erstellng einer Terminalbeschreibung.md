@@ -294,17 +294,18 @@ GLTI:   DB      8DH             ; Left intersect oK
 ;
 ```
 
-Da  sich  Herr K{mpf leider bez}glich Informationen zu  seinem  CP/M 
-bedeckt  h{lt  -  trotz  mehrmaliger Anschreiben  -  ,  konnten  die 
-Character Sets nur mit dem Programm CHARSET ermittelt werden. Weiter 
-Informationen  liegen  zum  Terminal nicht vor, bzw.  sind  aus  der 
-Dokumentation zum CP/M 2.2, erschienen bei R|ckrath, zu entnehmen.
-Die  Disketten Sage xxx bekommt man bei dem n{chsten Verteiler  oder 
+Da  sich  Herr Kaempf leider bezueglich Informationen zu  seinem  CP/M
+bedeckt  haelt  -  trotz  mehrmaliger Anschreiben  -  ,  konnten  die
+Character Sets nur mit dem Programm `CHARSET` ermittelt werden. Weiter
+Informationen  liegen  zum  Terminal nicht vor, bzw.  sind  aus  der
+`Dokumentation zum CP/M 2.2`, erschienen bei Roeckrath, zu entnehmen.
+Die  Disketten Sage xxx bekommt man bei dem naechsten Verteiler  oder
 direkt bei mir.
 
 Egbert
-```
 
+```
 (1) siehe User Manual
 (2) siehe auch VLIB-Help Files auf Sage 41-Disk
 (3) Sage 38-Disk
+```

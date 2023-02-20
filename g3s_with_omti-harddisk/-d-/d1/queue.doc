@@ -1,0 +1,124 @@
+             DOCUMENTATION FOR ZCPR3 FILE QUEUE MANAGEMENT
+
+Using  a number of ZCPR3's utilities, it is possible to build a list, or
+queue, of filenames on disk and then access the names in this  queue  in
+order  to  process  them. The process is very similar to 'tagging' files
+with VFILER or SWEEP, but  a  much  greater  range  of  actions  can  be
+performed  on  the  files than either of these utilities allows. Several
+examples are provided with this distribution, but it is possible to  add
+any  other  manipulations of the queued files that you may wish. Whether
+or not you find this scheme of  file  manipulation  useful,  it  may  at
+least serve as a demonstration of the power of ZCPR3. 
+
+
+Many  of the fancy features of ZCPR3 are used by the distributed system,
+although some are found only in the 'applications' which use  the  queue
+after  it  has  been  built. In order to use the system, your version of
+ZCPR3 must support, at the minimum: 
+     A shell stack allowing at least two entries
+     VFILER.COM
+     SH.COM
+     SHVAR.COM
+     ZEX.COM
+     IF.COM
+     GOTO.COM
+     REG           ; Either RCP-resident or transient
+     ERA           ;    "    "     "      "    "
+
+In addition, the following are very desirable: 
+     ALIAS.COM
+     SHCTRL.COM
+     SHDEFINE.COM
+     ECHO          ; Either RCP-resident or transient
+
+The following files are provided in this distribution: 
+          Q.COM
+          MENU.VMN
+          ADDQ.ZEX
+          QVIEW.ZEX
+          QTYPE.ZEX
+          QM80.ZEX
+          QRUN.ZEX
+          DOMULT.ZEX
+          QSPECIAL.COM
+
+Both Q.COM and QSPECIAL.COM are aliases, and you  may  have  to  rewrite
+them (with ALIAS.COM) in order for them to run on your system. 
+
+The  system  is controlled from VMENU, using MENU.VMN. The ordinary (and
+recommended) entry point is via Q.COM, which does some  housekeeping  in
+preparation  for  running the system and then invokes VMENU. You will be
+presented with the  ordinary  sort  of  VMENU  display:  disk  directory
+across  the top and a list of options below. A pointer can be moved from
+filename to filename with your arrow keys (if you have any  and  have  a
+Z3TCAP  installed)  or  the  Wordstar  cursor diamond. If there are more
+directory entries than will fit on the  screen  at  one  time,  you  can
+toggle  the  display  with  the '-' key. From the menu, single-keystroke
+selections can be made to add to the queue, erase the  queue,  view  the
+queue, or perform certain 'application' operations on it. 
+
+Typically,  a  menu  selection  will  invoke ZEX, and within the command
+file being processed, SH will be loaded on top of  VMENU.  Most  of  the
+ZEX  files  contain  some  comments  pertaining  to  their use, and both
+comments and commands should be read in  order  to  understand  how  the
+queueing  scheme  works.  All of the 'application' files (those that use
+the queue rather than modifying it) have a similar  structure;  you  can
+use this structure as a template for constructing new menu selections. 
+
+
+                              Limitations
+
+There  are  a  couple  of  considerations  affecting  the  use  of  this
+file-queueing scheme. 
+
+Variable Length 
+     Because the variable files used by  SH,  SHVAR,  and  SHDEFINE  can
+     contain  variable  names  of  no  more  than  8  characters  it  is
+     impossible to store  an  entire  filename.  Only  the  first  eight
+     characters  are stored -- the extent is lost. As a consequence, you
+     cannot put in the queue two different files with the same name  but
+     different  extents.  Nor,  of  course, can you put the same name in
+     twice. If the process you want to perform requires that  the  names
+     have  extents,  then  the  ZEX file for that particular application
+     will have to supply the extents in some way. See the  comments  and
+     code  in  the  QTYPE.ZEX  and  DOMULT.ZEX files for examples of the
+     ways in which this can be handled. 
+     
+Speed 
+     Because accessing the queue involves manipulating  files  on  disk,
+     adding  a file to the queue is not comparable (in speed) to tagging
+     a file with VFILER or SWEEP. The  speed  difference  will  probably
+     not  be  too  bad if your utilities are on a RAM-disk or hard disk,
+     but on a floppy-based system you will have to wait several  seconds
+     for  each  operation to be completed. One quirk is worth mentioning
+     here. SH, SHVAR, and SHDEFINE should, according to the  help  files
+     I  have,  look  for  the  SH.VAR  file  in  the  ROOT directory. My
+     versions do not: they always look in user area  0  of  the  current
+     drive.  Hence  both  Q.COM  and  the  'X' option on the menu try to
+     erase it from user area 0. If  there  are,  in  fact,  versions  of
+     these  utilities that go to ROOT: for SH.VAR, you will want to make
+     the appropriate changes. 
+
+
+                             Alternatives
+
+For some applications it may be more useful to have filenames  assembled
+into  a single text string with each name delimited by spaces or commas.
+Such a scheme can be implemented by instructing SHVAR appropriately. 
+
+Yet another data structure that can be imposed on  the  SH.VAR  file  is
+that  of a stack, with the last name in the first one out. Although less
+useful for  operations  on  files  than  a  queue,  there  may  be  some
+applications for which it would be appropriate. 
+
+One  option  not  implemented  in  the  system as distributed is that of
+deleting a name in the middle of the queue. This has  been  left  as  an
+exercise for the reader. 
+
+
+
+                    Dreas Nielsen
+                    234 NW 30th St.
+                    Corvallis, OR   97330
+                    (503) 754-6539
+

@@ -1,0 +1,94 @@
+(****************************************************************************)
+(*   Bibliotheksmodul DYNSTR.BIB                                            *)
+(*                                                                          *)
+(*   Implementiert dynamische Strings in Turbo-Pascal                       *)
+(*                                                                          *)
+(*   t StatString = STRING[255]                                             *)
+(*   t DynString = dynamischer String                                       *)
+(*   f DynStringLength : INTEGER  -> Laenge eines dynamischen Strings       *)
+(*   p MakeDynString(StatString,DynString)                                  *)
+(*       kopiert StatString in DynString                                    *)
+(*       Achtung! Keine Speicherueberpruefung                               *)
+(*   p MakeStatString(DynString,StatString)                                 *)
+(*       kopiert DynString in StatString                                    *)
+(*   p ForgetDynString(DynString)                                           *)
+(*       gibt den von DynString belegten Speicherplatz wieder frei          *)
+(*   f DynStringLess(X,Y,upper):BOOLEAN                                     *)
+(*       X,Y : DynString                                                    *)
+(*       upper : BOOLEAN                                                    *)
+(*       -> TRUE, wenn X lexikalisch vor Y kommt, ansonsten FALSE           *)
+(*       Falls upper=TRUE, wird Gross/Kleischrift ignoriert                 *)
+(*   f DynStringEqual(X,Y,upper):BOOLEAN                                    *)
+(*       Parameter wie bei DynStringLess                                    *)
+(*       -> TRUE, wenn X gleich Y, ansonsten FALSE                          *)
+(*   f DynStringPos(X,Y,Start,upper):INTEGER                                *)
+(*       -> Liefert das erste Vorkommen von X in Y ab dem Startzeichen      *)
+(*       upper wie bei DynStringLess                                        *)
+(*                                                 Codegroesse ca. 1Kbyte   *)
+(****************************************************************************)
+
+TYPE StatString = STRING[255];
+     DynString = ^StatString;
+
+FUNCTION DynStringLength(D : DynString):INTEGER;
+  BEGIN
+    DynStringLength:=ord(D^[0])
+  END; (* DynStringLength *)
+
+PROCEDURE MakeDynString(S : StatString; VAR D : DynString);
+  VAR l : byte ABSOLUTE S;
+  BEGIN
+    getmem(D,succ(l));
+    move(S,D^,succ(l))
+  END; (* MakeDynString *)
+
+PROCEDURE MakeStatString(D : DynString; VAR S : StatString);
+  BEGIN
+    S:=D^
+  END; (* MakeStatString *)
+
+PROCEDURE ForgetDynString(VAR D : DynString);
+  BEGIN
+    freemem(D,succ(DynStringLength(D)))
+  END; (* ForgetDynString *)
+
+FUNCTION DynStringLess(X,Y : DynString; upper : BOOLEAN):BOOLEAN;
+  VAR i,l1,l2,m : INTEGER;
+  BEGIN
+    IF NOT upper THEN BEGIN DynStringLess:=X^<Y^; EXIT END;
+    l1:=DynStringLength(X); l2:=DynStringLength(Y);
+    i:=1; IF l1<l2 THEN m:=l1 ELSE m:=l2;
+    WHILE (i<=m) AND (upcase(X^[i])=upcase(Y^[i])) DO i:=succ(i);
+    IF i<=m
+    THEN DynStringLess:=upcase(X^[i])<upcase(Y^[i])
+    ELSE DynStringLess:=l1<l2
+  END; (* DynStringLess *)
+
+FUNCTION DynStringEQUAL(X,Y : DynString; upper : BOOLEAN):BOOLEAN;
+  VAR i,l1,l2 : INTEGER;
+  BEGIN
+    IF NOT upper THEN BEGIN DynStringEQUAL:=X^=Y^; EXIT END;
+    l1:=DynStringLength(X); l2:=DynStringLength(Y);
+    IF l1<>l2 THEN BEGIN DynStringEQUAL:=FALSE; EXIT END;
+    FOR i:=1 TO l1 DO
+      IF upcase(X^[i])<>upcase(Y^[i]) THEN BEGIN
+          DynStringEQUAL:=FALSE; EXIT
+      END;
+    DynStringEQUAL:=TRUE
+  END; (* DynStringEQUAL *)
+
+FUNCTION DynStringPos(X,Y:DynString; Start:INTEGER; upper:BOOLEAN):INTEGER;
+  VAR i,j,l1,l2 : INTEGER;
+  BEGIN
+    l1:=DynStringLength(X); l2:=DynStringLength(Y);
+    FOR i:=Start TO succ(l2-l1) DO BEGIN
+      j:=0;
+      IF Upper
+        THEN WHILE (j<l1) AND (upcase(X^[succ(j)])=upcase(Y^[i+j]))
+               DO j:=succ(j)
+        ELSE WHILE (j<l1) AND (X^[succ(j)]=Y^[i+j]) DO j:=succ(j);
+      IF j=l1 THEN BEGIN DynStringPos:=i; EXIT END
+    END; (* FOR *)
+    DynStringPos:=0
+  END; (* DynStringPos *)
+

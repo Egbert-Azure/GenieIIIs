@@ -1,0 +1,18 @@
+{ Demo f]r Rechner.Bib }
+program Rechner;
+
+(*$i cpm-80.bib *)
+(*$i window.par *)
+(*$i window.bib *)
+(*$i rechner.bib *)
+
+  begin
+    Cursor_Off;
+    ClrScr;
+    InitWindows;
+    TaschenRechner;
+    ClrScr;
+    Cursor_On;
+    ExitWindows
+  end.
+

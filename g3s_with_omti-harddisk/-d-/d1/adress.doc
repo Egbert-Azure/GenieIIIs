@@ -1,0 +1,42 @@
+                                             Heinsberg, 16.08.93
+
+
+
+Hallo ZCPR'ler!
+
+ZCPR l{dt ja generell dazu ein Abl{ufe zu automatisieren, die 
+man ansonsten manuell am Computer selber erledigen m}~te. In 
+diese Richtung gehen auch der ALIAS ADRESS.CMD, der noch in Euer 
+ALIAS.CMD eingef}gt werden mu~, und das ZEX-Script ZDEBRF.ZEX. 
+     Das leidige Problem kennt ja wohl jeder: Man m|chte schnell 
+einen Brief mit dem ZDE schreiben, hat aber leider die Adresse 
+des/der Betreffenden vergessen (sei es nun die &%$ neue 
+Postleitzahl, oder die Telefonnummer - ist ja jetzt auch 
+egal...). Theoretisch schaut man nun in irgendeinem File nach, 
+und tippt bzw. kopiert (immer noch manuell) die Adresse in den 
+Briefkopf. Mit dem ALIAS geh|rt das jetzt der Vergangenheit an. 
+Nach Aufruf fragt selbiger nach dem Namen des Adressaten, und 
+erstellt dann automatisch ein Textfile TEMP.LET, welches den 
+Briefkopf mit der eigenen und fremden Adresse enth{lt.
+     Gebraucht werden die Datei MY.DAT, in der die eigene 
+Adresse stehen mu~, und ADRESS.DAT, in der s{mtliche anderen 
+Adressen stehen, jeweils durch ---- getrennt ({hnlich wie die 
+Ansammlung von FORFILES...). Mittles ZFIND wird dann die Adresse 
+herausgesucht, und in die Datei TEMP.DAT geschrieben. Danach 
+erledigt das ZEX-Script dann die Ansteuerung des ZDE's, und baut 
+den Briefkopt (bzw. die beiden Adressen) zusammen.
+     Folgender Punkt ist  noch zu beachten: Der ganze Krempel 
+l{uft bei mir auf einem C128 mit RAMDISK. Deswegen beziehen sich 
+die Laufwerksangaben auch auf Laufwerk M! Das mu~ dann noch je 
+nach Anlage ver{ndert werden. Beispielsweise habe ich schon mal 
+die Datei MY.DAT und ADRESS.DAT dazugef}gt (in MY.DAT befindet 
+sich meine Adresse, und in ADRESS.DAT zwei wahre 
+Beispieladressen!), die m}~en nat}rlich auch noch angepa~t 
+werden. Dann sollte alles problemlos funktionieren.
+
+Mit freundlichen Gr}~en
+
+          Reinhard Kirsch
+          
+
+

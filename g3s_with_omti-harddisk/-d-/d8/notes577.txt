@@ -1,0 +1,34 @@
+Program name:         C Tutor
+ 
+Author name:          Coronado Enterprises
+Address:              12501 Coronado Ave. NE
+                      Albuquerque, NM  87122
+Telephone Number:     None
+ 
+Suggested Donation:   $10.00 
+Program Description:
+ 
+C Tutor is a comprehensive course for the C programming
+language.  Since C is a very transportable language, the des-
+cription here is applicable to most compilers with some slight
+differences.  This course is recommended for the experienced
+programmer who knows about computer programming concepts and 
+and has used some other high level language.  This is a two disk 
+product.  The first diskette contains the tutorial text and it is
+recommended that it be printed by use of an included batch file.
+The second diskette contains the C source code for each of
+the examples included throughout the tutorial.  These examples
+are meant to be studied and then compiled and run by the student.
+The examples are short and focus in on the topic of discussion.
+A description of the various compilers and their differences is 
+included in a text file named COMPILER.DOC to aid you in getting
+the source files to compile.  All of the points of C language, 
+including proper structured programming techniques, are covered 
+at the elementary to he more sophisticated levels in easy to read, 
+well written text.  The authors appear to be highly skilled in both 
+the use of the programming language and the art of instructional 
+design.  Required, of course, is a complete IBM hardware
+setup, including at least one disk drive, and some version of a C
+compiler.  Also available, in similar format, is a tutorial on the
+Pascal programming language.
+

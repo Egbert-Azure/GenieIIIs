@@ -1,0 +1,102 @@
+
+                       ZHLPSUB2.LBR INSTRUCTIONS
+                       -------------------------
+                                4/10/90
+                  Bob Dean, Sysop Drexel Hill N* Z-Node #6
+                        (215) 623-4040  24/12/3
+
+I.  Files
+    ------
+
+     To update Z3HELP-x.LBR .HZP files in mass
+     ------------------------------------------
+       EX.COM        -  Submit.com replacement (use ZEX if you prefer)
+       CL.COM        -  CL002.COM standalone library compression utility
+       W.COM         -  Wildcard processor (for CL, which doesn't handle AFN) 
+       EXTUPDTS.SUB  -  Extracts from updates to a specified DU:
+                         (need also LBREXT.COM)
+       LPUTHLP.SUB   -  Puts back in proper Z3HELP-x file from 
+                         specified DU: (need also LPUT.COM)
+
+     Optional to update MENUs in Z3HELP-x to change instructions
+     ----------------------------------------------------------
+       NUHEADER      -  New text for RCPMs with Z3HELP online -
+                         adds reference to ^C to break out of LBRHLP
+                         for novice callers.  Can use with ZDE macro.
+       EXTMENU.SUB   -  Extracts menu .HZP file only from Z3HELP-x.LBRs
+       LPUTMENU.SUB  -  Puts the .HZP menu back in Z3HELP-x.LBRs
+
+
+II.  To Use
+     ------          
+
+       1) Pick a temporary working DU: on your hard drive as 
+          destination for extracted files (E8: default there now).  
+          Put all the .SUB files there, make LBREXT (I call LEX),
+          LPUT,EX,CL,and W available in the path.
+     
+       2) Modify the .SUB files for your source and destination DU:'s,
+          and change my LEX to LBREXT, or your LBREXT to LEX, whatever.
+          All my source Z3HELP files, including updates, are generally on 
+          the same DU: (makes it convenient, most ZNODES with ZHELP:
+          are that way).      
+
+       3) Run EX EXTUPDTS.SUB
+          Run EX LPUTHLP.SUB
+
+       4) CL will re-compress your files. You are updated.
+
+       
+III.  To ALTER Menu Headers
+      ---------------------
+
+      1)  The help files are online on DHN*.  To access them, all you need to
+          do is type the first letter of the file you wish help on (ie. A will
+          give you Z3HELP-A and it's .HZP files).  I use ALIAS.CMD command
+          files to expand the command to LBRHLP A, for example. Only trouble 
+          is, novice callers who sometimes type a single letter by mistake find
+          themselves in the HELP menu, and often don't know to ^C to escape.
+          There's no mention in the menu intro text.  So, I changed the 
+          intro text, to NUHEADER.  I suggest you consider the same.  I 
+          created the ?MENU.SUB files, and NUHEADER to accomplish this.
+          I created a ZDE macro to automate inserting NEWHEADER.
+
+      2)  Modify EXTMENU.SUB and LPUTMENU.SUB for your source and destination
+          files.  Make sure CRUNCH is also available in the path.  You can
+          change the CRUNCH parameter to current date. 
+
+          You also can create a ZDE MACRO file to make life much easier.  
+          Here's mine:
+
+               ^X            -  moves down one line
+               ^Y^Y^Y^Y      -  deletes existing text
+               ^KRNUHEADER   -  loads the new text file
+               ^KD           -  saves it and prompts for the next letter
+
+
+          And it takes under 5 minutes to handle 24 help files this way.
+
+
+      3)  Run EXTMENU.SUB.  Using ZDE, change the text info.  Then run
+          LPUTMENU.SUB.
+
+      4)  You are updated.                
+          
+IV.  Comments, and Other Z3HELP Update Utilities
+     -------------------------------------------
+
+As I had suggested with version 1, standalone (or ARUNZ) versions can
+be created. Nods should go to Tony Parker for his variation using NULU 
+scripts (I learned something about NULU), and Ed McGovern for his HUP.CMD,
+for ARUNZ.  I have yet to try those, but we've all had some fun here.
+Also to Bill for all his work (hope your new work with MSDOS doesn't 
+stop your flow of Z3HELP updates, Bill!)  Last to Michael Carson, who
+did CL for private ZSIG distribution in back in 4/89, and then apparently 
+got distracted. I'm taking a liberty here and including CL in .COM form 
+for a good purpose, and don't think Michael will mind.
+ 
+Enjoy,
+ 
+Bob
+
+letzte LIB ==> 45

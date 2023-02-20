@@ -1,0 +1,95 @@
+-x
+#
+
+                              >>>  MAIN MENU  <<<
+
+
+                        1 - Select File Utility Menu
+                        2 - Select Drectory Functions Menu
+                        3 - Select Systems Function Menu
+
+                       ( '+' and '-' Scroll File Display )
+
+#
+1:2
+2:3
+3:4
+#
+
+                         >>>   FILE UTILITY MENU   <<<
+
+
+         E - Edit Working File                  T - Type Working File
+         D - Delete Working File                A - Assemble Working File
+         M - Mload Working File                 L - Load Working File
+         C - Copy Working File                  Z - Run a COM File
+
+                      1 - Select Directory Function Menu
+                      2 - Select System Function Menu
+
+                     ( '+' and '-' Scroll Files Display )
+#
+1:3
+2:4
+eedit $PF
+t!type $PF
+dera $PF I
+amac $PN $$szpz
+m!mload $PN
+l!load $PN
+ccp "Enter Destination --> ":="Enter Source --> ":$PF
+z!$PN
+#
+
+                       >>>  DIRECTORY FUNCTIONS  <<< 
+
+
+      D - Display Current Directory         P - Display Named Directories
+      C - Change Logged Directory           M - Add New Named Directory
+      L - Load New Named Directory          S - Run Cleandir  
+
+                       1 - Select File Utility Menu
+                       2 - Select Systems Function Menu
+
+                   ( '+' and '-' Scroll Files Display )
+
+#
+1:2
+2:4
+d!cls;dir
+p!cls;pwd
+c"Enter New Directory --> ":
+mmkdir
+lldr "Enter New .NDR File --> "
+scleandir
+#
+
+                         >>>  SYSTEM FUNCTIONS  <<<
+
+
+      M - Invoke MU3 Memory Utility         D - Invoke DU3 Disk Utility
+      P - Set New Search Path               S - Show System Status
+      C - Change Logged Directory           Z - ZCPR3 Command
+
+                       1 - Select File Utility Menu
+                       2 - Select Directory Function Menu
+
+                    ( '+' and '-' Scroll Files Display )
+
+#
+1:2
+2:3
+m!mu3
+p!cls;path "Enter New Path --> "
+c"Enter New Directory --> ":
+ddu3
+sshow
+z!"ZCPR3:COMMAND>"
+##
+ )
+
+#
+1:2
+2:3
+m!mu3
+p!cls;path "Enter New Pa

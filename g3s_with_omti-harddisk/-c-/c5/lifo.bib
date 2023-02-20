@@ -1,0 +1,202 @@
+(****************************************************************************)
+(*   Bibliotheksmodul LIFO.BIB                                              *)
+(*                                                                          *)
+(*   Stellt eine untypisierte Stackstruktur zur Verfuegung.                 *)
+(*   (t L_MEM_Space, L_List, L_List_Node)                                   *)
+(*   t LIFO                                                                 *)
+(*   p InitLIFO(VAR LIFO)  Initialisiert einen Stack                        *)
+(*   f EmptyLIFO(LIFO) : BOOLEAN   TRUE, falls Stack=leer                   *)
+(*   p Push(VAR LIFO; VAR Inhalt; Size)                                     *)
+(*       Legt Size Bytes des Inhalts auf dem Stack ab.                      *)
+(*       Beispiel: Push(Stapel,i,SizeOf(integer))                           *)
+(*   p Pop(VAR LIFO; VAR Inhalt; Size)                                      *)
+(*       Holt Size Bytes vom Stack in die Variable Inhalt.                  *)
+(*       Wenn Datengroessen nicht uebereinstimmen, wird das Programm mit    *)
+(*       der Fehlermeldung 'TYPE-MISMATCH-ERROR' abgebrochen!               *)
+(****************************************************************************)
+
+  TYPE  L_MEM_Space = ARRAY[0..maxint] OF BYTE;   (* privat *)
+        L_List = ^L_List_Node;                    (* privat *)
+        L_List_Node = RECORD                      (* privat *)
+                        Size : INTEGER;
+                        Info : ^L_MEM_Space;
+                        next : L_List
+                      END;
+        LIFO = L_List;
+
+   PROCEDURE InitLIFO(VAR L : LIFO);
+     BEGIN
+       L:=NIL
+     END; (* InitLIFO *)
+
+   FUNCTION EmptyLIFO(F : LIFO): BOOLEAN;
+     BEGIN
+       EmptyLIFO:=F=NIL
+     END; (* EmptyLIFO *)
+
+   PROCEDURE Push(VAR F : LIFO; VAR I; S : INTEGER);
+     VAR p : LIFO;
+     BEGIN
+       NEW(p);
+       WITH p^ DO BEGIN
+         Size:=S;
+         next:=F;
+         getmem(Info,Size);
+         move(I,Info^,Size)
+       END; (* WITH *)
+       F:=p
+     END; (* Push *)
+
+   PROCEDURE Pop(VAR F : LIFO; VAR I; S : INTEGER);
+     VAR p : LIFO;
+     BEGIN
+       p:=F;
+       WITH p^ DO BEGIN
+         IF Size<>S THEN BEGIN WriteLn('TYPE-MISMATCH-ERROR'); HALT END;
+         move(Info^,I,Size);
+         freemem(Info,Size);
+         F:=next
+       END; (* WITH *)
+       dispose(p)
+     END; (* Pop *)
+
+const mx = 79;
+      my = 24;
+      xa = 1;
+      ya = 2;
+
+type  lab = array[1..mx,1..my] of record
+                                    feld : (belegt, frei, anfang, ende, stein);
+                                    Nr : integer
+                                  end;
+
+var   tweg,weg : array[0..1000] of record i,j : integer end;
+      xe,ye:integer;
+procedure show(l : lab);
+  var i : 1..mx;
+      j : 1..my;
+  begin
+    for i:=1 to mx do
+      for j:=1 to my do begin
+        gotoxy(xa+pred(i),ya+pred(j));
+        case l[i,j].feld of
+          belegt : write('Û');
+          frei   : write(' ');
+          anfang : write('A');
+          ende   : write('E');
+          stein  : write(' ')
+        end
+      end
+  end; (* show *)
+
+procedure distance(var l : lab; x,y,d : integer; var min : integer);
+var z:integer;
+  begin
+    gotoxy(1,1); write(d:10,min:10);
+    if l[x,y].feld in [stein,belegt] then exit;
+    if l[x,y].feld = ende then begin
+         if d<min then begin weg:=tweg; min:=d; xe:=x; ye:=y; end; exit end;
+    if d+abs(x-xe)+abs(y-ye)>=min then exit;
+    if l[x,y].Nr<=d then exit else l[x,y].Nr:=d;
+    z:=0;
+    if y<my then if l[x,y+1].feld=stein then z:=succ(z);
+    if y>1  then if l[x,y-1].feld=stein then z:=succ(z);
+    if x<mx then if l[x+1,y].feld=stein then z:=succ(z);
+    if x>1  then if l[x-1,y].feld=stein then z:=succ(z);
+    if z>1 then begin  exit end;
+    l[x,y].feld:=stein; tweg[d].i:=x; tweg[d].j:=y;
+    gotoxy(xa+pred(x),ya+pred(y)); write('*');
+    if x<mx then distance(l,x+1,y,succ(d),min);
+    if y<my then distance(l,x,y+1,succ(d),min);
+    if x>1  then distance(l,x-1,y,succ(d),min);
+    if y>1  then distance(l,x,y-1,succ(d),min);
+    gotoxy(xa+pred(x),ya+pred(y)); write(' ');
+    l[x,y].feld:=frei
+  end;
+
+procedure suche(l : lab; x,y,d : integer; var min : integer);
+  var s1,s2 : lifo;
+      stop : boolean;
+      xe,ye: integer;
+
+  procedure check(x,y:integer);
+    begin
+      if l[x,y].feld=ende then begin stop:=true; xe:=x; ye:=y; l[x,y].Nr:=d end;
+      if l[x,y].feld=frei then begin
+        gotoxy(xa+pred(x),ya+pred(y));  write('*');
+        l[x,y].Nr:=d; l[x,y].feld:=stein; push(s2,x,2); push(s2,y,2)
+      end (* if *)
+    end; (* check *)
+
+  function test(b:boolean; x,y,d:integer):boolean;
+    begin
+      if b then test:=l[x,y].Nr=d
+      else test:=false
+    end;
+
+  begin  (* suche *)
+    InitLifo(s1); InitLifo(s2); stop:=false;
+    l[x,y].Nr:=d; l[x,y].feld:=stein; push(s1,x,2); push(s1,y,2);
+    repeat
+      d:=succ(d);
+      repeat
+        pop(s1,y,2); pop(s1,x,2);
+        if y<my then check(x,y+1);
+        if y>1  then check(x,y-1);
+        if x<mx then check(x+1,y);
+        if x>1  then check(x-1,y);
+      until emptylifo(s1) or stop;
+      s1:=s2; initlifo(s2)
+    until emptylifo(s1) or stop;
+    gotoxy(1,1); write(d:10);
+    if not stop then exit;
+    min:=d;
+    show(l);
+    repeat
+        gotoxy(xa+pred(xe),ya+pred(ye));  write('*');
+        d:=l[xe,ye].Nr;
+        if test(ye<my,xe,ye+1,pred(d)) then ye:=ye+1
+        else
+        if test(ye>1,xe,ye-1,pred(d)) then ye:=ye-1
+        else
+        if test(xe<mx,xe+1,ye,pred(d)) then xe:=xe+1
+        else
+        if test(xe>1,xe-1,ye,pred(d)) then xe:=xe-1
+        else begin writeln(^G); exit end
+    until l[xe,ye].Nr=0;
+    gotoxy(xa+pred(xe),ya+pred(ye));  write('*');
+  end; (* suche *)
+
+procedure zufall(var l : lab);
+  var i,j,x,y : integer;
+  begin
+    for i:=1 to mx do
+      for j:=1 to my do begin
+        l[i,j].feld:=frei; l[i,j].Nr:=maxint
+      end;
+    for i:=1 to mx*my div 3 do begin
+      x:=succ(random(mx));
+      y:=succ(random(my));
+      l[x,y].feld:=belegt
+    end;
+    l[1,1].feld:=anfang; l[mx,1].feld:=ende;
+  end;
+
+var l1 : lab; k,d,min : integer;
+    a:integer;
+begin
+  d:=0; min:=maxint; xe:=0; ye:=0;
+  zufall(l1); ClrScr; show(l1); suche(l1,1,1,d,min);
+  gotoxy(1,1);
+  readln;
+  a:=min;
+  show(l1);  min:=maxint;
+  distance(l1,1,1,d,min);
+  if min=maxint then begin
+    gotoxy(1,1); clreol; write('keine L”sung') end else
+  for k:=1 to pred(min) do begin
+    gotoxy(xa+pred(weg[k].i),ya+pred(weg[k].j)); write('*')
+  end;
+  gotoxy(1,1); if a<>min then write('FEHLER!!!');
+  readln;
+end.

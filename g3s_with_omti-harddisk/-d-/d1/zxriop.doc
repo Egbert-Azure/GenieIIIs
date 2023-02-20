@@ -1,0 +1,106 @@
+                             ZXRIOP
+                             V. 1.1
+
+                          Joe Mortensen
+                            03/07/92
+
+INTRODUCTION
+
+ZXRIOP ("Z X-Ray") is my attempt to develop an IOP module which 
+can be called during program execution in order to examine any 
+memory location and alter it on the fly.  I have an old CP/M 
+program called XT.COM (XtraTech by Xpert Systems).  It is an RSX 
+with functions which go far beyond the limits of ZXR, but one 
+which I've found indispensable for program development.  However, 
+XT uses a lot of memory and it is not Z-System wise.  If XT is 
+loaded, ZDE hangs when you try to exit an editing session.  I've 
+hoped that someone else might develop such a useful tool, but so 
+far I'm not aware that anyone has.  ZXR requires ZCPR3 or higher 
+and a Z-System with a standard 12 record IOP.  The time function 
+works only with ZD/ZSDOS and the appropriate clock module.
+
+INSTALLATION
+
+With ZCPR 3.3 and 3.4 ZXR needs no installation.  With ZCPR 3.0 
+you must patch the address of your Z3 environment at offset 09h 
+in IOPZXR.COM.
+
+LOADING
+
+ZXR is loaded by IOPZXR.  If Z-System is not present or if there 
+is no IOP space, it won't load.  To remove IOPZXR type the 
+command IOPZXR /R. 
+
+USING ZXR
+
+The trigger key is ^@ (user-configurable with IOPZXR.CFG).  On 
+line 24 of the screen this menu appears:
+
+C=Chg  D=Dump  E=Env  T=Time  Q=Quit ?
+
+                   Changing a Byte or Bytes
+
+If you press C, a ? appears asking you for an address in memory.  
+ZXR expects up to a four digit hex number as input.  Terminate 
+input of less than four digits with RETURN.  BACKSPACE is also 
+recognized if you enter a wrong value.  The address is displayed 
+and the byte at that location, for example:
+
+EF80 C3 
+
+At this point two actions are possible.  
+
+1.  You can enter a new value (say FF) which is echoed and then 
+the next byte is displayed:
+
+EC80 C3 FF 06 
+
+2.  Pressing the space key passes over a byte and displays the 
+next.  A maximum of eight bytes can be viewed and changed if 
+desired in one change operation.  After the eighth byte is 
+handled (or RETURN is pressed), the full line is redisplayed 
+along with a menu:  ADQ ?  (A for Another address to change, D 
+for Dump -- it will ask for an address, or Q to quit.)
+
+                    Dumping a Memory Location
+
+To display a given line of memory, press D.  The ? prompt 
+appears, expecting up to a 4 digit hex number of an address in 
+RAM.  Input of less than four digits is terminated with 
+RETURN.  BACKSPACE is also recognized to correct a wrong value.  
+ZXR then displays the address and 16 bytes in both hex and ASCII.
+
+The dump menu is:  <>ACQ ?  The '<' or ',' key moves back 16 bytes 
+and displays one line of bytes.  the '>' or '.' key moves forward 
+16 bytes.  The A command asks for a new memory location to 
+display.  C allows you to go directly to the change routine.  Q 
+returns you to the main memory.
+
+                     Environment Parameters
+
+The E command displays the current system locations:  CCP, BDOS, 
+BIOS, ENV, and CBIOS.
+
+                              Time
+
+If you are running ZD/ZSDOS and have a clock and clock module 
+loaded, ZXR will display the current date and time.  Pressing any 
+key restores the main menu.  ZXR will run without ZD/ZSDOS but 
+won't respond to the "Time" command.
+
+
+NZBLTZ and ZXRIOP
+
+NZBLTZ provides an easy way of having ZXRIOP available.  With 
+ZXRIOP loaded in the IOP save the system image with NZBLTZ.  I 
+use ZXRIOP mostly when I am testing assembly language programs so 
+I have saved the version of NZCOM with it present.  When I run
+ASSEM.COM ZXRIOP is already there ready to use.
+
+Please report any bugs or operating problems to me.
+Joe Mortensen
+4214 Chelsea Ct.
+Midland MI 48640
+Voice:  517 835-6923
+Ladera ZNode: 213 670-9465
+

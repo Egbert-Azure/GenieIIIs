@@ -1,0 +1,166 @@
+{ Included File: SCORE.INC }
+
+function score(hand: handtype):integer;
+const jack = 11;
+var
+  index: 1..5;
+  return: integer;
+  cardmax: 4..5;
+
+  function fifteen(hand: handtype):integer;
+  var
+    ways: integer;
+    i,j,k: 1..dealsize;
+    sum: integer;
+  begin
+    sum:=0;
+    for i:=1 to cardmax do
+      begin
+        if hand[i].rank>10 then hand[i].rank:=10;
+        sum:=sum+hand[i].rank
+      end;
+    ways:=0;
+    if sum=15 then ways:=1;
+    for i:=1 to cardmax do
+      begin
+        with hand[i] do
+          begin
+            if (sum-rank) <= 15 then
+              begin
+                if (sum-rank) = 15 then ways:=ways+1
+              end
+            else
+              for j:=i+1 to cardmax do   { ????????????? }
+                begin
+                  if (sum-rank-hand[j].rank)<=15 then
+                    begin
+                      if (sum-rank-hand[j].rank)=15 then
+                        ways:=ways+1
+                    end
+                  else
+                    for k:=j+1 to cardmax do
+                      if (sum-rank-hand[j].rank-hand[k].rank)=15 then
+                        ways:=ways+1
+                end
+          end {with}
+      end;
+    fifteen:=ways*2
+  end;  {fifteen}
+
+  function run(hand: handtype):integer;
+  var
+    mult: integer;
+    matched: 0..5;
+    i: 1..dealsize;
+    return: integer;
+    seen: boolean;
+  begin
+    mult:=1;
+    matched:=0;
+    return:=0;
+    seen:=false;
+    for i:=1 to (cardmax-1) do
+      begin
+        if hand[i].rank=hand[i+1].rank then
+          begin
+            if seen then mult:=mult+1
+            else mult:=mult+2;
+            seen:=true;
+            if i=(cardmax-1) then
+              begin
+                if mult>=2 then mult:=mult-1;
+                if matched>=2 then
+                  return:=return+((matched+1)*mult);
+                matched:=0
+              end
+          end
+        else
+          begin
+            seen:=false;
+            if hand[i].rank=(hand[i+1].rank-1) then
+              matched:=matched+1
+            else
+              begin
+                if mult>=2 then mult:=mult-1;
+                if matched>=2 then
+                  return:=return+((matched+1)*mult);
+                mult:=1;
+                matched:=0
+              end
+          end
+      end;
+    if mult>=2 then mult:=mult-1;
+    if matched>=2 then
+      return:=return+((matched+1)*mult);
+    run:=return
+  end;  {run}
+
+  function pair(hand: handtype):integer;
+  var
+    return: integer;
+    matched: 0..4;
+    index: 1..dealsize;
+  begin
+    return:=0;
+    matched:=0;
+    for index:=1 to (cardmax-1) do
+      begin
+        if hand[index].rank=hand[index+1].rank then
+          matched:=matched+1;
+        if (hand[index].rank<>hand[index+1].rank) or
+           (index=cardmax-1) then
+           begin
+             case matched of
+               0: ;
+               1: return:=return+2;
+               2: return:=return+6;
+               3: return:=return+12
+               end; {case}
+             matched:=0     { ??? }
+           end
+      end;
+    pair:=return
+  end;  {pair}
+
+  function flush(hand: handtype):integer;
+  var
+    return: integer;
+    index: 1..dealsize;
+  begin
+    return:=1;
+    for index:=1 to 3 do
+      if hand[index].suit=hand[index+1].suit then
+        return:=return+1;
+    if return=4 then
+      begin
+        if common.rank<>0 then
+          if common.suit=hand[4].suit then return:=5;
+        flush:=return
+      end
+    else flush:=0
+  end;  {flush}
+
+BEGIN  {score}
+  return:=0;
+  cardmax:=4;
+  return:=return + flush(hand);
+  if common.rank<>0 then
+    begin
+      cardmax:=5;
+      for index := 1 to playsize do
+        if hand[index].rank = jack then
+           if hand[index].suit = common.suit then
+              return:=return+1;  {GLITCH IN THE BOOK???}
+      hand[5]:=common;
+      sort(5,hand)
+    end
+  else
+    begin
+      hand[5].rank:=0
+    end;
+  return:= fifteen(hand)+return;
+  return:= pair(hand)+return;
+  return:= run(hand)+return;
+  score:=return
+END;   {score}
+

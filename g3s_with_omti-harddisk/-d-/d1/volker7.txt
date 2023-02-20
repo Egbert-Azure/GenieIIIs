@@ -1,0 +1,78 @@
+.rm 65
+.cw 12
+.pl 68
+Egberô Schr|eò                         427° Dorsten¬ deî 27.03.93
+                                            Joachimstr.18
+                                            tel.:(02362)75311
+                                            gesch.:(02365)499649
+
+Hallï Volker,
+
+nuî  kannsô Dõ alsï aucè nocè iî Ã programmieren®  Langsaí  hinkå 
+icè wirklicè hinterher.
+
+Zõí Probleí PCCOPÙ unä Unterdirectory:
+Daó   isô  eigentlicè  keiî  Problem®   Folgendå   Vorgehensweiså 
+funktionéerô beé miò hervorragend
+­ iî gew}nschteî User-Bereicè gehen 
+­ PCCOPÙ aufrufen
+­ Laufwerë Bº f}ò PÃ Diskettå angebeî !!¡ (nichô Pº !!!)
+­ anschlie~enä wirä kopierô bzw® wenî PCCOPÙ eiî  Unterdirectorù 
+  eòkennt¬ wirä gefragô oâ dieseó ge|ffneô/kopiert werdeî soll.
+Dõ  ben|tigsô  wedeò  FREMÄ nocè MSDOÓ odeò  {hnliches®  Deò  I/Ï 
+Fehleò  kanî  abeò  aucè unteò ZPM³  auftreten¬  wenî  nichô  maì 
+zwischendurcè  CLRHISÔ  aufgerufeî wurdå ¡  Beé  "normalem¢  CP/Í 
+tritô beé miò niå eiî I/Ï Fehleò auf.
+
+Icè  habå  Diò  diå *.È Routineî  deó  Borlanä  Ã-Compileró  (C+© 
+geschickt¬  damiô  wiò unó aî dieseî Routineî  beé  Erweiterungeî 
+orientiereî  k|nneî  (beispielsweiså  GRAPHIC.H)®  Diå   Routineî 
+gelteî nacè ANSÉ Standarä f}ò ALLÅ C-Compiler®
+
+ZPM³  l{ufô beé miò nuî einwandfrei® Waó beé miò nichô l{ufô  isô 
+ZÃCP® Wiå sinä dá Deinå Erfahrungeî ??
+
+Daó Handbucè deó BDÓ Ã-Compileró habå icè Diò besorgô unä kopierô 
+(liegô deí Brieæ bei)® Icè habå miò davoî keinå Kopiå gemacht¬ dá 
+icè  wahrscheinlicè niå damiô arbeiteî werde® Bittå  bedenkå  daó 
+deò  BDÓ Compileò NICHÔ miô andereî Ã-Compilerî  kompatibeì  ist® 
+Damiô  erstelltå  Programmå k\nneî ­ ií Gegensatú zõ  andereî  Ã-
+Standardó  ­ nichô auæ anderå Rechneò ]bertrageî werdeî  !!¡  Wiå 
+sch|n sowaó seiî kann¬ solì Diò daó Programí  MANCHMAÌ  zeigen¬ 
+das  miò  unteò MSDOÓ gutå Dienstå leistetå (iî  meineí  fr}hereî 
+Arbeitsbereicè  konntå  icè  damiô  meinå  Mitarbeiteò  zõ  eineí 
+regelm{~igem Backuğ zwingen).
+
+Altå CHIĞ Heftå habå icè leideò nichô ¡ Beé unsereí letzeî  Umzuç 
+voò  ca®  ¸ Jahreî habeî wiò ­ meinå besserå H{lftå unä  icè  (iî 
+dieseò Reihenfolge!!© leideò beschlosseî einigeó aî Computerzeit
+schrifteî auszusortieren® Abeò icè habå einigå altå Chiğ  Speziaì 
+Pascaì Hefte® Darauó ist aucè WINDOW.BIÂ.
+
+Zuí Benchmark-Test:
+"normales¢ Holtå CP/Í   º 18¸ ½ 348/sec
+ZPM³ CP/M (ohnå ZPM3LDR©: 18¶ ½ 34¶/sec
+
+Aí  25.03.9³ biî icè dienstlicè zuò CeBIÔ '9³ gefahreî  unä  habå 
+anschlie~enä  ·  Stundeî Messetrubeì }beò  micè  ergeheî  lassen® 
+Nachdeí diå dienstlicheî Angelegenheiteî }berstandeî waren¬  fanä 
+icè nocè diå Zeit¬ micè privaô etwaó umzusehen® TANDÙ ió  bacë  ­ Šunä  zwaò  miô  seineò 100¥ Tochteò GRIĞ  miô  eineí  traumhafteî 
+Laptop®   Daó  Teiì  isô  sowohì  Lağ­  aló  aucè   Peî-Toğ   miô 
+Schrifterkennunç  (OCR)® 1µ Minuteî habå icè faszinierô  auæ  deí 
+Displaù  miô deí Lighô Peî herumgekrakelô unä daó Teiì  haô  beií 
+Umsetzeî  meineò grauenhafteî Schreibschrifô nichô  EINEÎ  Fehleò 
+gemachô   ¡  Daó  ganzå  selbstverst{ndlicè  miô  Farâ   LCÄ   iî 
+bestechendåò Qualit{t.
+
+Aí  Stanä  voî  Heiså  (ct©  konntå  icè  diå  Hardwarå  Projektå 
+bewundern® Insbesonderå diå 68000/6802° spricè Ataré  Nachbauten® 
+Isô sï etwaó schwieriç zõ l|teî ??¿ W}rdå micè schoî reizen.
+
+F}ò Deiî Studiuí w}nschå icè Diò vieì Erfolç unä Gl}ck
+
+Bió zuí n{chsteî mal
+
+Egbert
+
+  
+      

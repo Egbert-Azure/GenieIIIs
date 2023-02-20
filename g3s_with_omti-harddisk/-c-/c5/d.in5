@@ -1,0 +1,55 @@
+(*********************************************************************
+**        D.IN5  Dateiliste entsprechend Optionen sortieren         **
+*********************************************************************)
+
+(* 931012 Tilmann Reh *)
+
+(* Feststellen, ob Eintrag 'groesser' oder 'kleiner' ist. *)
+
+function GreaterThan(f1,f2:DirDatRecord):boolean;
+
+  function ExtFirst(c:CharArray11):string20;
+  begin
+    ExtFirst:=copy(c,9,3)+copy(c,1,8);
+    end;
+
+begin
+  case SortOrder of
+    ByName : GreaterThan:=f1.FileNameExt>f2.FileNameExt;
+    ByExt  : GreaterThan:=ExtFirst(f1.FileNameExt)>ExtFirst(f2.FileNameExt);
+    ByDate : GreaterThan:=(f1.Date>f2.Date)
+                      or ((f1.Date=f2.Date) and ((f1.Time>f2.Time)
+                      or  (f1.Time=f2.Time) and (f1.FileNameExt>f2.FileNameExt)));
+    BySize : GreaterThan:=(f1.Size>f2.Size)
+                      or ((f1.Size=f2.Size) and (f1.FileNameExt>f2.FileNameExt));
+    else     GreaterThan:=false;
+    end;
+  end;
+
+(* Sortieren der Dateienliste (Quicksort). *)
+
+var vs,vx           : DirDatRecord;
+    SortNotComplete : boolean;
+
+{$A-}
+procedure QuickSortFileList(anfang,ende:integer);
+var li,re : integer;
+begin
+  li:=anfang; re:=ende;
+  vs:=DirDat^[(li+re) shr 1];
+  repeat
+    while GreaterThan(vs,DirDat^[li]) and (li<=re) do li:=succ(li);
+    while GreaterThan(DirDat^[re],vs) and (re>=li) do re:=pred(re);
+    if li<=re then begin
+      vx:=DirDat^[li]; DirDat^[li]:=DirDat^[re]; DirDat^[re]:=vx;
+      li:=succ(li); re:=pred(re);
+      end;
+  until li>re;
+  if MaxAvail>100 then begin
+    if re>anfang then QuickSortFileList(anfang,re);
+    if li<ende then QuickSortFileList(li,ende);
+    end
+  else SortNotComplete:=true;
+  end;
+{$A+}
+

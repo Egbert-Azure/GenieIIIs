@@ -1,0 +1,330 @@
+(****************************************************************************)
+(*   Bibliotheks-Modul MASKE-1.BIB                                          *)
+(*       Erlaubt die bildschirmorientierte Eingabe von Records.             *)
+(*       Setzt die Eingabeprozedur LiesZeichen voraus                       *)
+(*                                                                          *)
+(*  (t MaxRecString) = STRING[255] (kann fuer bes. Anwendungen kleiner sein)*)
+(*  t MaskEintr   (zum Aufbau einer Bildschirmmaske)                        *)
+(*       = RECORD                                                           *)
+(*           x,y : byte;                                                    *)
+(*           m   : string[80];                                              *)
+(*           l,sl,Art : byte                                                *)
+(*         END                                                              *)
+(*                                                                          *)
+(*     Dabei ist x/y die Cursorposition, an der die Meldung m ausgegeben    *)
+(*     wird, l die Laenge des Elements in Bytes -1, sl die maximale         *)
+(*     Eintraglaenge und Art der Datentyp, wobei gilt :                     *)
+(*                                                                          *)
+(*     Datentyp              l             sl              art              *)
+(*       char                0              1               0               *)
+(*       string [n]          n              n               1               *)
+(*       integer             1              1..6            2               *)
+(*       real                5              g*16+n          3               *)
+(*       byte                0              1..3            4               *)
+(*       boolean             0              4...('JA NEIN') 5               *)
+(*                                                                          *)
+(*     Anmerkung zur Zahlendarstellung : Zahlen werden immer rechts-        *)
+(*     buendig ausgegeben. Real erhaelt das Format REAL:g:n                 *)
+(*                                                                          *)
+(*  Eine Maske ist ein beliebig dimensioniertes Feld (max 127) von          *)
+(*  solchen MaskEintr, die in Reihenfolge und Groesse dem einzule-          *)
+(*  senden Record entsprechen muessen. Naeheres siehe Turbo-Special 1/3     *)
+(*                                                                          *)
+(*  p CopyRecTemp(Nr,Rec,Temp,Maske)                                        *)
+(*      kopiert den Nr-ten Eintrag des Record Rec in die Variable Temp      *)
+(*  p CopyTempRec(Nr,Rec,Temp,Maske)                                        *)
+(*      kopiert die Variable Temp in den Nr-ten Eintrag des Record Rec      *)
+(*  p CopyRecToString(Nr,Rec,Temp,Maske)                                    *)
+(*      kopiert den Nr-ten Eintrag des Record Rec in den STRING Temp        *)
+(*  p CopyStringToRec(Nr,Rec,Temp,Maske)                                    *)
+(*      kopiert den STRING Temp in den Nr-ten Eintrag des Record Rec        *)
+(*      In beiden F{llen wird eine automatische Typenumwandlung durchgef}hrt*)
+(*                                                                          *)
+(*  p SchreibRecord(Record,Maske,bis) (Siehe Turbo-Special 1/3)             *)
+(*  p LiesRecord(Record,Maske,bis,wx) (Siehe Turbo-Special 1/3)             *)
+(*      Der Parameter wx ist normalerweise 80, sollte aber bei Verwendung   *)
+(*      mit WINDOW.BIB auf die aktuelle Fensterbreite gesetzt werden!       *)
+(*                                                                          *)
+(*  fuer die Erweiterungen um die Datentypen char,int.,real,byte,bool.      *)
+(*                    (c)  by  C. Arend-Schneider                           *)
+(****************************************************************************)
+
+type MaxRecString = STRING[255];
+     MaskEintr = record
+                   x,y : byte;       (* Bildschirmposition *)
+                   m   : string[40]; (* Label              *)
+                                     (* von 80 auf 40      *)
+                   l   : byte;       (* Speicherbedarf-1   *)
+                   sl  : byte;       (* Anzeige            *)
+                   Art : byte;       (* Kod. Datentyp      *)
+                 end;
+
+procedure CopyRecTemp(x:byte; var UsE, Temp, UsM);
+ var Eintr : array[0..maxint] of char absolute UsE;
+     Maske : array[1..127] of MaskEintr absolute UsM;
+     i,s   : integer;
+begin
+  s:=0; for i:=1 to x-1 do s:=s+Maske[i].l+1;
+  move(Eintr[s],Temp,succ(Maske[x].l))
+end; (* CopyRecTemp *)
+
+procedure CopyTempRec(x:byte; var UsE, Temp, UsM);
+ var Eintr : array[0..maxint] of char absolute UsE;
+     Maske : array[1..127] of MaskEintr absolute UsM;
+     i,s   : integer;
+begin
+  s:=0; for i:=1 to x-1 do s:=s+Maske[i].l+1;
+  move(Temp,Eintr[s],succ(Maske[x].l))
+end; (* CopyTempRec *)
+
+procedure CopyRecToString(Nr:byte; var UsE, Temp, UsM);
+ var TempStr : MaxRecString absolute Temp;
+     f : MaxRecString;
+     f_c : char absolute f;
+     f_s : MaxRecString absolute f;
+     f_i : integer absolute f;
+     f_r : real absolute f;
+     f_b : byte absolute f;
+     f_j : boolean absolute f;
+     Maske : array[1..127] of MaskEintr absolute UsM;
+ begin
+  CopyRecTemp(Nr,UsE,f,UsM);
+  with Maske[Nr] do
+    case Art of
+     0 : TempStr:=f_c;
+     1 : TempStr:=f_s;
+     2 : str(f_i:sl,TempStr);
+     3 : begin  str(f_r:sl SHR 4:sl and 15,TempStr);
+                TempStr:=copy(TempStr,1,sl SHR 4)     end;
+     4 : str(f_b:sl,TempStr);
+     5 : if f_j then TempStr:='JA  ' else TempStr:='NEIN'
+    end
+end; (* CopyRecToString *)
+
+procedure CopyStringToRec(Nr:byte; var UsE, Str, UsM; var Fehler : integer);
+ var Temp : MaxRecString absolute Str;
+     f   : MaxRecString;
+     f_c : char absolute f;
+     f_s : MaxRecString absolute f;
+     f_i : integer absolute f;
+     f_r : real absolute f;
+     f_b : byte absolute f;
+     f_j : boolean absolute f;
+     Maske : array[1..127] of MaskEintr absolute UsM;
+     first, last : integer;
+ begin
+  fillchar(f,256,0); Fehler:=0; last:=ord(Temp[0]); first:=1;
+  while (first<last) and (Temp[first]=' ') do first:=succ(first);
+  with Maske[Nr] do
+    case Art of
+     0   : f_c:=Temp[1];
+     1   : f_s:=Temp;
+     2   : val(copy(Temp,first,succ(last-first)),f_i,Fehler);
+     3   : val(copy(Temp,first,succ(last-first)),f_r,Fehler);
+     4   : begin
+             val(copy(Temp,first,succ(last-first)),f_i,Fehler);
+             Fehler:=Fehler or hi(f_i)
+           end;
+     5   : f_j:=Temp='JA  '
+    end;
+  CopyTempRec(Nr,UsE,f,UsM);
+end; (* CopyStringToRec *)
+
+(*************************************************************************)
+(*              Schreibt einen beliebigen Record mit Maske               *)
+(*************************************************************************)
+procedure SchreibRecord(var UsRec, UsMask; bis : byte);
+ var str : MaxRecString;
+     i, j : integer;
+     Maske : array[1..127] of MaskEintr absolute UsMask;
+begin
+  for i:=1 to bis do
+    with Maske[i] do
+    begin
+      gotoxy(x,y);lowvideo;write(M); normvideo;
+      CopyRecToString(i,UsRec,str,UsMask); write(str);
+      if Art<>3 then for j:=succ(length(str)) to sl do write('_');
+    end (* WITH *)
+end; (* SchreibRecord *)
+
+(*************************************************************************)
+(*                         LiesRecord mit Maske                          *)
+(*************************************************************************)
+procedure LiesRecord(var UsRec, UsMask; bis, wx : byte);
+
+ type Richtung = (keine,fertig,rauf,runter,finis);
+
+ var  selektor  : byte;
+      weiter    : Richtung;
+      Maske     : array[1..127] of MaskEintr absolute UsMask;
+
+procedure Eingabe(Nr : integer; var weiter : Richtung);
+
+ var CPos       : integer;
+     temp       : MaxRecString;
+     c          : char;
+     Zugelassen : set of char;
+     Spalte, Zeile, max, Vorzeichen, Fehler : integer;
+
+procedure SetCursor;
+  begin
+    gotoxy(1+(Spalte+CPos-2) mod wx,Zeile+((Spalte+CPos-2) div wx))
+  end;
+
+procedure aktualisiere;
+  var i : integer;
+  begin
+    gotoxy(Spalte,Zeile); write(temp);
+    for i:=succ(length(temp)) to max do write('_');
+  end;
+
+procedure beep; begin write(^G) end;
+
+procedure DEL;
+  var l : integer;
+  begin
+    l:=length(temp); delete(temp,CPos,1);
+    write(copy(temp,CPos,succ(l-CPos)),'_')
+  end;
+
+procedure INS;
+  var l : integer;
+  begin
+    l:=succ(length(temp)); insert(c,temp,CPos); write(c);
+    CPos:=succ(CPos); write(copy(temp,CPos,succ(l-CPos)))
+  end;
+
+(*$A-*)
+procedure Negiere;
+  var i : integer;
+  begin
+    i:=1; while temp[i]=' ' do i:=succ(i);
+    if temp[i]='-' then begin temp[i]:=' '; Vorzeichen:=+1 end
+                   else begin temp[pred(i)]:='-'; Vorzeichen:=-1 end;
+    CopyStringToRec(Nr,UsRec,temp,Maske,Fehler);
+    if Fehler>0 then begin beep; Negiere end;
+  end;
+(*$A+*)
+
+procedure Anhaengen;
+  var i : integer;
+  begin
+    i:=1; while temp[i] in [' ','-'] do i:=succ(i);
+    if (i=max) and (temp[i]='0') then temp[i]:=c else temp:=copy(temp+c,2,max)
+  end;
+
+procedure Wegnehmen;
+  begin temp:=' '+copy(temp,1,pred(max)) end;
+
+begin (* Eingabe *)
+  with Maske[Nr] do
+    begin
+      if l+sl+Art=0 then begin
+                           if Nr=bis then weiter:=finis else weiter:=fertig;
+                           exit
+                         end
+                    else weiter:=keine;
+      CopyRecToString(Nr,UsRec,temp,Maske);
+      Spalte:=x+length(m); Zeile:=y;
+      if Art=3
+        then begin
+               max:=sl SHR 4;
+               while (pos('.',temp)>0) and (temp[max]='0') do Wegnehmen;
+               if temp[max]='.' then Wegnehmen;
+               aktualisiere
+             end
+        else max:=sl;
+      case Maske[Nr].Art of
+          0 : Zugelassen:=[#32..#255];
+          1 : Zugelassen:=[^A,^D,^S,^F,^G,#32..#255];
+          2 : Zugelassen:=['0'..'9','-'];
+          3 : Zugelassen:=['0'..'9','.','-'];
+          4 : Zugelassen:=['0'..'9'];
+          5 : Zugelassen:=['J','j','A','a','N','n','E','e','I','i'];
+      end; (* CASE *)
+      if art in [0,5] then CPos:=1 else CPos:=length(temp)+1;
+      gotoxy(pred(Spalte+CPos),Zeile);
+      repeat
+        SetCursor; LiesZeichen(c);
+        if c in [^J,^[,^M,^H,^E,^X,^Y,' ']+Zugelassen then
+        case c of
+          ^J : ;
+          ^[ : weiter:=finis;
+          ^M : weiter:=fertig;
+          ^E : weiter:=rauf;
+          ^X : weiter:=runter;
+          ^A : CPos:=1;
+          ^F : CPos:=succ(length(temp));
+          ^G : DEL;
+          ^S : if CPos>1 then begin write(^H); CPos:=pred(CPos) end else beep;
+          ^D : if (CPos<=length(temp)) and (CPos<max)
+                 then CPos:=succ(CPos) else beep;
+          ^H : case Art of
+                0 : begin temp:=' '; aktualisiere end;
+                1 : if CPos>1
+                      then begin CPos:=pred(CPos); SetCursor; DEL end
+                      else beep;
+           2,3,4 : begin
+                      WegNehmen;
+                      if temp[max] in [' ','-'] then temp[max]:='0';
+                      aktualisiere
+                    end
+               end; (* CASE *)
+         ^Y : begin
+                case Art of
+                 0 : temp:=' ';
+                 1 : temp:='';
+                 2,3,4 : begin fillchar(temp[1],pred(max),' ');
+                           temp[max]:='0' end;
+                 5 : temp:='NEIN'
+                end;
+                aktualisiere;
+                if Art in [0,5] then CPos:=1 else CPos:=succ(length(temp))
+              end
+          else case art of
+                 0 : begin temp:=c; write(c) end;
+                 1 : if length(temp)<max then INS else beep;
+               2,3,4 : case c of
+                       '-' :  if temp[1] in [' ','-']
+                                then begin Negiere; aktualisiere end
+                                else beep;
+                       ' ' : ;
+                       '.' : if pos('.',temp)=0
+                              then begin Anhaengen; aktualisiere end
+                              else beep;
+                       else if (temp[1]=' ') or ((max=1) and (temp[1]='0'))
+                      then begin
+                             Anhaengen;
+                             CopyStringToRec(Nr,UsRec,temp,Maske,Fehler);
+                             if Fehler>0
+                               then begin beep; Wegnehmen end
+                               else aktualisiere
+                           end else beep;
+                     end;
+                   5 : case c of
+                        'J','j' : begin temp:='JA  '; aktualisiere end;
+                        'n','N' : begin temp:='NEIN'; aktualisiere end
+                       end
+               end; (* CASE *)
+        end (* CASE  c of*) else beep
+   until weiter<>keine;
+ end;
+ CopyStringToRec(Nr,UsRec,temp,Maske,Fehler);
+ if Maske[Nr].Art=3 then
+   begin CopyRecToString(Nr,UsRec,temp,Maske); aktualisiere end;
+end; (* Eingabe *)
+
+begin (* LiesRecord *)
+  selektor:=1; weiter:=runter; SchreibRecord(UsRec,UsMask,bis);
+  repeat
+    Eingabe(selektor,weiter);
+    if weiter=rauf then if selektor>1 then selektor:=pred(selektor)
+                                      else selektor:=bis;
+    if weiter=runter then if selektor<bis then selektor:=succ(selektor)
+                                          else selektor:=1;
+    if weiter=fertig then if selektor<>bis
+                           then begin selektor:=succ(selektor);
+                                   weiter:=keine end;
+  until ((selektor=bis) and (weiter=fertig)) or
+        (weiter=finis);
+end; (* LiesRecord *)

@@ -1,0 +1,44 @@
+(*********************************************************************
+**        D-ENG.IN1  English Messages and Online-Help               **
+*********************************************************************)
+
+(* 310393 Tilmann Reh *)
+
+(* All Messages are defined as constants here, for simple *)
+(* portability in other languages.                        *)
+(* Be careful with some texts! Spaces at the end are to   *)
+(* overwrite previous displayed messages!                 *)
+
+const WrongVersion   = 'CP/M-3 required!';
+      TooManyMaskMsg = 'Too much parameters!';
+      TooMuchMsg     = 'Too much files - list not complete!';
+      SorryNoSort    = 'Not enough memory - list not completely sorted!';
+      PressAnyKey    = 'Press any key to continue';
+      DirectoryOf    = 'Directory of ';
+      BytesMsg       = ' Bytes in ';
+      FilesMsg       = ' file(s)';
+      AllocatedMsg   = ' Bytes allocated';    (* fixed 16 characters! *)
+      FreeMsg        = ' Bytes free';
+      FreeDirMsg     = ' Entries free';
+      AbortMsg       = '*** Program aborted ***  ';
+
+(* Display Fullscreen-Help (with option '?').           *)
+(* Terminate program thereafter (no directory display). *)
+
+procedure DisplayHelp;
+begin
+  writeln(^m^j,VersionMsg,^m^j^m^j,
+'Usage: D du:filename du:filename ... /options'^m^j^m^j,
+'Options:  /?  this help                   /K  suppress header'^m^j,
+'          /1  one-column display          /M  suppress footer'^m^j,
+'          /4  four-column display         /N  do not sort'^m^j,
+'          /A  show attributes             /P  invert CP/M-3 pagemode'^m^j,
+'          /B  suppress header&footer      /R  include SYS-files'^m^j,
+'          /D  sort by date                /S  sort by size'^m^j,
+'          /E  sort by extension           /U  filenames in upper case'^m^j,
+'          /G  suppress file display       /W  wide display, filenames only'^m^j,
+'          /H  sort horizontal             /X  exclude given files'^m^j,
+'          /J  justify filenames');
+  halt;
+  end;
+

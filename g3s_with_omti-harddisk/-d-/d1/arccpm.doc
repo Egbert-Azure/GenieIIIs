@@ -1,0 +1,273 @@
+                       --------------------------
+                        A R C C P M  Version 1.0
+                       --------------------------
+
+                Copyright (c) August 1987 by Reimer Mellin
+                Sulenstr.8, 8000 Muenchen 71, West Germany
+                RBBS: T-Bus Muenchen (FidoNet 507/Node 14)
+                CP/M-80 Section (Area 4),Tel#:(089)/293881
+
+                       --------------------------
+                        A R C C P M  Version 2.2
+                       --------------------------
+
+                Copyright  (C) Januar 1994  by Tilmann Reh
+                In der Grossenbach 46, D-57072 Siegen, FRG
+                Mail: tilmann.reh@hrz.uni-siegen.d400.de
+
+
+                       ALLGEMEINE VORBEMERKUNGEN 
+                       -------------------------
+
+  ARCCPM Version 2.2 ist eine vollstaendig neu geschriebene Realisierung
+  des Archivierungsprogramms ARCCPM V1.0, welches durch Reimer Mellin von
+  den (DOS-) C-Quelltexten in Turbo-Pascal umgesetzt wurde.
+
+  ARC V2.2 ist nicht nur etwa 5 KB kleiner und 5 mal so schnell wie V1.0,
+  sondern bietet darueberhinaus noch funktionelle Erweiterungen:
+
+   - Squeezing und Unsqueezing (Ver.4) werden ab sofort voll unterstuetzt.
+   - Unter CP/M-Plus werden Datum und Uhrzeit der Dateien ins Archiv
+     uebernommen. Existiert kein Zeiteintrag (oder bei CP/M 2.2), so wird
+     die aktuelle bzw. die eingegebene Zeit verwendet. Unter CP/M-Plus wird
+     weiterhin auch beim Extrahieren ein korrekter Zeiteintrag erzeugt
+     (bei Systemen ohne interruptgesteuerte Uhr).
+   - Die Eingabezeile wird durch einen Patch auf die volle Laenge von 127 
+     Zeichen vergroessert. Ohne Patch stehen unveraendert 32 Zeichen zur
+     Verfuegung. Der Patch (3 Byte im Kompilat) ist in CLINE127.INC 
+     beschrieben und als Datei CLINE.HEX beigelegt (z.B. f}r MLOAD).
+   - Mit dem Schalter 'k' kann die Kompressionsart 'Crunching' fest vorge-
+     geben werden.
+   - Unter CP/M-3 wird die Crunch-Zwischendatei im 'Temporary Drive'
+     abgelegt.
+
+                              Revision History:
+  V2.0   22.11.89   Freigabe der komplett neugeschriebenen Version 2.0
+  V2.1   12.01.92   CP/M-3: Temporary Drive, Extrahieren mit Zeiteintr{gen
+  V2.2   11.01.94   Bugfixes: Auch sehr gro~e Dateien werden fehlerfrei
+                    "ent-cruncht"; Dateien der L{nge 0 k|nnen geARCt werden;
+                    Archive der Netto-L{nge 0 k|nnen angezeigt werden.
+
+  Das Programm mu~ mit einer Endadresse von mindestens D800h kompiliert
+  werden. Auf jeden Fall sollte man beim Kompilieren die Endadresse etwas
+  gegen}ber dem Default herabsetzen, um Raum f}r RSXen zu lassen (z.B.
+  GET/PUT/SUBMIT).
+  Nach jedem Kompilieren den 127-Zeichen-Patch nicht vergessen! Am
+  einfachsten durch "MLOAD ARC.COM,CLINE".
+
+  Die folgende Beschreibung von ARCCPM ist bis auf die o.g. funktionellen
+  Erweiterungen das Werk von Reimer Mellin.
+
+  Tilmann Reh, D-57072 Siegen, 14. Januar 1994.
+
+  WARUM ARCEN : 
+
+  Komprimierung und Archivierung  von Dateien ist  besonders in der DFUE
+  wichtig  (eigentlich sogar notwendig),  da hier jede Minute Uebertrag-
+  ungszeit Geld bedeutet.  Der in diesem  Programm  implementierte Algo-
+  rithmus komprimiert eine Datei auf ca. 20-60% der Originalgroesse. Zu-
+  saetzlich koennen  zusammengehoerende  Dateien auch  in  einem  ARChiv
+  (z.B zu Backupzwecken)  zusammengefasst werden.  Das bedeutet fuer den 
+  Anwender groessere  Uebersichtlichkeit  auf seinen  Speichermedien und
+  reduziert gerade bei  Diskettenformaten  kleiner Kapazitaet die Anzahl
+  der notwendigen Directory Eintraege.
+
+  EINSCHRAENKUNGEN :  
+
+  ARCCPM beherrscht - leider - nur einen Subset des original ARC's. 
+
+  Unterstuetze Komprimierungsverfahren:
+   - Storing(nur speichern ohne Komprimieren),
+   - Packing (identische Bytefolgen zusammenfassen),
+   - Squeezing (Huffman-Encoding),
+   - Crunching (Lempel-Ziv-Welch Verfahren).
+
+  Unterstuetze Dekomprimierungsverfahren:
+   - Ent-Storing (na klar),
+   - Ent-Packing (logisch),
+   - Ent-Squeezing (auch das),
+   - Ent-Crunching (sowieso).
+   
+  NICHT Unterstuetze Verfahren:
+   - Ent-Crunching nach aelteren Verfahren,
+   - Squashing/Entsquash.
+
+  Dokumentation zu ARCCPM Version 1.0                           Seite  1
+
+
+
+                        WIE FUNKTIONIERT ARCCPM ?
+                        -------------------------
+
+  Ein Aufruf von ARCCPM lautet immer:
+
+  ,--------------------------------------------------------------------,
+  l     ARC {adelmvx}[bknstw][g<password>] <archiv> [<filelist>...]    l
+  '--------------------------------------------------------------------'
+
+
+  Symbole in [] sind optional,  Angaben in <> sind unbedingt zu machen !
+
+  Von den Symbolen in {} (Flags) ist jeweils eines unbedingt anzugeben !
+
+  <password> ist ein String von hoechstens 10 Zeichen, die Dateibezeich-
+  nungen <archiv> & <filelist> duerfen Laufwerksbezeichner oder die CP/M
+  ueblichen Wildcards ('*' und '?') enthalten.
+
+
+  Wirkung der Symbole :
+
+
+  a    Add to Archive.  Ein noch nicht existierendes Archiv wird neu an-
+       gelegt. Alle gefundenen Files der <filelist> werden in das Archiv
+       einsortiert.
+
+  d    Delete Files from Archive.  Die angebenen Dateien werden aus  dem
+       Archiv geloescht.
+
+  x,e  Extract from Archive.  Die  angegebenen  Dateien  werden  aus dem 
+       Archiv extrahiert. Ohne Angabe von Parametern: Alle Dateien.
+
+  l,v  'Verbose Listing' of Archive.  Das  'ausfuehrliche Directory' des 
+       Archivs wird auf dem Bildschirm dargestellt.
+
+  m    Move to Archive. Wie 'a' , aber die einsortierten  Dateien werden
+       anschliessend geloescht.
+
+  b    Keep Backup.  Das alte Archiv bleibt im Falle von Aenderungen als 
+       BAK-file erhalten.
+
+  k    Force Crunching. Die zu addierenden Dateien werden grundsaetzlich
+       gecruncht. Der Zeitgewinn hierdurch ist allerdings kaum messbar.
+
+  n    Suppress Notes. Kommentare werden unterdrueckt.
+
+  s    Store only. Nur sinnvoll bei der 'A'dd Option. Die zu addierenden 
+       Dateien werden nur kopiert (Storing).
+
+  t    Set  Time. Unter CP/M-Plus wird explizit nach Datum  und  Uhrzeit 
+       gefragt.  In diesem Fall werden auch die Zeiteintraege der  CP/M-
+       Plus-Dateien nicht verwendet. Unter CP/M 2.2 ist dieser  Schalter
+       wirkungslos.
+
+  w    Suppress Warnings. Warnungen werden unterdrueckt.
+
+  g    Password  Entry. Die folgende durch <space> abgeschlossene Zeich-
+       enkette wird als  Password zum Verschluesseln/Entschluesseln her-
+       genommen.
+  Dokumentation zu ARCCPM Version 1.0                           Seite  2
+
+  
+
+
+                                BEISPIELE
+                                ---------
+
+
+  'arc l *'  
+
+        Listet alle Files im ersten Archiv des Default Drives auf.
+
+
+  'arc v a:*'
+  
+        Listet alle Files im ersten  gefundenen Archiv  auf Laufwerk A:
+        auf.
+
+
+  'arc l test *.doc *.com *.?q?  
+
+        Listet alle Files mit Endung  '.doc','.com','.?q?' auf,  welche 
+        im Archiv test.arc gefunden werden. 
+
+
+  'arc x c:test a:*.*'  
+
+        Extrahiert alle Files im Archiv 'c:test.arc' auf das Drive A:.
+
+
+  'arc e a:* c:*.doc b:*.com'
+       
+        Extrahiert alle  Files '*.doc' ( im ersten gefundenen Archiv auf 
+        Laufwerk  A:) auf das Laufwerk C: und alle Files '*.com' auf das 
+        Laufwerk B:.
+
+
+  'arc a y* d:*.inc d:arc*.*'
+        
+        Sucht auf dem Default Drive das Archiv 'y*.arc' und addiert alle
+        Files '*.inc' und 'arc*.*' vom Laufwerk D: dazu.
+
+
+  'arc m test a:*.lbr'
+
+        Sucht 'test.arc' ( falls nicht gefunden, generiert es )  und ad-
+        diert vom  Laufwerk A: alle Files mit Endung '.LBR'.  Anschlies-
+        send werden diese Files geloescht !
+
+  
+  'arc d test *.txt'
+
+        Entfernt vom Archiv 'test.arc' alle Files mit Endung '.TXT'.
+  Dokumentation zu ARCCPM Version 1.0                           Seite  3
+
+
+
+
+                                 HINWEISE
+                                 --------
+
+  Das Programm darf auf keinen Fall unter Turbo-Pascal 2.0 kompiliert
+  werden, da in Inline-Anweisungen direkte Zugriffe auf die Laufzeit-
+  bibliothek von Turbo-3.0 erfolgen.
+
+  Es duerfen maximal 10 Dateinamen als Parameter angegeben werden.
+  Werden mehr angegeben, kann es zu furchtbaren Effekten kommen.
+
+  Die CP/M-Spezifikation von Dateinamen mit Wildcards muss eingehalten
+  werden. Es ist nicht zulaessig, nach einem '*' ein weiteres Einzelzeichen
+  anzugeben (nur '.' oder Namensende erlaubt). Zwei Punkte hintereinander 
+  sind nicht zulaessig.
+
+  Wird bei der Frage nach dem Datum (Schalter 't' oder CP/M 2.2) nur
+  RETURN eingegeben, so wird nicht weiter nach der Uhrzeit gefragt und kein
+  Datum/Zeiteintrag im Archiv gemacht. Wird nur bei der Uhrzeit RETURN 
+  eingegeben, so enthaelt das Archiv den Datumseintrag ohne Zeitangabe. 
+
+  User Areas  werden derzeit noch nicht unterstuetzt,  alle Files werden 
+  im eingestellten User-Bereich erwartet.
+
+  Beim  Addieren  werden auf der  Diskette  des Archivs folgende Dateien
+  temporaer erstellt:
+
+    - arcname.$$$    <-- das in Bearbeitung befindliche neue Archiv,
+    - arcname.crn    <-- Komprimierte Datei, die gerade addiert wird.
+
+  Es wird nicht vor dem Archivieren ueberprueft, ob genug Speicherplatz
+  auf der Diskette ist. Es muss daher immer mindestens die Kapazitaet des
+  bearbeiteten Archivs frei sein.
+
+  Wenn die 'Keepbak' Option gesetzt ist,  dann wird das  alte Archiv  zu 
+  'arcname.BAK'  umbenannt und  nicht geloescht.  In jedem Fall wird die 
+  Datei 'arcname.$$$' in 'arcname.ARC' umbenannt.
+
+  Falls die  's'(store only) Option  gesetzt  wird,  wird  das  Crunchen 
+  uebersprungen  und nur kopiert.  Diese  Option kann man dann anwenden, 
+  wenn man zusammengehoerige Files nur zusammenfassen moechte.
+                    
+  Anhand der Filegroesse  des komprimierten Files (nach dem Analysieren) 
+  erkennt ARCCPM, welches Verfahren am guenstigsten ist.
+
+
+
+  GEPLANTE ERWEITERUNGEN :
+
+   - Eventuell eine Implementierung des 'SQUASHING' Algorithmus.
+     (Ich habe noch keine Algorithmen hierzu.)
+   - Drive/User support (Angaben des Types DU:Filename.Ext f}r alle
+     Parameter).
+
+  OK das wars, Nachfragen & Bugreports bitte an obige Adresse !
+  
+  Viel Spass and keep ARC'ing ....    Tilmann Reh, 12.01.92
+  "ent-cruncht"; Dateien der L{nge 0 k|nnen geARCt werden;

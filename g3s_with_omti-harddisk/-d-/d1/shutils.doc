@@ -1,0 +1,18 @@
+SHUTILS.DOC
+Mar. 17,1986
+
+Library File:  SHUTILS.LBR
+
+Contents:
+
+	SHUTILS.DOC		This file.
+	GETVAR.COM		Prints a user-defined prompt, accepts a
+				response, and assigns it to a user-defined
+				shell variable.
+	GETVAR.ZQ0		Source for GETVAR.COM.
+	RESOLVE.COM		Resolves references to shell variables, 
+				System Files, register values, and other
+				quantities from aliases, ZEX files, etc.
+	RESOLVE.ZQ0		Source for RESOLVE.COM.
+	SHUTILS.HQP		Help file for these two utilities.
+

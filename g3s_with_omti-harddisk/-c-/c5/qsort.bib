@@ -1,0 +1,93 @@
+(****************************************************************************)
+(* Bibliotheks-Modul QSORT.BIB                                              *)
+(****************************************************************************)
+
+procedure Sortiere(var SortArray; Size,LoIndex,HiIndex,OrdAdr,von,bis:integer);
+  type ArrayPtr = ^Byte;
+  Var ElementGroesse : integer;
+      Mitte,i0,j0,m0 : ArrayPtr;
+
+  procedure Swap(var x,y;Size:integer);
+    begin
+    inline($2A/X/$ED/$5B/Y/$ED/$4B/SIZE/$78/$B1/
+           $28/$09/$1A/$ED/$A0/$2B/$77/$23/$EA/*+$FFF9)
+    end;
+
+  function SortKleiner(var x,y; OrdAdr : integer) : boolean;
+    begin
+      inline($DD/$E1/$2A/X/$E5/$2A/Y/$E5/$DD/$E5/$2A/ORDADR/$E9)
+    end;
+
+  function Element(i:integer) : ArrayPtr;
+    begin
+      Element:=ptr(addr(SortArray)+i*ElementGroesse);
+    end;
+
+  procedure inc(var index : integer; var pointer : ArrayPtr);
+    begin
+      index:=succ(index);
+      pointer:=ptr(ord(pointer)+ElementGroesse)
+    end;
+
+  procedure dec(var index : integer; var pointer : ArrayPtr);
+    begin
+      index:=pred(index);
+      pointer:=ptr(ord(pointer)-ElementGroesse)
+    end;
+
+  procedure E_Sort(von,bis:integer);
+    label exit;
+    var i,j:integer;
+    begin
+      if bis<=von then goto exit;
+      i:=von; i0:=Element(i);
+      while i<bis do begin
+      m0:=i0; j:=i; j0:=i0; inc(j,j0);
+      while j<=bis do begin
+        If SortKleiner(j0^,m0^,OrdAdr) then m0:=j0;
+        inc(j,j0)
+      end;
+        if m0<>i0 then swap(i0^,m0^,ElementGroesse);
+        inc(j,j0)
+      end;
+      exit:
+     end;
+
+(*$A-*)
+
+procedure sort(von,bis:integer);
+  label exit;
+  var i,j:integer;
+  begin
+    if bis-von<6 then begin E_Sort(von,bis);goto exit end;
+    i:=von; j:=bis; m0:=Element((i+j) shr 1);
+    move(m0^,Mitte^,ElementGroesse); i0:=Element(i); j0:=Element(j);
+    while i<j do begin
+      while SortKleiner(i0^,Mitte^,OrdAdr) do inc(i,i0);
+      while SortKleiner(Mitte^,j0^,OrdAdr) do dec(j,j0);
+      if i<=j then begin
+        if i<>j then Swap(i0^,j0^,ElementGroesse);
+        inc(i,i0); dec(j,j0)
+      end
+    end;
+    if bis-1<j-von then begin
+                     if i<bis then Sort(i,bis);
+                     if von<j then Sort(von,j)
+                     end
+                   else begin
+                     if von<j then Sort(von,j);
+                     if i<bis then Sort(i,bis)
+                     end;
+    exit:
+  end;
+(*$A+*)
+
+begin
+  ElementGroesse:=trunc(((Size and 1)+2.0*(Size shr 1))
+                       /succ(HiIndex-LoIndex));
+  getmem(Mitte,ElementGroesse);
+  Sort(von-LoIndex,bis-LoIndex);
+  freemem(Mitte,ElementGroesse)
+end;
+
+

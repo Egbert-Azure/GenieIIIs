@@ -1,0 +1,320 @@
+|quiet|
+shv /q $1 $2 $3 $4 $5 $6 $7
+reg s5 0 q
+if nu $8
+	goto start
+fi
+if ne $8 TWO
+and ne $8 THREE
+goto $8
+;=start
+zif
+cls
+box 0 7 15 8 53
+gotoxy 9 19
+|"|Welcome to Rick's archiving program!|"|go 10 19
+|"|Put BACKUP DISK #1 in your backup drive,|"|go 11 19
+|"|Make yourself comfortable in the pilot's seat,|"|go 12 19
+|"|And hit RETURN . . . |"|go 16 1
+|wait|
+cls
+box 0 6 15 5 53
+gxymsg 8 18 * SETTING ARCHIVE BIT WHERE APPROPRIATE  . . .
+gotoxy 11 1
+protect *.bak,lsh.cmd,command.lbr a
+;=A
+reg s5 1 q
+cls
+box 0 7 16 5 50
+gxymsg 9 25 backing up files 'a' through 'd'...
+gotoxy 12 1
+;=1
+ppip19 A*.* bak: /ae
+if er
+reg s5 1 q
+goto err
+fi
+;=2
+ppip19 B*.* bak: /ae
+if er
+reg s5 2 q
+goto err
+fi
+;=3
+ppip19 C*.* bak: /ae
+if er
+reg s5 3 q
+goto err
+fi
+;=4
+ppip19 D*.* bak: /ae
+if er
+reg s5 4 q
+goto err
+fi
+if eq $8 TWO
+or eq $8 THREE
+goto contone
+l
+|silence on|hold 3
+|silence off|
+cls
+box 0 7 8 7 65
+gotoxy 10 17
+|"|Remove disk 1, insert disk 2, and hit <RETURN>|"|go 15 1
+|wait| 
+;=contone 
+fi 
+;=B 
+cls 
+box 0 7 16 5 50 
+gxymsg 9 25 backing up files 'e' through 'j'... 
+gotoxy 12 1 
+;=5 
+ppip19 E*.* bak: /ae 
+if er 
+reg s5 5 q 
+goto err 
+fi 
+;=6 
+ppip19 F*.* bak: /ae
+if er
+reg s5 6 q
+goto err
+fi
+;=7
+ppip19 G*.* bak: /ae
+if er
+reg s5 7 q
+goto err
+fi
+;=8
+ppip19 H*.* bak: /ae
+if er
+reg s5 8 q
+goto err
+fi
+;=9
+ppip19 I*.* bak: /ae
+if er
+reg s5 9 q
+goto err
+fi
+;=10
+ppip19 J*.* bak: /ae
+if er
+reg s5 10 q
+goto err
+fi
+if eq $8 TWO
+goto conttwo
+l
+|silence on|hold 3
+|silence off|
+cls
+box 0 7 8 7 65
+gotoxy 10 17
+|"|remove disk 2, insert disk 3, and hit <RETURN>|"|go 15 1
+|wait|
+;=conttwo
+fi
+;=C
+cls
+box 0 7 16 5 50
+gxymsg 9 25 backing up files 'k' through 'p'...
+gotoxy 12 1
+;=11
+ppip19 K*.* bak: /ae
+if er
+reg s5 11 q
+goto err
+fi
+;=12
+ppip19 L*.* bak: /ae
+if er
+reg s5 12 q
+goto err
+fi
+;=13
+ppip19 M*.* bak: /ae
+if er
+reg s5 13 q
+goto err
+fi
+;=14
+ppip19 N*.* bak: /ae
+if er
+reg s5 14 q
+goto err
+fi
+;=15
+ppip19 O*.* bak: /ae
+if er
+reg s5 15 q
+goto err
+fi
+;=16
+ppip19 P*.* bak: /ae
+if er
+reg s5 16 q
+goto err
+fi
+if eq $8 THREE
+goto contthre
+l
+|silence on|hold 3
+|silence off|cls
+box 0 7 6 9 65
+gotoxy 10 19
+|"|Getting tired?  Don't worry - we're more than|"|go 11 25
+|"|halfway there.|"|go 12 19
+|"|remove disk 3, insert disk 4, and hit <RETURN>|"|go 15 1
+|wait|
+;=contthre
+fi
+;=D
+cls
+box 0 7 16 5 50
+gxymsg 9 25 backing up files 'q' through 'u'...
+gotoxy 12 1
+;=17
+ppip19 Q*.* bak: /ae
+if er
+reg s5 16 q
+goto err
+fi
+;=18
+ppip19 R*.* bak: /ae
+if er
+reg s5 18 q
+goto err
+fi
+;=19
+ppip19 S*.* bak: /ae
+if er
+reg s5 19 q
+goto err
+fi
+;=20
+ppip19 T*.* bak: /ae
+if er
+reg s5 20 q
+goto err
+fi
+;=21
+ppip19 U*.* bak: /ae
+if er
+reg s5 21 q
+goto err
+fi
+if eq $8 TWO
+goto contfour
+l
+|silence on|hold 3
+|silence off|cls
+box 0 7 6 8 65
+gotoxy 10 17
+|"|Remove disk 4, insert disk 5, hit <RETURN>,|"|go 11 30
+|"|and you're "done but one"|"|go 15 1
+|wait|
+;=contfour
+fi
+;=E
+cls
+box 0 7 16 5 50
+gxymsg 9 25 backing up files 'v' through 'y'...
+gotoxy 12 1
+;=22
+ppip19 V*.* bak: /ae
+if er
+reg s5 22 q
+goto err
+fi
+;=23
+ppip19 W*.* bak: /ae
+if er
+reg s5 23 q
+goto err
+fi
+;=24
+ppip19 X*.* bak: /ae
+if er
+reg s5 24 q
+goto err
+fi
+;=25
+ppip19 Y*.* bak: /ae
+if er
+reg s5 25 q
+goto err
+fi
+if eq $8 TWO
+or eq $8 THREE
+goto contfive
+l
+|silence on|hold 3
+|silence off|cls
+cls
+box 0 7 8 7 65
+gotoxy 10 17
+|"|Remove disk 5, insert disk 6 -- hit <RETURN> ...|"|go 12 22
+|"|and relax for "THE BIG Z"|"|go 15 1
+|wait|
+;=contfive
+fi
+;=F
+cls
+box 0 7 16 5 50
+gxymsg 9 25 backing up the big "z" . . .
+;=26
+ppip19 z*.* bak: /ae
+if er
+reg s5 26 q
+goto err
+fi
+;=27
+|"|
+And any we may have missed...
+|"|
+ppip19 *.* bak: /ae
+if er
+reg s5 27 q
+goto err
+fi
+cls
+box 0 8 20 9 40
+gxymsg 10 25 ============================
+go 11 30 * BACKUP COMPLETE *
+go 13 25 THAT WASN'T TOO BAD, WAS IT?
+go 14 25 ============================
+goto end
+;=err
+zif
+if er 7
+goto errseven
+fi
+cls
+box 0 7 7 9 65
+gotoxy 9 16
+|"|ZEX has detected that the BACKUP disk is full.|"|go 11 19
+|"|So let's log on there and give you a|"|go 12 19
+|"|DIRECTORY listing.  This will give you a|"|go 13 19
+|"|chance to see if any files can be erased.|"|go 15 1
+rs shv /q curdu $$d$$u:
+bak:
+dir
+/inputera
+|if true||"|
+|lf|Loading NSWEEP might help, so you can view your files...|crlf|
+|"||endif|
+ns
+/input
+/inputret
+rs %curdu $$$|goto $$r5
+;=errseven
+|if true||"|
+Abort request detected, ZEX script terminating...
+|"||endif|
+zif
+;=end
+

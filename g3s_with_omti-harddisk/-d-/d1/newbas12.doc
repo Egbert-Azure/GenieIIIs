@@ -1,0 +1,223 @@
+
+                             NEWBASE
+                     An Overlay for dBase II
+
+                           Version 1.2
+                            Gene Head
+                  This version by Gene Pizzetta
+                          June 23, 1991
+
+
+This overlay is intended for the use of licensed users of dBASE 
+II only.   If you "own" a copy of dBASE II that you did not 
+purchase or receive legitimately you are a thief, it is that 
+simple.   Stealing software will only drive up prices for legal 
+users and dry up the sources of quality software products.
+
+This overlay contains the following optional dBase modifications:
+
+SKIPDATE:  Skips the "ENTER DATE:" question at sign-on.
+
+SKIPSIGNON:  Skips all the sign-on messages and goes directly to 
+the dot-prompt.  To skip the sign-off message simply "SET CONSOLE 
+OFF" just prior to the QUIT or QUIT TO command.
+
+SKIPOPT:  Allows listing of KEYIN and CDELIMIT options to be 
+displayed at sign-on.
+
+FORCE:  Forces a warm boot if a valid command file was not 
+specified when DBASE.COM was executed.  It keeps unauthorized 
+people from the dot-prompt.
+
+PREDEFINED:  Forces dBASE II to execute a pre-defined command 
+file.  This simulates an auto-start mode without a submit file or 
+alias, and it prevents command level operation.  If you set 
+PREDEFINED TRUE, you must put your command line at label COMMAND 
+near the end of the overlay.  As distributed, the command is 
+"MENU.CMD".
+
+KEYIN:  Allow PEEKing at the last key pressed on the keyboard.  
+Useful for aborting DO WHILE loops.  "PEEK(337)" will hold the 
+last key pressed.
+
+NOESCAPE:  Disables the escape (abort) function so that users may 
+not break out of a CMD file.  The problem arises even with "SET 
+ESCAPE OFF", because between the time that the file is being 
+loaded and ESCAPE is SET OFF, a user could hit ESC.  If so, dBase 
+would recognize it and respond accordingly. The NOESCAPE option 
+is available for for all supported versions.  Even with NOESCAPE 
+set  here, "SET ESCAPE OFF" should still be one of the first 
+commands in you CMD file.
+
+ALTDRV:  Allows dBase to search an alternate drive for its 
+overlays, if they cannot be located on the default drive.  This 
+works only for the DBASEOVR.COM overlay file and not for the 
+DBASEMSG.TXT file, with most versions.  If you use the on-line 
+HELP command, DBASEMSG.TXT must be on the default drive.  dBase 
+version 2.43*, seems to find DBASEMSG.TXT on the alternate drive 
+just fine.  Under ZSDOS or ZRDOS, make the overlays on the 
+alternate drive public files and DBASE can be run from any 
+directory on the system.  Under CP/M-Plus put the overlays in 
+user 0 of the alternate drive and make them system files.
+
+CDELIMIT:  You can change the label delimiter character from the 
+default colon (":") to another character.  For example, "STORE 9 
+TO THIS:ONE" can be changed to "STORE 9 TO THIS_ONE" by setting 
+the delimiter character to the underline.
+
+DBASE VERSION -- The following dBase versions are supported, at 
+least partially, by this overlay.
+     VER23B    version 2.3B
+     VER24     version 2.4
+     VER241    version 2.41
+     VER241Z   Z-80 version 2.41
+     VER243    version 2.43*
+
+   +---------------------------------------------------------+
+   | BE SURE YOU HAVE A BACK-UP COPY OF DBASE.COM BEFORE YOU |
+   |             ATTEMPTING TO USE THIS OVERLAY              |
+   +---------------------------------------------------------+
+
+Simply set the equates in the source code file to your liking, 
+assemble it to a HEX file, and then overlay DBASE.COM using MLOAD 
+or MYLOAD:
+
+     MLOAD NEWDBASE.COM=DBASE.COM,NEWBASE.HEX
+
+Or by using the following DDT commands:
+
+     A>DDT DBASE.COM
+     DDT VERS 2.2
+     NEXT  PC
+     4D00 0100
+     -INEWBASE.HEX
+     -R
+     NEXT  PC
+     4D00 0000
+     -G0
+
+After exiting DDT, save the new file:
+     A>SAVE 76 NEWDBASE.COM
+Or, if you install a forced, predefined command file:
+     A>SAVE 77 NEWDBASE.COM
+
+VERSIONS SUPPORTED (for most modifications):  2.3B, 2.4, 2.41, 
+2.41Z, 2.43, 2.43Z, 2.43*.  Versions 2.43 and 2.43Z have bugs 
+that caused them to be abandoned by Ashton-Tate.
+
+HISTORY:
+
+06/22/91 -- Gene Pizzetta
+     CDELIMIT equate did not work under ASM.  XKEYIN label did 
+     not work under SLRMAC, nor did TRUE and FALSE equates.  Now 
+     can get rid of version 2.43 "Thirty days hath September" 
+     message if skipping date request.  Option display now shows 
+     current label delimiter and KEYIN location, if they are 
+     selected options, but not ALTDRV (ZCPR).  Moved equates to 
+     locations adjacent to their descriptions.  ZCPR equate 
+     changed to ALTDRV, since it had little to do with ZCPR.  
+     Converted to Zilog mnemonics.
+
+07/20/85 -- Gene Head
+     Added equates for version 2.43*.  (Note:  There is a big 
+     difference between version 2.43* (notice the *) and plain 
+     2.43.
+
+04/22/85 -- Gene Head
+     Partial support of version 2.3B restored.  Version 2.3B will 
+     not support full ALTDRV operation.  You CAN specify a OVLDRV 
+     drive where overlays will be found.
+
+03/20/85 -- Gene Head
+     Tried to fix all the ASM nesting problems.  ASM.COM will not 
+     consistantly recognize nested conditionals.  I tried to 
+     figure out all the logic to un-nest the nested conditionals. 
+     Also added the ESCape key disable on all supported versions. 
+     (Version 2.3B no longer supported.)
+
+03/18/85 -- Ryan Katri
+     Added ESCape key disable option so that users may not abort 
+     a program file before it has time to SET ESCAPE OFF.  SET 
+     ESCAPE OFF should still be one of the first lines in your 
+     command file.
+
+03/17/85 -- Ryan Katri
+     Added Z-80 2.43 equates.  Fixed a problem that ASM was 
+     having when dealing with a nested IF near CHKALT that caused 
+     problems only when ALTDRV was set FALSE.
+
+02/20/85 -- Gene Head
+     Added 2.43 equates for Paul Foote.  Skip sign-on will no 
+     longer skip the copyright stuff.  Ashton-Tate went to some 
+     lengths to make sure it stayed in place so I decided it must 
+     be pretty important to them.  However, the long list of 
+     threats and legal mumbo-jumbo can be skipped.
+
+10/25/84 -- Gene Head
+     Define the label delimiter character.  Gary Knapp asked for 
+     this one to make labels more readable.  THIS_LABEL instead 
+     of the old THIS:LABEL.
+
+09/21/84 -- Gene Head
+     Added PREDEFINED option.  Force dBASE II to execute a pre- 
+     defined command file.
+
+08/10/84 -- Ryan Katri
+     Added equates for Z-80 version 2.41.  Re-ordered these 
+     updates to reflect most recent first.
+
+07/25/84 -- Gene Head
+     Added version 2.41 equates.  Removed ELSE conditionals so 
+     this can be assembled with ASM.  Also added assembly error 
+     messages.
+
+07/23/84 -- Gene Head
+     Force command file execution.  Some folks want to keep un- 
+     trained users from the dot-prompt.  This patch will do a 
+     warm boot if a valid command file was not specified when 
+     DBASE.COM was executed.
+
+07/18/84 -- Gene Head
+     Skip date option installed.  Some folks have time and date 
+     functions available and do a date and time set as part of an 
+     initialization command so want to skip the ENTER DATE stuff.
+
+06/20/84 -- Gene Head
+     Some folks want to skip the sign-on messages.
+
+05/25/84 -- Gene Head
+     Some folks run ZCPR or a ZCPR look-alike and would like 
+     dBASE II to run from drive A regardless of the default drive 
+     it was executed from.
+
+05/01/84 -- Gene Head
+     Moved the KEYIN cubby hole from low memory in the screen 
+     definition area to high memory so that INSTALL.COM does not 
+     disturb it.
+
+04/01/84 -- Gene Head
+     Some folks need a way to exit a long or forever DO WHILE 
+     loop from a keyboard command (like the INKEY$ function found 
+     in most BASIC's).
+
+If you happen to transport any of these features to the MS-DOS 
+version of dBASE II please let me know how you did it.
+
+I'm also interested in supporting 2.3 and earlier versions.  If 
+you have an earlier version and want this modification installed 
+please contact me at the above address or phone.
+
+Copyright (c) 1984 by
+     Gene Head
+     2860 NW Skyline Drive
+     Corvallis, Oregon  97330
+     (503) 758-0279
+All rights reserved.
+
+Released for non-commercial, private, no-profit use only.  If you 
+make any money using this overlay or use it in your business I 
+expect fair compensation to be mailed to the address above.
+
+I also support the DBRUN, the dBASE II run-time package, for a 
+modest fee per installation.
+

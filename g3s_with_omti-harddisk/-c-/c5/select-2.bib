@@ -1,0 +1,114 @@
+(****************************************************************************)
+(*   Bibliotheksmodul SELEKT-2.BIB                                          *)
+(*                                                                          *)
+(*   Vertikale Menueauswahl, aehnlich wie SELEKT-2.BIB in Heft 5, nur       *)
+(*   dass das Menue aus mehr Punkten als 24/25 Punkten bestehen kann und    *)
+(*   dass mehrere Punkte ausgewaehlt werden koennen.                        *)
+(*   Hoechstzahl 255 Menuepunkte                                            *)
+(*   Das Modul setzt READCHAR.INC voraus                                    *)
+(*   t ByteSet = set of byte wird global deklariert                         *)
+(*   p Selekt(x1,y1,x2,y2:integer; var Menue; l, Anz:byte;                  *)
+(*                                     var Punkte:byte; var Wahl:ByteSet    *)
+(*   Dabei ist: x1,y1,x2,y2   Koordinaten des Fensters.                     *)
+(*              Menue         array[a..b] of String[k]. (b<=255)            *)
+(*              l             k+1 bzw. SizeOF(Menue[a])                     *)
+(*              Anzahl        Anzahl der MenuePunkte (meist b)              *)
+(*              Wahl          enthaelt die Feld-Position der  gewaehlten    *)
+(*                            Menuepunkte.                                  *)
+(*********************************************************************tss687*)
+
+type ByteSet = set of byte;
+
+procedure Selekt2(NettoZeilen : integer; var Menue; l,Anz:byte;
+                  var Wahl : ByteSet; NurEiner : boolean);
+   Const  MaxMenue=255;    {kann verkleinert werden, um Speicher zu sparen}
+          Markierung=#251; {Zeichen, das die Ausgewaehlen MenuePunkte markiert}
+   type   Str80 = string[80];
+   var    PtrArray : array[byte] of ^Str80;
+          j,i,oben, neu, alt, n : integer;
+          y         : byte;
+          c,d         : char;
+
+  procedure IVOn;
+    begin LowVideo end;
+
+  procedure IVOff;
+    begin NormVideo end;
+
+  function MAX(x,y : integer):integer;
+    begin if x>y then MAX:=x else MAX:=y end;
+
+  function MIN(x,y : integer):integer;
+    begin if x<y then MIN:=x else MIN:=y end;
+
+  procedure Schreib(pos : byte);
+    begin
+      if pos in Wahl then write(Markierung,#32) else write(#32,#32);
+      write(PtrArray[pos]^);
+    end;
+
+  procedure SchreibListe; { aktualisiert einen Bildschirm }
+    var n,a : integer;
+    begin
+      n:=succ(neu-Oben); a:=succ(alt-Oben);
+      if neu=alt
+        then begin gotoxy(1,n); IVOn; Schreib(neu); IVOff; exit end;
+      if (neu>=Oben) and (neu<Oben+NettoZeilen)
+        then begin
+               gotoxy(1,n); IVOn; Schreib(Neu); IVOff;
+               gotoxy(1,a); Schreib(Alt); alt:=neu; gotoxy(1,n); exit
+             end;
+      if neu=succ(alt)
+        then begin
+               IVOff; gotoxy(1,a); Schreib(Alt); writeln; Oben:=succ(Oben);
+               IVOn; Schreib(Neu); IVOff; alt:=neu; exit
+             end;
+      if neu=pred(alt)
+         then begin
+                IVOff; gotoxy(1,a); Schreib(Alt); InsLine;
+                Oben:=Pred(Oben); gotoxy(1,1); IVOn; Schreib(Neu);
+                IVOff; alt:=neu; exit
+              end;
+      Oben:=neu; alt:=neu; gotoxy(1,1); IVOn; Schreib(neu);
+      IVOff; ClrEol;
+      for n:=succ(Oben) to Oben+pred(NettoZeilen) do
+        begin
+          gotoxy(1,succ(n-Oben)); if n<Anz then Schreib(n);
+          ClrEol
+        end;
+      gotoxy(1,1)
+    end; (* SchreibListe *)
+
+  begin (* Selekt2 *)
+    for i:=0 to pred(Anz) do
+        PtrArray[i]:=ptr(Addr(Menue)+i*l);
+        (* PtrArray[i]:=ptr(addr(Menue)+i*l); *) (* bei CP/M 80 *)
+    neu:=0; Oben:=20; alt:=20;
+    repeat
+      SchreibListe;
+      LiesZeichen(d);
+        case d of
+          ^E : neu:=MAX(0,pred(neu));
+          ^X : neu:=MIN(pred(Anz),succ(neu));
+          ^R : neu:=MAX(0,neu-NettoZeilen);
+          ^C : neu:=MIN(pred(Anz),neu+NettoZeilen);
+          ^Q : begin
+                 LiesZeichen(c);
+                 case c of
+                   'r','R',^R : neu:=0;
+                   'c','C',^C : if Oben+NettoZeilen>=pred(Anz)
+                                  then neu:=pred(Anz)
+                                  else begin
+                                         neu:=MAX(0,Anz-NettoZeilen);
+                                         SchreibListe; neu:=pred(Anz)
+                                       end;
+                 end; (* case *)
+               end;
+         #13 : begin
+                 if neu in Wahl then Wahl:=Wahl-[neu] else Wahl:=Wahl+[neu];
+                 neu:=MIN(pred(Anz),succ(neu))
+               end;
+        end; (* CASE *)
+    until (d=#27) or (NurEiner AND (Wahl<>[]));
+end; (* Selekt2 *)
+

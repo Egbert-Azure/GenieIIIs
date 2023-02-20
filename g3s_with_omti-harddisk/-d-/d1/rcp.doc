@@ -1,0 +1,53 @@
+                                  RCP.LBR
+         Library of Resident Command Packages for NZ-COM and Z3PLUS
+                         11 Oct 89 by Carson Wilson
+
+
+This library contains Z-Relocatable (.ZRL) Resident Command Packages (RCP's) 
+which can be loaded directly from the library with NZCOM, Z3PLUS, or JetLDR.  
+RCP-DFLT.ZRL is the default RCP for both NZ-COM and Z3PLUS.  The other RCP's
+are named as follows:
+
+RCP-nnxy.ZRL
+
+where nn is memory required in records, x is either "F" for floppy-system 
+oriented modules or "H" for hard- or RAM-disk oriented modules, and y is "C" 
+if the CLED and SPOP commands are included (see RCPCLED.DOC).  Modules lacking 
+a letter are the same for both series.
+
+I hope that the sets of options I have selected will prove useful to you. 
+For a much wider selection, look for RCPZRL11.LBR on Z-Nodes and other
+bulletin boards across the country.  Those who wish to further customize
+their RCPs should look for Z34RCP11.LBR, which contains the complete
+source to the standard RCP.
+
+Here are the names and features of the RCPs included in this library.  All 
+commands appearing above the module name are included (e.g., RCP-09H.ZRL 
+includes only H, CLS, R, SP, ECHO, POKE, and PEEK):
+
+                                                      WITH CLED & SPOP
+Commands Included                     Name                 Name
+---------------------------------------------------------------------------
+H:    help
+CLS:  clear screen
+R:    reset disk system
+SP:   show space remaining on disk
+ECHO: send text to screen or printer
+POKE: set memory
+PEEK: view memory                     RCP-09H              RCP-20HC
+Q:    set or clear quiet status
+D:    disk directory
+ERA:  erase files
+REN:  rename files
+CP:   copy file
+TYPE: display file on console
+LIST: list to printer
+PROT: set file attributes
+NOTE: command-line comment
+REG:  set and display user registers
+WHL:  set or clear wheel status       
+PORT: view and set I/O ports          RCP-26               RCP-36
+
+The default module, RCP-DFLT, contains: CLS, ECHO, ERA, H, NOTE, P, POKE,
+R, REG, SP, TYPE, and WHL.
+

@@ -1,0 +1,428 @@
+Neues vom CP/M-Frischmarkt.
+
+Neues? Vom CP/M-80? Sind Sie sicher?  So oder so Ñhnlich sind die
+Reaktionen, die ich manchmal zu hoeren bekomme.  Naja, Ignoranten gibt
+es viele, es gab sogar schon Leute die "Gott ist tot!" verkÅndet haben.
+Warum sich also aufregen, wenn ein paar schreien "CP/M ist tot!" oder
+gar "DOS ist tot!".   Uns Anwender kÅmmert das nur dann, wenn
+ploetzlich der Support weg ist und nichts mehr nachkommt, das uns hilft,
+unsere Probleme in den Griff zu bekommen.
+
+Ein dringendes Problem ist das der neuen Programme.  Diese mÅssen ja
+erstellt werden, wobei es nicht nur an guten Programmierern mangelt.
+Auch die Software fehlt oft.  Angefangen mit dem érgernis, da· die C128
+von Commodore nur mit einem Teil der wichtigen CP/M Plus Tools versorgt
+wurden und teilweise also Åber keinen Assembler verfÅgen.  Zudem kommt
+die Tatsache, da· Borland die Existenz von Turbo Modula quasi
+abstreitet, nach dem Motto "hatten wir nie!".   Borlands letzter Streich
+war die Einstellung der CP/M-Lizenzen fÅr Turbo-Pascal, den wohl
+wichtigsten Hochsprachen-Compiler fÅr CP/M-80.  Ein paar Exemplare irren
+noch durch die Gegend und einige landen ab und zu bei mir oder anderen,
+die Software vertreiben.
+
+Aber woher sonst solche Tools nehmen?  Aaah - es gibt auch gute
+Nachrichten:  die Firma HITECH hat ihren vorbildlichen und exzellenten
+C-Compiler freigegeben!  Freeware = kostenlose Weitergabe und Benutzung,
+die Rechte bleiben bei der Firma.  (énderungen sind nicht zulÑssig ohne
+schriftliche Zustimmung der Firma.)  Dieser Compiler also kennt den vollen
+Kernighan & Ritchie Standard und ist auch weitgehend ANSI-kompatibel!
+Eine echte Sensation also sozusagen.  Den Compiler gibt es gegen
+Einsendung eines 10.-- DM Scheins im Briefumschlag bei mir.  Auf der
+KAYPRO IV Disk ist dann auch eine DEMO des Z-SYSTEMs fÅr CP/M Plus, des
+Z3PLUS.  FÅr Z3PLUS-Besitzer: Ihr kînnt Åber Eure Verteiler wie Åblich
+die Diskette V-54 abfordern.
+
+In USA ist Steve Goldsmith sehr aktiv, fÅr den C128 besondere Tools zu
+entwickeln, mit denen die besondere Hardware auch unter CP/M nutzbar
+gemacht wird.  Dazu gehîrt au·er einem PCX-Viewer fÅr 1-Bit
+(Schwarz-Wei·-) PCX-Bilder auch eine Reihe anderer nÅtzlicher
+Kleinigkeiten, wie Zeichen-Editor, VDC-Manipulatoren und anderes.
+Interessant ist dabei auch sein neuestes Werk, eine C-Toolbox fÅr den
+erwÑhnten HITECH-C Compiler, mit deren Hilfe man unter CP/M auf den SID,
+den VDC und andere Hardware direkt zugreifen kann.  Diese Software ist
+verstÑndlicherweise SHAREWARE, mu· also bei Gefallen und Benutzung bezahlt
+werden.  Aber auch AltbewÑhrtes kann man erhalten.
+
+Hier eine Liste der bekanntesten (teilweise Public Domain) Assembler und
+Hochsprachen-Compiler:
+
+[ 1. Version: 29. Juli 1991 ]
+[ Zuletzt editiert und Åbersetzt: 20. September 1993, von Helmut Jungkunz ]
+
+          C P / M - 8 0   C O M P I L E R   L I S T E
+          ===========================================
+
+Compiler Kategorien: Ich habe die Liste zweigeteilt nach der vorhandenen
+Information Åber einen Compiler.  Die erste Liste ist eine Liste
+von Compilern mit irgendeiner Beschreibung, die zweite Liste
+enthÑlt Compiler, die nur vom Namen her bekannt sind.  Da· eine
+einzeilige Kommentarzeile reicht, um den Compiler in Kategorie 1 zu
+plazieren sei zur Warnung angemerkt.
+
+VerfÅgbarkeit der Compiler:
+
+  Wo bekannt, wird der Inhaber des Copyrights genannt. "?? PD ??"
+bedeudet, da· ich es nicht wei·, aber diese so billig angeboten werden,
+da· sie nach meiner EinschÑtzung zumindest SHAREWARE sein mÅ·ten.
+
+  Viele Mailboxen haben interessante Software und Ed Grey betreibt nicht
+nur eine Mailbox, sondern verkauft auch noch MIX C. RS Components in
+England verkauft ebenfalls Originalmaterial.  Auch die Firma HISOFT ist
+noch aktiv im GeschÑft.
+
+  JRT PASCAL, Prolog-80, Micro-COBOL, Forth-83, Small-C and andere sind
+offenbar P.D. und damit aus Mailboxen erhÑltlich. PCW World hat
+seltsamerweise MBASIC auf einer ihrer Disks, aber ich habe so meine
+Zweifel, ob das seine Richtigkeit hat.
+
+  Bezugnamen:
+Alle, die Information Åber die Compiler geschickt haben, sind hier
+aufgefÅhrt, da sie wahrscheinlich mehr wissen, wenn Fragen zu einem
+besonderen Produkt auftauchen.
+
+  Die GerÅchte:
+Hah! Viele! Ich bin gezwungen, GerÅchte zurÅckzuweisen, nach denen Microsoft
+kein Interesse mehr hat: RS Components verkauft immer noch Compiler fÅr CP/M+
+ - einschlie·lich M80! - und das fÅr dreistellige BetrÑge.  (In
+Deutschland ist das aus LizenzgrÅnden nicht anders.  Dabei wird dann
+allerdings ein Paket aus MBASIC, M80 und L80 verkauft.  Bezugsquelle ist
+dabei die Firma Wiedmann Unternehmensberatung, Adresse siehe Kasten.
+
+1. Bekannte Compiler:
+-------------------
+
+	Ada:
+	====
+	- Janus/Ada				???
+          PASCAL Subset von Ada. Kleinere Parallelen.
+	  Refs: dcb
+
+	Algol 60:
+	=========
+	- Valgol v1.				?? PD ??
+          Subset von Algol 60. Generiert Z80-Code. Benîtigt "E Prolog".
+          Refs: u895217        Anmerkung: SIG/M 242 enthÑlt E-Prolog
+
+	Assembly:
+	=========
+        - ZMAC v1.07D          *Nur diese alte Version ist Public Domain*
+          Z80 Makro-Assembler
+	  Refs: wittig
+          ZusÑtze:
+          - ZLINK v1.07D Linkage Editor
+
+        - ZSM v2.3                                      P.D.  V-10
+          Z80 Makro-Assembler      eigenes Format
+          Refs: jungkunz
+          ZusÑtze:
+          - ZLINK, ZLIB,ZC
+
+        - CROWE Assembler               P.D. ursprÅnglich SIG/M 95
+          Z80 Makro-Assembler           mit deutscher Doku und Anpassung
+          Refs: jungkunz                an M80 beziehbar  bei H.
+                                        Jungkunz
+
+
+        - Macro-80  (M80)                         Microsoft
+          Gro·artiger MaKro-Assembler & Linker Lader. Link
+          Dateien sind relozierbar und werden von allen Microsoft
+          Compilern benutzt, sowie von vielen anderen.
+	  Refs: laverman, henryb
+
+	- MAC & RMAC				Digital Research
+          Standard Assembler fÅr CP/M 3 (bzw. CP/M+). RMAC erzeugt .REL
+          Dateien.  Der Linker kann ausfÅhrbare .PRL Dateien (Page ReLocatable)
+          erzeugen.
+
+	BASIC:
+	======
+        - MBASIC Compiler                       Microsoft
+          Der MBASIC Interpreter ist _der_ Standard.  Dies ist der Compiler.
+	  Refs: laverman
+
+	- Hisoft Z Basic			????
+          Erzeugt wahrscheinlich langsamen Code.
+	  Refs: u895217
+
+	- SBASIC				Kaypro??
+          Mitgeliefert beim Kaypro II
+	  Refs: Steve.Graham
+
+        - EBASIC                                      P.D. CPMUG 005
+          CBASIC-Clone, nicht sehr leistungsfÑhig      PCWWORLD L105
+          zum Probieren okay.
+          Refs: jungkunz
+          ZusÑtze: ERUN Runtime Paket.
+
+        - CBASIC              war Åber M&T erhÑltlich.  Quelle: Wiedmann
+          Grafikschnittstelle GSX
+          fÅr Computer mit GSX-Treiber
+          Refs: jungkunz
+
+        C:
+	==
+	- Small-C v1.2				*Public Domain*
+          Keine Floating Point UnterstÅtzung, V. 1 schlechter als K&R
+	  Refs: wittig
+          ZusÑtze:
+          - Peephole Optimizer
+	  - Preprocessor (K&R)
+          - Assembler Optimizer fÅr Small-C
+          - Float Paket auf SIG/M 224
+
+	- MIX C v2.1.0				MIX Software
+          Voll K&R, mit Float und Long.
+	  Refs: ewen, ac959
+
+	- HiSoft C				????
+          K&R, keine Floats.
+	  Refgs: u895217
+
+        - HiTech C v. 3.09              Hi-Tech Software: Freeware !!!!!
+          Voll K&R _und_ ANSI. (!!)
+	  Refs: mds
+
+	- Arnor C				Arnor Ltd
+          Voll K&R
+	  Refs: u895217
+
+	- C/80					Software Toolworks
+          IMathpac erhÑltlich.
+	  Refs: henryb
+
+	- BDS-C					BD Software
+          Fast K&R C, keine eingebauten Floats, aber Float-Support im
+          Paket.  Nur interessant in der verbesserten Version BDSC-Z,
+          wobei zwei Compiler in einem mit allen Libraries plus
+          interaktivem Editor und allen wichtigen Sources.
+          Diese neue Version fÅr ZCPR enthÑlt sehr gute Dokumentation.
+          ErhÑltlich bei Helmut Jungkunz, Adresse siehe Kasten
+
+          Refs: laverman
+
+        COBOL:
+	======
+	- Micro COBOL				?? PD ??
+          Abgespecktes COBOL, keine indizierten Dateien, kein Sort.
+	  Refs: u895217
+	
+	- Nevada COBOL				????
+          Basiert auf einem Standard von 1974. Keine indizierten Dateien.
+	  Refs: u895217
+
+	Fortran:
+	========
+	- Fortran-80				Microsoft
+          Fast vollstÑndige Fortran IV Implementation. Beansprucht die
+          schnellste mathematische Library fÅr 8080/Z80 zu haben.
+          Arbeitet (wahrscheinlich) mit einem RATFOR preprocessor.
+	  Refs: agr-rss, laverman
+
+	Modula-2:
+	=========
+        - Hisoft FTL Modula-2                   (Workman & Ass.) HISOFT
+          Gut, schnell und extensiv. Mit Editor. Lib Source dabei.
+          One-pass Compiler  keine FORWARD Declarations nîtig.
+          Implementiert Modula-2 2. Edition(!)
+	  Refs: u895217, cummings
+
+	- Turbo Modula-2			Borland Intl.
+          Editor, Compiler, Linker & Librarian in einem. Schnell & gut.
+          Kann mit .REL Files (Macro-80) arbeiten.
+          Implementiert Modula-2 3. Edition(!) _Nicht mehr erhÑltlich._
+	  Refs: svh, cummings
+	  
+	- Hochstrasser Z80-Modula-2		Hochstrasser Computing AG
+          Implementiert 2. Edition Modula-2. Probleme mit gro·en
+          Programmen.
+	  Refs: cummings
+
+	PASCAL:
+	=======
+        - Turbo PASCAL v3.01A                   Borland Intl. (leider!)
+          Editor & Compiler in einem. Schnell. Keine separaten Module,
+          aber Include-Dateien werden unterstÅtzt.
+          "Unerheblicher" Nachteil:  kaum mehr zu kriegen!!
+          Refs: ac959
+	  
+	- Nevada PASCAL				????
+          Benîtigt mehr als 60K RAM.
+	  Refs: u895217
+
+        - JRT PASCAL                                 P.D. !!!
+          P-Code System.  Semi-Compiler, ziemlich gut.
+	  Refs: se
+
+	- PASCAL/MT+				Digital Research
+          Voll-PASCAL, einschlie·lich Module mit Schnittstellen.
+          Verwendet ein Objekt-Dateiformat, das sich von Microsoft's
+          .REL Dateien ableitet.  Ideal for large projects.
+	  Refs: svh, laverman
+
+	PL/I:
+	=====
+        - PL/I-80            Digital Research  SIG/M 079  P.D. ??
+          Die Art der Parameter Behandlung des BIOS & BDOS ist
+          abgeleitet von der Art und Weise, wie es dieser Compiler
+          machte.
+	  Refs: svh
+
+
+2. Dem Namen nach bekannt:
+--------------------------
+
+Mu-LISP                  verschwunden
+iLISP 2.0                verschwunden
+Toolworks LISP/80        verschwunden
+LISP in PASCAL           SIG/M 236 und PCWWORLD L107    P.D.
+Mi-C                     verschwunden
+Avotec C                 verschwunden
+Aztec C                  (Verwandt mit Atari ST Aztec C???)
+Pro Fortran 1.25         verschwunden
+E Prolog                 P.D. SIG/M  242
+Prolog 80                verschwunden
+micro-Prolog 3.1         verschwunden
+Prolog-1 2.2             verschwunden
+Forth 83                 P.D. SIG/M 204
+Hisoft Forth             siehe Hi-Soft England
+Hisoft PASCAL            siehe Hi-Soft England
+MAXAM 2                  Z80-Assembler!  Oft auch als EPROM erhÑltlich
+
+
+3. References:
+--------------
+  ac959:	ac959@cwns2.ins.cwru.edu (Ed Grey)
+  agr-rss:	agr-rss@brl.mil (Richard S. Sandmeyer)
+  cummings:	cummings@primerd.prime.com (Kevin J. Cummings)
+  dcb:		dcb%grgzfla.UUCP@vax.cs.pitt.edu (Daniel C. Becker)
+  ewen:		ewen@actrix.gen.nz (Ewen McNeill)
+  henryb:	henryb@usage.csd.unsw.oz.au (Henry Brancik)
+  laverman:	laverman@cs.rug.nl (Bert Laverman)
+  mds:		mds@id.dth.dk (Michael Dantzer-Sorensen)
+  Steve.Graham:	Steve.Graham@ub.cc.umich.edu (Steve Graham)
+  se:		se@ikp.uni-koeln.de (Stefan Esser)
+  svh:		svh@shell.com (Steven V. Hovater)
+  u895217:	u895217@bruny.cc.utas.edu.au (Scott Marshall)
+  wittig:	wittig@gmdzi.gmd.de (Georg Wittig)
+  jungkunz:     INTERNET: 100024.1545@compuserve.com  (Helmut Jungkunz)
+
+-- 
+  Bert Laverman,  Dept. of Computing Science, Groningen University
+  laverman@cs.rug.nl			bert@arrakis.nl.mugnet.org
+
+  Helmut Jungkunz
+  10024,1545 (Compuserve)
+
+-------------------  Ende der Compilerliste --------------------------
+
+Jetzt noch ein Nachtrag zum Thema Packer/Entpacker.  Bekannt waren Euch
+bisher schon verschiedene Dateitypen.  Da aber immer wieder Fragen
+auftauchen, auch hierzu nochmal eine kurze Zusammenfassung:
+
+DATEITYP        Lesen           Auspacken
+(Endung)
+
+  .TXT          SFCPC           ----   SFCPC liest sehr gro·e Texte!
+  .?Q?          QL41, NSWEEP    NSWEEP, USQ (Unsqeeze), UNCRUNCH,
+  .?Z?          QL41, LT31      UNCRUNCH
+  .?Y?          LT31            UNCRLZH
+  .LBR          QL41, LT31      QL41, NULU151,152 , LT31
+  .ARC          ARC,UNARC       ARC,UNARC
+  .ZIP          UNZIP           UNZIP
+  .ARJ          CPMUNARJ        CPMUARJ
+  .LZH          PMEXT           PMEXT
+  .PMA          PMEXT           PMEXT
+
+Das letzte ist auch der neueste Schrei:  PMARC/ PMEXT!
+Mit PMARC kînnen unter CP/M erstmals selbstentpackende Archive von
+jedermann erzeugt werden!  Geht zwar nicht immer, aber die .PMA Dateien
+schon.  Diese werden so effizient gepackt, wie die .ARJ Dateien unter
+DOS!  Die vom DOS P.D. Packer LHA.EXE erzeugten .LZH Dateien kînnen nun
+unter CP/M problemlos entpackt werden!  Schnelles Teil! Zu beziehen bei
+mir (Z3PLUS-User: V-052).  Wird als Datei PMAUTOAE.COM geliefert.
+
+Damit zum Thema P.D.-Kataloge und Tools fÅr CP/M.  Wie kommt man dazu:
+
+Eine Diskette im KAYPRO IV Format oder MG1581 formatieren, Etikett
+drauf, die eigene Anschrift und das Format mit Bleistift auf der
+Diskette selbst vermwerken, nicht auf der HÅlle!  Der Zweck ist, wenn
+eine einzelne Diskette unter hundert anderen mal aus der HÅlle fÑllt,
+wei· keiner mehr, wo die hingehîrt.  DafÅr keine Garantie also.
+So, das ganze in ein Kuvert, 3.-- DM drauf und 3.-- DM innen rein als
+RÅckporto, sowie 2,-- DM BearbeitungsgebÅhr und am besten ein Etikett
+mit der eigenen Anschrift, so da· das RÅcksenden problemlos geht.
+Das Ganze senden an mich (Helmut Jungkunz, siehe unten) mit der Angabe
+"Katalogdisk".
+
+Was es sonst noch Interessantes gibt:
+
+dBASSI  -  eine Start- und Programmierhilfe fÅr dBASE 2.41
+           Ñhnlich dem MS-DOS Assistenten von dBASE III+
+           Quelle: ACW-Soft Bonn, WindmÅhlenstr. 4,53111 Bonn
+           Bitte Anpassung an C128 (ADM3A) ausdrÅcklich bestellen.
+
+CP/M+   -  Ist es denn zu fassen!  Da gibt es eine Ersatzteilfirma,
+           die normalerweise SchaltplÑne liefert.  Ausgerechnet bei
+           denen bekommt man CP/M Plus Bootdisks fÅr den C128 mit
+           Handbuch!
+
+Z3PLUS -   die bisher ungeschlagene Krînung der BenutzeroberflÑchen fÅr
+           CP/M Plus - Interface fÅr ZCPR Programme, die dann _ohne_
+           Anpassung laufen, macht aus jeder CP/M Plus-Maschine ein
+           MenÅsystem (selber leicht zu machen).  Handbuch in Deutsch,
+           Programme und Hilfesystem in Englisch.  Sehr beliebt.
+           Quelle: Helmut Jungkunz, Zacherlstr. 14, 85737 Ismaning,
+           Tel.  18:30 - 21:30   089/969374  oder Anrufbeantworter
+
+Jugg'ler   Spitzentool und absolutes Mu· fÅr jeden C128-Besitzer mit
+           mehr als einem Laufwerk und Ambitionen, mit anderen Computern
+           Software zu tauschen.  Neueste Version 3.5 unterstÅtzt jetzt
+           auch die AMSTRAD PCW CF2DD (706K) und AMSTRAD CPC VORTEX
+           (704K) Formate, sofern diese auf 3.5"-Disks vorliegen.  öber
+           170 Formate mit 1571 und 1581 bearbeitbar.
+           Quelle: Helmut Jungkunz, Zacherlstr. 14, 85737 Ismaning,
+           Tel.  18:30 - 21:30   089/969374  oder Anrufbeantworter
+
+BDSC-Z     Komplettpaket mit zwei Compilern (einer speziell fÅr ZCPR)
+           und zwei SÑtzen LIBs, sowie RED-Editor und Debugger.
+           Sehr gute, englischsprachige, Dokumentation.
+
+Es lohnt sich auch, mal nach BÅchern anzufragen, manchmal bekomme ich
+Sachen auch kurzfristig rein.  ôfter fragen lohnt also.
+In diesem Sinne, hack on!
+
+
+
+"KASTEN"
+-------
+
+           Fa. Wiedmann Unternehmensberatung        dBASE, dBASSI,
+           Korbinianplatz 2                         WS3.0, Multiplan
+           85737 Ismaning                           Supercalc PCW
+           Tel. 9-18:00      089/969374
+
+           Helmut Jungkunz                          Z3PLUS (f.CP/M+)
+           Zacherlstr. 14                           NZCOM (f.CP/M2.2)
+           85737 Ismaning                           BDSC-Z, TURBO Tools
+           Tel. 18:30-21:30  089/969374             Turbolader, BÅcher
+                                                    SLR Super Ass./Lnk.
+
+           Schaltungsdienst Lange                   C128 CP/M Plus
+           Berlin
+           Tel. 030/.......
+
+           Secondhandmarkt:
+
+           Computer Flohmarkt                       Alles Mîgliche.
+           Postfach 66
+           75430 Maulbronn
+           Tel. 07043/7323
+           (erscheint alle 2 Monate)
+
+
+
+------------
+Helmut Jungkunz
+
+
+¿,

@@ -1,0 +1,307 @@
+.lqon
+.mb 3
+.cw 12
+.PL 66
+.rm 68
+.HEGenie IIIs Erstellung einer Terminalbeschreibung         Seite #
+
+Erstellunç eineò Terminalbeschreibung
+.cw 8
+              Aí Beispieì Geniå IIIó unteò K{mpæ CP/Í 3.0
+                     Egberô Schr|er¬ Novembeò 1992
+.cw 12
+1® Vorwort
+
+Nachdeí  nuî iî einigeî CLUÂ INFO'ó schoî }beò Z3PLUÓ unä  aucè  diå 
+Erstellunç  eineò  TCAĞ  ­  Infï  32¬  Seitå  3µ  ff¬  F.Chwolká   ­ 
+geschriebeî  wurde¬ m|chtå icè dieså miô folgendeí Artikeì  erg{nzeî 
+unä  damiô  alleî Neulingeî diå Erstellunç eineò  eigeneî  Terminaì-
+Beschreibunç  unteò  Z3PLUÓ  erleichtern® Daó Useò  Manuaì  sagô  zõ 
+dieseí   Themá  leideò  nichtó  unä  hinkô  deò  Entwicklunç   etwaó 
+hinterher.
+
+2® Terminaì unteò Z3PLUS
+
+Aló  Standarä-Installtioî  wirä  beé Kauæ voî  Z3PLUÓ  daó  Programí 
+TCSELECÔ  miô eineò aktuelleî TCAĞ Librarù ausgeliefert® Damiô  wirä 
+daó  Terminaì-Capabilitù-Filå (1© f}ò daó entsprechendå  CP/Í-Systeí 
+bzw®  deî  Computeò-Tyğ  ausgew{hlt® Beií CP/Í 3.°  voî  K{mpæ  wirä 
+beispielsweiså eiî Televideï 92° Terminaì emuliert.
+Wenî  maî  diå Grafikf{higkeiô deó Geniå IIIó unteò Gdoó  kennô  isô 
+dieså  Installatioî  mehò  aló  mager¬  dá  já  aucè  Z3PLUÓ  Grafië 
+verarbeiteî kann.
+
+3® VLIBxø ­ Grafikf{higkeiô unteò Z3PLUS
+
+VLIÂ  isô  einå Librarù voî Routineî }rspr}nglicè voî  Richarä  Conî 
+geschrieben.
+Inzwischeî wurdeî vielå [nderungeî unä Erg{nzungeî durchgef}hrt.
+VLIÂ liegô jetzô iî deò Versioî 4.2ä voò (2).
+Programme¬  diå  dieså Routineî nutzen¬ sinä iî deò Lagå  daó  Videï 
+Displaù uí diå Funktionen
+
+ï direktå Cursoò-Adressierung
+ï speziellå Videï Eigenschaften
+ï Pulì-Dowî Men}s
+
+zõ erweitern.
+Dazõ  m}sseî Informationeî }beò deî Rechneò und/odeò diå  verwendetå 
+CP/Í 3.° Implementatioî vorliegeî (z.B® Characteò-Seô etc.).
+
+4® Erstellunç eineó Sourcå Codeó f}ò daó Terminal
+
+Miô deí Programí TCSRC14.COÍ (3© erzeugô maî ­  nachdeí miô TCSELECÔ 
+eiî Terminaì gew{hlô wurdå ­ eineî kommentierteî Z8° Sourcå Codå deó 
+TCAĞ  ií  Environment® Dieseò Filå wirä aló Defaulô  miô  Z3TCAP.Z8° 
+benannô unä siehô f}ò daó Televideï 92° Terminaì wiå folgô aus:
+
+;
+» Z3TCAĞ fileº  Z3TCAP.Z80
+;
+ESÃ	EQÕ	2·		» Escapå character
+;
+» Thå firsô characteò iî thå terminaì namå musô noô bå á space®  For
+» Z3TCAP.TCĞ librarù purposeó only¬ thå namå terminateó witè á space
+» anä musô bå uniquå iî thå firsô eighô characters.
+;
+TNAMEº	DÂ	'TVI92°       §	» Namå oæ terminaì (1³ chars)Š;
+GOFFº	DÂ	GOELÄ-TNAMÅ	» Graphicó offseô froí Z3TCAĞ start
+;
+»  Terminaì configuratioî byteó B1´ anä B1µ arå defineä anä  bitó  
+»  assigned
+» aó follows®  Thå remaininç bitó arå noô currentlù assigned®  Seô 
+»  these
+» bitó accordinç tï youò terminaì configuration.
+;
+»	B1´ b7º Z3TCAĞ Type...® ° ½ Standarä TCAĞ  ± ½ Extendeä TCAP
+;
+»	bitº	76543210
+B14º	DÂ	00100000Â	» Configuratioî bytå B14
+;
+»    B1µ b0º Standout......® ° ½ Halæ-Intensitù ± ½ Reverså Video
+»    B1µ b1º Poweò Uğ Delay® ° ½ Nonå           ± ½ Teî-seconä delay
+»    B1µ b2º Nï Autï Wrap..® ° ½ Autï Wrağ      ± ½ Nï Autï Wrap
+»    B1µ b3º Nï Autï Scroll® ° ½ Autï Scrolì    ± ½ Nï Autï Scroll
+»    B1µ b4º ANSI..........® ° ½ ASCIÉ          ± ½ ANSI
+;
+»	bitº	76543210
+B15º	DÂ	00100000Â	» Configuratioî bytå B15
+;
+» Singlå characteò arro÷ keyó oò WordStaò diamond
+;
+	DÂ	'K§-40È		» Cursoò up
+	DÂ	'J§-40È		» Cursoò down
+	DÂ	'L§-40È		» Cursoò right
+	DÂ	'H§-40È		» Cursoò left
+;
+» Delayó (iî ms© afteò sendinç terminaì controì strings
+;
+	DÂ	5°	        » CÌ delay
+	DÂ	°		» CÍ delay
+	DÂ	°		» CÅ delay
+;
+» Stringó starô here
+;
+CLº	DÂ	'Z§-40H,°       » Homå cursoò anä cleaò screen
+CMº	DÂ	ESC,'=%« %« ',° » Cursoò motioî macro
+CEº	DÂ	ESC,'T',°       » Eraså froí cursoò tï enä-oæ-line
+SOº	DÂ	ESC,')',°       » Starô standouô mode
+SEº	DÂ	ESC,'(',°       » Enä standouô mode
+____________________________________________________________________
+Aâ hieò werdeî diå eigeneî Terminaì Definitioneî statô ° eingef}gt.
+_____________________________________________________________________
+TIº	DÂ	°               » Terminaì initialization
+TEº	DÂ	°               » Terminaì deinitialization
+;
+» Extensionó tï standarä Z3TCAP
+;
+LDº	DÂ	°               » Deletå linå aô cursoò position
+LIº	DÂ	°               » Inserô linå aô cursoò position
+CDº	DÂ	°               » Eraså froí cursoò tï enä-oæ-screen
+;
+» Thå attributå strinç containó thå fouò commanä characteró tï set
+» thå followinç fouò attributeó foò thió terminaì iî thå following
+» orderº  	Normal¬ Blink¬ Reverse¬ Underscore
+;ŠSAº	DÂ	°               » Seô screeî attributeó macro
+ATº	DÂ	°               » Attributå string
+RCº	DÂ	°               » Reaä currenô cursoò position
+RLº	DÂ	°               » Reaä linå untiì cursor
+;
+» Graphicó TCAĞ area
+;
+GOELDº	DÂ	°		» Graphicó On/Ofæ delaù iî ms
+;
+» Graphicó strings
+;
+GOº	DÂ	°               » Graphicó modå On
+GEº	DÂ	°               » Graphicó modå Off
+CDOº	DÂ	°               » Cursoò Off
+CDEº	DÂ	°               » Cursoò On
+;
+» Graphicó characters
+;
+GULCº	DÂ	°		» Uppeò lefô corner
+GURCº	DÂ	°		» Uppeò righô corner
+GLLCº	DÂ	°		» Loweò lefô corner
+GLRCº	DÂ	°		» Loweò righô corner
+GHLº	DÂ	°		» Horizontaì line
+GVLº	DÂ	°		» Verticaì line
+GFBº	DÂ	°		» Fulì block
+GHBº	DÂ	°		» Hasheä block
+GUIº	DÂ	°		» Uppeò intersect
+GLIº	DÂ	°		» Loweò intersect
+GISº	DÂ	°		» Miä intersect
+GRTIº	DÂ	°		» Righô intersect
+GLTIº	DÂ	°		» Lefô intersect
+;
+»  Filì remaininç spacå witè zeros
+;
+	 REPÔ	12¸-(¤-TNAME)
+         DÂ	0
+	 ENDM
+
+	END
+;
+» Enä oæ Z3TCAP
+;
+
+
+F}ò daó Geniå IIIó unteò K{mpæ CP/Í 3.°  siehô deò ge{ndertå  Sourcå 
+Codå nuî wiå folgô aus:
+
+;
+» Z3TCAĞ fileº  G3SK.Z80
+;
+ESÃ	EQÕ	2·		» Escapå character
+;
+» Thå firsô characteò iî thå terminaì namå musô noô bå á space®  For
+» Z3TCAP.TCĞ librarù purposeó only¬ thå namå terminateó witè á space
+» anä musô bå uniquå iî thå firsô eighô characters.
+;
+TNAMEº	DÂ	'G3Ó-KAEMPÆ   §	» Namå oæ terminaì (1³ chars)
+;
+GOFFº	DÂ	GOELÄ-TNAMÅ	» Graphicó offseô froí Z3TCAĞ startŠ;
+»  Terminaì configuratioî byteó B1´ anä B1µ arå defineä anä  bitó  
+»  assigned
+» aó follows®  Thå remaininç bitó arå noô currentlù assigned®  Seô 
+»  these
+»  bitó accordinç tï youò terminaì configuration.
+;
+»	B1´ b7º Z3TCAĞ Type...® ° ½ Standarä TCAĞ  ± ½ Extendeä TCAP
+;
+»	bitº	76543210
+B14º	DÂ	10000000Â	» Configuratioî bytå B14
+;
+» B1µ b0º Standout......® ° ½ Halæ-Intensitù ± ½ Reverså Video
+» B1µ b1º Poweò Uğ Delay® ° ½ Nonå           ± ½ Teî-seconä delay
+» B1µ b2º Nï Autï Wrap..® ° ½ Autï Wrağ      ± ½ Nï Autï Wrap
+» B1µ b3º Nï Autï Scroll® ° ½ Autï Scrolì    ± ½ Nï Autï Scroll
+» B1µ b4º ANSI..........® ° ½ ASCIÉ          ± ½ ANSI
+;
+»	bitº	76543210
+B15º	DÂ	00000001Â	» Configuratioî bytå B15
+;
+» Singlå characteò arro÷ keyó oò WordStaò diamond
+;
+	DÂ	'K§-40È		» Cursoò up
+	DÂ	'V§-40È		» Cursoò down
+	DÂ	'L§-40È		» Cursoò right
+	DÂ	'H§-40È		» Cursoò left
+;
+» Delayó (iî ms© afteò sendinç terminaì controì strings
+;
+	DÂ	°		» CÌ delay
+	DÂ	°		» CÍ delay
+	DÂ	°		» CÅ delay
+;
+» Stringó starô here
+;
+CLº	DÂ	ESC,'*',°       » Homå cursoò anä cleaò screen
+CMº	DÂ	ESC,'=%« %« ',° » Cursoò motioî macro
+CEº	DÂ	ESC,'T',°       » Eraså froí cursoò tï enä-oæ-line
+SOº	DÂ	ESC,')',°       » Starô standouô mode
+SEº	DÂ	ESC,'(',°       » Enä standouô mode
+TIº	DÂ	°               » Terminaì initialization
+TEº	DÂ	°               » Terminaì deinitialization
+;
+» Extensionó tï standarä Z3TCAP
+;
+LDº	DÂ	ESC,'R',°       » Deletå linå aô cursoò position
+LIº	DÂ	ESC,'E',°       » Inserô linå aô cursoò position
+CDº	DÂ	ESC,'Y',°       » Eraså froí cursoò tï enä-oæ-screen
+;
+» Thå attributå strinç containó thå fouò commanä characteró tï set
+» thå followinç fouò attributeó foò thió terminaì iî thå following
+» orderº  	Normal¬ Blink¬ Reverse¬ Underscore
+;
+»  É haä nï informationó abouô thå screeî attributå macrï  oæ  
+» K{mpæ CP/Í » 3.0.
+» É wrotå tï Klauó K{mpæ foò morå informationó anä foò thå sourcå 
+» codeó iî septembeò 1992¬ buô therå waó nï responså untiì now
+» (Februarù 1993).Š» Iæ anybodù ió ablå tï completå thió TCAĞ pleaså inforí må oò call:
+» Egberô Schr|er
+» Joachimstra~å 18
+» ×-427° Dorsten
+» Germany
+» Phoneº privateº 02362/75311
+»        oî businessº 02365/49/9649
+»   
+SAº	DÂ	°               » Seô screeî attributeó macro
+ATº	DÂ	°               » Attributå string
+RCº	DÂ	°               » Reaä currenô cursoò position
+RLº	DÂ	°               » Reaä linå untiì cursor
+;
+» Graphicó TCAĞ area
+;
+GOELDº	DÂ	°		» Graphicó On/Ofæ delaù iî ms
+;
+» Graphicó strings
+;
+GOº	DÂ	ESC,'$',°       » Graphicó modå On
+GEº	DÂ	ESC,'%',°       » Graphicó modå Off
+CDOº	DÂ	ESC,'.0',°      » Cursoò Off
+CDEº	DÂ	ESC,'.4',°      » Cursoò On
+;
+» Graphicó characters
+;
+GULCº	DÂ	86È             » Uppeò lefô corner
+GURCº	DÂ	87È		» Uppeò righô corner
+GLLCº	DÂ	85È		» Loweò lefô corneò oK
+GLRCº	DÂ	88È		» Loweò righô corneò oK
+GHLº	DÂ	8BÈ		» Horizontaì linå oK
+GVLº	DÂ	8AÈ		» Verticaì linå oK
+GFBº	DÂ	160Ä		» Fulì blocë oK
+GHBº	DÂ	7FÈ		» Hasheä blocë Testing
+GUIº	DÂ	8EÈ		» Uppeò intersecô oK
+GLIº	DÂ	8FÈ		» Loweò intersecô oK
+GISº	DÂ	89È		» Miä intersecô oK
+GRTIº	DÂ	8CÈ		» Righô intersecô oK
+GLTIº	DÂ	8DÈ		» Lefô intersecô oK
+;
+»  Filì remaininç spacå witè zeros
+;
+	 REPÔ	12¸-(¤-TNAME)
+	 DÂ	0
+	 ENDM
+
+	END
+;
+» Enä oæ Z3TCAP
+;
+.paŠDá  sicè  Herò K{mpæ leideò bez}glicè Informationeî zõ  seineí  CP/Í 
+bedeckô  h{lô  ­  trotú  mehrmaligeò Anschreibeî  ­  ¬  konnteî  diå 
+Characteò Setó nuò miô deí Programí CHARSEÔ ermittelô werden® Weiteò 
+Informationeî  liegeî  zuí  Terminaì nichô vor¬ bzw®  sinä  auó  deò 
+Dokumentatioî zuí CP/Í 2.2¬ erschieneî beé R|ckrath¬ zõ entnehmen.
+Diå  Disketteî Sagå xxø bekommô maî beé deí n{chsteî Verteileò  odeò 
+direkô beé mir.
+
+Egbert
+
+.cw 8
+
+(1© siehå Useò Manual
+(2© siehå aucè VLIÂ-Helğ Fileó auæ Sagå 4±-Disk
+(3© Sagå 3¸-Disk
+.cw 12
+ 

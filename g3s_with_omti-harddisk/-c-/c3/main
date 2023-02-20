@@ -1,0 +1,7 @@
+.. To print whole document:
+..      A> bradford intro main summary
+
+This is the second paragraph of the document.  It is located in
+the file called "main."  Notice that Bradford acts as if it were
+in the same file as the first paragraph.
+. playing w

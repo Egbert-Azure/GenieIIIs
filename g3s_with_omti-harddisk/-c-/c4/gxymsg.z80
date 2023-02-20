@@ -1,0 +1,138 @@
+;********************************************************************
+;
+;	GXYMSG: A ZCPR 3.3+ compatible routine, using the version 4
+;		libraries, to place the cursor at a user designated
+;		screen location and print a string. For use in alias 
+;		scripts.
+;
+; Version 3.0D - (July 5, 1990) Updated and re-linked based upon 
+;  VLIB4D and version 4 libraries.  Fixed bug in stack: section.  
+;  Assembled with SLR's Z80ASM and linked ;  with DRI's LINK.  
+;  Thanks go to Dave Ramsey for producing an exellent set of 
+;  command-level graphics tools.       		      Bob Dean
+;
+; Author: Dave Ramsey			Date: May 25, 1989
+;  Versions 1.0 and 2.0.    
+;
+;********************************************************************
+;
+; VLIB/Z3LIB/SYSLIB references:
+;
+	ext	gz3init,tinit,dinit,at,vpstr
+	ext	eval10,argv
+;
+; Constants defined:
+;
+VERSION	equ	 3
+MONTH	equ	 7
+DAY	equ	 5
+YEAR	equ	90
+;
+DOS	equ	5
+BUFFER	equ	080h
+CR	equ	13
+LF	equ	10
+ARGCNT	equ	3
+; 
+start:
+	jp	main
+	db	'Z3ENV'
+	db	1
+z3eadr:	ds	2
+main:
+	ld	hl,(z3eadr)
+	call	gz3init
+	and	a,0fh
+	jr	nz,stack
+	ld	hl,oldtcpmsg
+	call	vpstr
+	ret
+;
+; setup stack...
+;
+stack:
+	ld	hl,0
+	add	hl,sp
+	ld	(oldsp),hl	; save old stack pointer
+	ld	hl,(DOS+1)
+	ld	l,0
+	ld	a,h
+	add	a,-8
+	ld	h,a		; set stack pointer below CCP
+	ld	sp,hl
+;
+; Get command line parms, there should be 3, and store results
+;
+	ld	a,0ffh		; null terminate argument strings
+	ld	hl,BUFFER+1
+	ld	de,tokentbl
+	call	argv
+	ld	a,(numtok)
+	cp	a,ARGCNT	; did the user get it right?
+	jp	nz,gethelp	; nope, tell him how to call us.
+;
+; Else, store parm results directly inline for the drbox call and execute
+;
+	ld	hl,(parm1)	; convert row
+	call	eval10
+	ld	(row),a		; and save
+	ld	hl,(parm2)	; convert column
+	call	eval10
+	ld	(col),a		; and save
+;
+; else... init terminal as per V4 lib conventions
+;
+	call	tinit
+;
+; Call AT routine to position the cursor.
+;
+linebox:
+	call	at		; position cursor
+row:	db	0
+col:	db	0
+;
+	ld	hl,(parm3)	; print string
+	call	vpstr
+;
+; deinit terminal and restore stack
+;
+fini:
+	call	dinit		; de-init terminal
+;
+fini2:
+	ld	hl,(oldsp)	; restore old stack pointer
+	ld	sp,hl
+	ret			; return to CCP
+;
+;
+gethelp:
+	ld	hl,helpmsg	; print help message
+	call	vpstr
+	jp	fini2		; and exit gracefully
+
+;
+oldsp:	ds	2
+;
+tokentbl:
+maxtok: db	ARGCNT	; I don't want to see more than 3 arguments,
+numtok: db	0	; but how many were there really?
+parm1:	ds	2	; address arg 1 - row
+parm2:	ds	2	; address arg 2 - column
+parm3:	ds	2	; address arg 3 - text to print
+;
+helpmsg:
+	db	'GXYMSG, Version ',VERSION/10+'0','.',VERSION MOD 10+'0',CR,LF
+	db	'GXYMSG - Positions the Cursor on the screen and',CR,LF
+	db	'         prints a text message.',CR,LF
+	db	'Syntax:',CR,LF
+	db	'     GXYMSG <row> <col> <text> ',CR,LF
+	db	'Where:',CR,LF
+	db	'     <row>  is the start row of the box on the screen;',CR,LF
+	db	'     <col>  is the start column on the screen;',CR,LF
+	db	'     <text> is the text to print.',CR,LF,0
+;
+oldtcpmsg:
+	db	'Extended TCAP not present.',CR,LF,0
+;
+	end
+

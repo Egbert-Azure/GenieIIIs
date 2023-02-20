@@ -1,0 +1,82 @@
+(****************************************************************************)
+(*   Bibliotheksmodul AUSWAHL.BIB                                           *)
+(*                                                                          *)
+(* Fuer CP/M Addr statt Ofs und Seg(Menu) gel\scht E.S                      *)
+(*   Auswahl eines Men}punktes aus einer Tabelle                            *)
+(*                                                                          *)
+(*   p Auswahl(xPos,yPos,Breite,Spalten,AnzahlBytes,Menue,Anzahl,Wahl       *)
+(*      xPos, yPos : Bildschirm-Koordinaten des ersten Men}punktes          *)
+(*      Breite     : (INTEGER) Breite des Leuchtbalkens                     *)
+(*      Spalten    : (INTEGER) Anzahl der Tabellen-Spalten                  *)
+(*      AnzahlBytes: (INTEGER) = SizeOf(Menue[1])                           *)
+(*      Menue      : (ARRAY[1..Anzahl] OF STRING[X]) das Men}               *)
+(*      Anzahl     : (INTEGER) Anzahl der angezeigten Men}punkte            *)
+(*      Wahl       : (VAR INTEGER)                                          *)
+(*                     >0 Der gew{hlte Punkt                                *)
+(*                     =0 Auswahl wurde }ber <ESC> verlassen                *)
+(*                     <0 Auswahl wurde mit '?' verlassen                   *)
+(****************************************************************************)
+
+procedure Auswahl(xPos,yPos,Breite,Spalten,AnzahlBytes : INTEGER;
+                  VAR Menue; Anzahl : INTEGER; VAR Wahl : INTEGER);
+   TYPE Str255 = STRING[255];
+        StrPtr = ^Str255;
+   VAR  MenueStr : ARRAY[1..255] OF StrPtr;
+        Zeilen, i : INTEGER;
+        Eingabe : CHAR;
+
+   PROCEDURE InverseOn;
+     BEGIN
+       LowVideo
+     END (* InverseOn *);
+
+   PROCEDURE InverseOff;
+     BEGIN
+       NormVideo
+     END (* InverseOff *);
+
+   PROCEDURE Locate(Nr : INTEGER);
+     BEGIN
+       gotoxy(xPos+(pred(Nr) DIV Zeilen)*Breite,yPos+(pred(Nr) MOD Zeilen))
+     END (* Locate *);
+
+   PROCEDURE Print(Nr : INTEGER);
+     VAR i : INTEGER;
+     BEGIN
+       Write(copy(MenueStr[Nr]^,1,Breite));
+       FOR i:=succ(length(MenueStr[Nr]^)) TO Breite DO Write(' ')
+     END (* Print *);
+
+   PROCEDURE ChangeHighLight(VAR alt, neu : INTEGER);
+     BEGIN
+       Locate(alt); InverseOff; Print(alt);
+       Locate(neu); InverseOn; Print(neu);
+       Locate(neu); InverseOff; alt:=neu;
+     END (* ChangeHighLight *);
+
+   BEGIN
+     Zeilen:=pred(Anzahl+Spalten) DIV Spalten; Wahl:=Wahl AND 255;
+     IF (Wahl>Anzahl) OR (Wahl<1) THEN Wahl:=1;
+     FOR i:=1 TO Anzahl DO BEGIN
+       MenueStr[i]:=Ptr(Addr(Menue)+pred(i)*AnzahlBytes);
+       Locate(i); IF i=Wahl THEN InverseOn ELSE InverseOff;
+       Print(i)
+     END; (* FOR *)
+     Locate(Wahl); i:=Wahl;
+     REPEAT
+       IF i<>Wahl THEN ChangeHighLight(i,Wahl);
+       LiesZeichen(Eingabe);
+       CASE Eingabe OF
+         ^S : IF Wahl>Zeilen THEN Wahl:=Wahl-Zeilen ELSE
+              IF Wahl>1 THEN Wahl:=Wahl+pred(Spalten)*Zeilen-1;
+         ^D : IF Wahl<=Anzahl-Zeilen THEN Wahl:=Wahl+Zeilen ELSE
+              IF (Wahl>pred(Spalten)*Zeilen) AND (Wahl<Anzahl)
+                THEN Wahl:=Wahl-pred(Spalten)*Zeilen+1;
+         ^E : IF Wahl>1 THEN Wahl:=Wahl-1;
+         ^X : IF Wahl<Anzahl THEN Wahl:=Wahl+1;
+         ^[ : BEGIN Wahl:=0; Eingabe:=^M END;
+        '?' : BEGIN Wahl:=Wahl OR $8000; Eingabe:=^M END
+       END (* CASE *)
+     UNTIL Eingabe=^M
+   END (* Auswahl *);
+

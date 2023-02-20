@@ -1,0 +1,36 @@
+M80
+<=HDBOOTER
+<=DRIVER
+<=LDRBIOHD
+<
+
+L80 HDBOOTER/N,HDBOOTER/E
+<N
+L80 DRIVER/N,DRIVER/E
+<N
+
+LINK CPMLDR[L4400,NR]=CPMLDR,LDRBIOHD
+
+ERA HDBOOTER.REL
+ERA DRIVER.REL
+ERA LDRBIOHD.REL
+ERA $$TEMP$$
+
+T80
+<LOAD HDBOOTER 1000
+<LOAD DRIVER 1200
+<LOAD CPMLDR 4900
+<A 49A8
+<JR 49A8
+<
+<A 4C23
+<JR 4C23
+<
+<SAVE $$TEMP$$. 100 557F
+<BYE
+copysys $$temp$$
+<C
+<N
+
+
+

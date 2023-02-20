@@ -1,0 +1,65 @@
+{ Included File: CARD.INC }
+
+procedure makedeck;
+var
+  cardnum: 0..decksize;
+  rank: ranktype;
+  suit: suitype;
+begin
+  cardnum:=0;
+  for suit:=hearts to spades do
+    for rank:=1 to ranksize do
+      begin
+        cardnum:=cardnum+1;
+        deck[cardnum].rank:=rank;
+        deck[cardnum].suit:=suit
+      end
+end;  {makedeck}
+
+procedure shuffle;
+var
+  curcard, newcard: 1..decksize;
+  tmp: card;
+begin
+  for curcard:=1 to decksize do
+    begin
+      newcard:=random(decksize)+1;
+      tmp:=deck[newcard];
+      deck[newcard]:=deck[curcard];
+      deck[curcard]:=tmp
+    end
+end;  {shuffle}
+
+procedure deal;
+var
+  i: 1..dealsize;
+begin
+  common.rank:=0;
+  for i:=1 to dealsize do
+    begin
+      human[i]:=deck[i];
+      comp[i]:=deck[i+dealsize]
+    end
+end;  {deal}
+
+procedure showcard(toshow: card);
+begin
+  case toshow.rank of
+    1: write('A');
+    2,3,4,5,6,7,8,9: write(toshow.rank:1);
+    10: write('T');
+    11: write('J');
+    12: write('Q');
+    13: write('K')
+    end;  {case}
+  case toshow.suit of
+    hearts: write('H');
+    clubs: write('C');
+    diamonds: write('D');
+    spades: write('S')
+    end;  {suit}
+  write(' ')
+end;  {showcard}
+
+{ End of included file }
+

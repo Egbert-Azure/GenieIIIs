@@ -1,0 +1,12 @@
+INLINE ($FD/$E1);                       { Pop Return    }
+INLINE ($2A/INT_VAR/$E5);               { Push Integer  }
+INLINE ($3A/BYT_VAR/$6F/$26/$00/$E5);   { Push Byte     }
+INLINE ($21/REC_VAR/$E5);               { Push Record   }
+INLINE ($01/REAL_VAR/$11/$04/$00/$6B/   { Push Real     }
+        $62/$09/$7E/$23/$66/$6F/$E5/
+        $21/$FE/$FF/$19/$EB/$38/$F1);
+INLINE ($21/STR_VAR/$11/$00/$00/$42/    { Push String   }
+        $4E/$03/$EB/$39/$ED/$42/$F9/
+        $EB/$ED/$B0);
+INLINE ($2A/ADDRESS/$FD/$E5/$E9);       { Call Function }
+

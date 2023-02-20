@@ -1,0 +1,628 @@
+; NEWBASE.MAC
+
+; Copyright (c) 1984 by
+;	Gene Head
+;	2860 NW Skyline Drive
+;	Corvallis, Oregon 97330
+;	(503) 758-0279
+; All rights reserved.
+
+; Released for non-commercial, private, no-profit use only.  If you
+; make any money using this overlay or use it in your business I expect
+; fair compensation to be mailed to the address above.
+
+; I also support the DBRUN, the dBASE II run-time package, for a modest
+; fee per installation.
+
+;  * * * * * * * * * *    E D I T O R I A L    * * * * * * * * * * * *
+;  *	This overlay is intended for the use of licensed users of    *
+;  *	dBASE II only.   If you 'own' a copy of dBASE II that you    *
+;  *	did not purchase or receive legitimately you are a thief,    *
+;  *	it is that simple.   Stealing software will only drive up    *
+;  *	prices for legal users  and dry up the sources of quality    *
+;  *	software products.					     *
+;  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+;=========================================================================
+
+; 06/22/91 -- Gene Pizzetta
+;	CDELIMIT equate did not work under ASM.  XKEYIN label did not
+;	work under SLRMAC, nor did TRUE and FALSE equates.  Now can get
+;	rid of version 2.43* "Thirty days hath September" message if
+;	skipping date request.  Option display now shows current label
+;	delimiter and KEYIN location, if they are selected options, but
+;	not ALTDRV (ZCPR).  Moved equates to locations adjacent to their
+;	descriptions.  ZCPR equate changed to ALTDRV, since it had little
+;	to do with ZCPR.  Converted to Zilog mnemonics.
+
+; 07/20/85 -- Gene Head
+;	Added equates for version 2.43*.  (Note:  There is a big difference
+;	between version 2.43* (notice the *) and plain 2.43.
+
+; 04/22/85 -- Gene Head
+;	Partial support of version 2.3B restored.  Version 2.3B will NOT
+;	support full ALTDRV operation.  You CAN specify a OVLDRV drive where
+;	overlays will be found.
+
+; 03/20/85 -- Gene Head
+;	Tried to fix all the ASM nesting problems.  ASM.COM will not
+;	consistantly recognize nested conditionals.  I tried to figure out
+;	all the logic to un-nest the nested conditionals.  Also added the
+;	ESCape key disable on all supported versions.  (Version 2.3B no
+;	longer supported.)
+
+; 03/18/85 -- Ryan Katri
+;	Added ESCape key disable option so that users may not abort a
+;	program file before it has time to SET ESCAPE OFF.  SET ESCAPE OFF
+;	should still be one of the first lines in your command file.
+
+; 03/17/85 -- Ryan Katri
+;	Added Z-80 2.43 equates.  Fixed a problem that ASM was having when
+;	dealing with a nested IF near CHKALT that caused problems only
+;	when ALTDRV was set FALSE.
+
+; 02/20/85 -- Gene Head
+;	Added 2.43 equates for Paul Foote.  Skip sign-on will no longer skip
+;	the copyright stuff.  Ashton-Tate went to some lengths to make sure
+;	it stayed in place so I decided it must be pretty important to
+;	them.  However, the long list of threats and legal mumbo-jumbo can
+;	be skipped.
+
+; 10/25/84 -- Gene Head
+;	Define the label delimiter character.  Gary Knapp asked for this one
+;	to make labels more readable.  THIS_LABEL instead of the old
+;	THIS:LABEL.
+
+; 09/21/84 -- Gene Head
+;	Added PREDEFINED option.  Force dBASE II to execute a pre-defined
+;	command file.
+
+; 08/10/84 -- Ryan Katri
+;	Added equates for Z-80 version 2.41.  Re-ordered these updates to
+;	reflect most recent first.
+
+; 07/25/84 -- Gene Head
+;	Added version 2.41 equates.  Removed ELSE conditionals so this can
+;	be assembled with ASM.  Also added assembly error messages.
+
+; 07/23/84 -- Gene Head
+;	Force command file execution.  Some folks want to keep un-trained
+;	users from the dot-prompt.  This patch will do a warm boot if a
+;	valid command file was not specified when DBASE.COM was executed.
+
+; 07/18/84 -- Gene Head
+;	Skip date option installed.  Some folks have time and date functions
+;	available and do a date and time set as part of an initialization
+;	command so want to skip the ENTER DATE stuff.
+
+; 06/20/84 -- Gene Head
+;	Some folks want to skip the sign-on messages.
+
+; 05/25/84 -- Gene Head
+;	Some folks run ZCPR or a ZCPR look-alike and would like dBASE II
+;	to run from drive A regardless of the default drive it was executed
+;	from.
+
+; 05/01/84 -- Gene Head
+;	Moved the KEYIN cubby hole from low memory in the screen definition
+;	area to high memory so that INSTALL.COM does not disturb it.
+
+; 04/01/84 -- Gene Head
+;	Some folks need a way to exit a long or forever DO WHILE loop from
+;	a keyboard command (like the INKEY$ function found in most BASIC's).
+
+; If you happen to transport any of these features to the MS-DOS version of
+; dBASE II please let me know how you did it.
+
+; I'm also interested in supporting 2.3 and earlier versions.  If you have
+; an earlier version and want this modification installed please contact me
+; at the above address or phone.
+
+;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+;		AVAILABLE USER-SELECTABLE ASSEMBLY OPTIONS
+;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+FALSE	equ	0
+TRUE	equ	NOT FALSE
+
+;	+---------------------------------------------------------+
+;	| BE SURE YOU HAVE A BACK-UP COPY OF DBASE.COM BEFORE YOU |
+;	|		ATTEMPT TO USE THIS OVERLAY		  |
+;	+---------------------------------------------------------+
+
+; SKIPDATE:	SKIPDATE will skip the ENTER DATE question at sign-on.
+
+SKIPDATE	equ	FALSE	; set TRUE to skip date set at sign-on
+
+; SKIPSIGNON:	SKIPSIGNON will skip all the sign-on stuff and go directly
+;		to the dot-prompt.  (To skip the sign-off message simply
+;		SET CONSOLE OFF just prior to the QUIT or QUIT TO command.)
+
+SKIPSIGNON	equ	FALSE	; set TRUE to skip sign-on message
+
+; SKIP30:	Skips the "Thirty days hath September..." message for
+;		Version 2.43*, if SKIPDATE is TRUE.
+
+SKIP30		equ	TRUE	; set TRUE to skip '30 days' message
+
+; SKIPOPT:	SKIPOPT option allows a list of selected options to be
+;		displayed at sign-on.
+
+SKIPOPT		equ	FALSE	; set TRUE to skip options display at sign-on
+
+; FORCE:	FORCE option forces a warm boot if a valid command file
+;		was not specified when DBASE.COM was executed.  Keeps
+;		undesirables from the dot-prompt.
+
+FORCE		equ	FALSE	; set TRUE to force a command file
+
+; PREDEFINED:	PREDEFINED option forces dBASE II to execute a pre-defined
+;		command file.  This simulates an auto-start mode without
+;		a SUBMIT file and prevents command level operation.
+;		NOTE:  If you set PREDEFINED to TRUE then you must put
+;		your command line at label COMMAND near the end of this
+;		overlay.  Currently the command is 'MENU.CMD'.
+
+PREDEFINED	equ	FALSE	; set TRUE for pre-defined command file
+
+; KEYIN:	The KEYIN option will allow you to PEEK at the last key
+;		press at the keyboard.  Useful for aborting DO WHILE loops.
+;		PEEK(337) will hold the last key pressed.
+
+KEYIN		equ	TRUE	; set TRUE to allow key-in feature
+
+; ESCAPEOFF:	Disables the ESCape (abort) function so that users may
+;		not break out of a .CMD file.  The problem arises even
+;		with SET ESCAPE OFF, because between the time that the
+;		file is being loaded and ESCAPE is SET OFF, a user could
+;		hit ESCape and dBASE would recognize it and respond
+;		accordingly. The ESCAPE option is available for for all
+;		supported versions.
+
+ESCAPEOFF	equ	FALSE	; set TRUE to disable the ESCape function
+
+; ALTDRV:	Allows execution of DBASE from an alternate drive if the
+;		program overlays can't be located on the default drive. This
+;		fixes only the access to the DBASEOVR.COM file and not
+;		the DBASEMSG.TXT file.  If you use the on-line HELP command
+;		the DBASEMSG.TXT file must be on the default drive.
+;		(At least for version 2.43*, this also seems to work for
+;		DBASEMSG.TXT.  Under ZSDOS or ZRDOS, make the overlays on
+;		the alternate drive public files and DBASE can be run from
+;		any directory on the system.  Under CP/M-Plus put the
+;		overlays in user 0 of the alternate drive and make them
+;		system files.)
+
+ALTDRV		equ	TRUE	; set TRUE to include alternate drive
+OVLDRV		equ	'B'-40h	; alternate drive for overlays
+
+; CDELIMIT:	You can change the label delimiter character from the
+;		default colon (":") to another character.  For example,
+;		"STORE 9 TO THIS:ONE" can be changed to "STORE 9 TO THIS_ONE"
+;		by setting the delimiter character to the underline.
+
+CDELIMIT	equ	FALSE	; set TRUE to change delimiter character
+DLMTCHR		equ	':'	; put your new delimiter character here
+
+; DBASE VERSION -- Set ONE AND ONLY ONE of the following versions TRUE.
+; All others MUST be FALSE.
+
+VER23B		equ	FALSE	; set TRUE if running version 2.3B
+VER24		equ	FALSE	; set TRUE if running version 2.4
+VER241		equ	FALSE	; set TRUE if running version 2.41
+VER241Z		equ	FALSE	; set TRUE if running Z-80 2.41
+VER243		equ	TRUE	; set TRUE if running version 2.43*
+
+;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+;	END OF AVAILABLE USER-SELECTABLE ASSEMBLY OPTIONS
+;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ 	
+;	+---------------------------------------------------------+
+;	| BE SURE YOU HAVE A BACK-UP COPY OF DBASE.COM BEFORE YOU |
+;	|		ATTEMPT TO USE THIS OVERLAY		  |
+;	+---------------------------------------------------------+
+
+; Simply set the equates above to your liking, assemble this file to a
+; HEX file, and then overlay DBASE.COM using MLOAD or MYLOAD:
+
+;	MLOAD NEWDBASE.COM=DBASE.COM,NEWBASE.HEX
+
+; Or by using the following DDT commands:
+
+;	A>DDT DBASE.COM
+;	DDT VERS 2.2
+;	NEXT  PC
+;	4D00 0100
+;	-INEWBASE.HEX
+;	-R
+;	NEXT  PC
+;	4D00 0000
+;	-G0
+
+; After exiting DDT, save the new file:
+
+;	A>SAVE 76 NEWDBASE.COM
+
+; Or, if you install a forced, predefined command file:
+
+;	A>SAVE 77 NEWDBASE.COM
+
+;=========================================================================
+
+; INITIAL JUMP LIST -- To help identify supported versions I have
+; developed the following list of jump instructions that must be
+; found at location 100h of each supported version.
+
+;	Version		Jump instruction at 100h
+;	-------		---------------------------------
+;	2.3B		jmp	4473h
+;	2.4		jmp	46C9h
+;	2.41		jmp	477Ah
+;	2.41Z		jmp	467Fh
+;	2.43		jmp	49B5h	<-- abandoned version
+;	2.43Z		jmp	5200h	<-- abandoned version
+;	2.43*		jmp	4C0Fh
+
+; If your version of DBASE.COM is not listed call me for help.
+
+;=========================================================================
+
+; INKEY patch for all versions to maintain transportability.  PEEK(337)
+; on any NEWBASE installation will now return the last key pressed.
+
+KEYPATCH	equ	14Ah
+
+ IF VER23B	; dBase II version 2.3b, sign-on date 22 Feb 1982
+BEGIN	equ	4473h		; jump around installed parameters
+SKIP1	equ	461Ah		; skip date hook
+SKIP2	equ	46AFh		; skip date destination
+DATEFIX	equ	00FEh		; date fix for re-entry
+CONSIO	equ	39F0h		; KEYIN hook
+SAVE1	equ	39DFh		; direct BIOS hook
+MESSAGE	equ	46BBh		; first byte of sign-on message
+MESS1	equ	46E1h		; NEWBASE message hook
+FCB1	equ	42F3h		; fcb1 for DBASEOVE.COM
+FCB2	equ	4314h		; fcb2 for DBASEOVR.COM
+BUFFERS	equ	46C0h		; start of buffers
+HELLO	equ	47D0h		; hello message
+DELIMIT	equ	2AE4h		; location of delimiter character
+DISABLE	equ	39AEh		; zero out for escape disable (CPI 1Bh)
+NEWREC	equ	4B00h		; added record for PREDEFINED option
+				; ..(same as next load addr under DDT)
+ ENDIF	; VER23B
+
+ IF VER24	; dBase II version 2.4, sign-on date April 1, 1983
+BEGIN	equ	46C9h		; jump around installed parameters
+SKIP1	equ	4876h		; skip date hook
+SKIP2	equ	4892h		; skip date destination
+DATEFIX	equ	00FEh		; date fix for re-entry
+CONSIO	equ	3A8Ah		; KEYIN hook
+SAVE1	equ	4378h		; dBase II cubby-hole
+MESSAGE	equ	495Ah		; first byte of sign-on message
+MESS1	equ	46B5h		; NEWBASE message hook
+FCB1	equ	4331h		; fcb1 for DBASEOVE.COM
+FCB2	equ	4352h		; fcb2 for DBASEOVR.COM
+XALTDRV	equ	3BA6h		; ALTDRV hook
+ALTRET	equ	3BA9h		; jump-back location
+BUFFERS	equ	497Eh		; start of buffers
+HELLO	equ	4AE1h		; hello message
+FREE	equ	44C9h		; un-used program space
+ENDCODE	equ	44FFh		; end of safe area
+DELIMIT	equ	2B3Bh		; label delimiter position
+DISABLE	equ	3A47h		; zero out for escape disable (CPI 1Bh)
+NEWREC	equ	4D00h		; added record for PREDEFINED option
+				; ..(same as next load under DDT)
+ ENDIF	; VER24
+
+ IF VER241	; dBase II version 2.41, sign-on date February 1, 1984
+BEGIN	equ	477Ah		; jump around installed parameters
+SKIP1	equ	4927h		; skip date hook
+SKIP2	equ	4943h		; skip date destination
+DATEFIX	equ	00FEh		; date fix for re-entry
+CONSIO	equ	3B25h		; KEYIN hook
+SAVE1	equ	4429h		; dBase II cubby-hole
+MESSAGE	equ	4A0Bh		; first byte of sign-on message
+MESS1	equ	4A58h		; NEWBASE message hook
+FCB1	equ	43E2h		; fcb1 for DBASEOVE.COM
+FCB2	equ	4403h		; fcb2 for DBASEOVR.COM
+XALTDRV	equ	3C49h		; ALTDRV hook
+ALTRET	equ	3C4Ch		; jump-back location
+BUFFERS	equ	4A37h		; start of buffers
+HELLO	equ	4B77h		; hello message
+FREE	equ	457Ah		; un-used program space
+ENDCODE	equ	46FFh		; end of safe area
+DEFDRV	equ	0165h		; default drive storage
+DELIMIT	equ	2B99h		; label delimiter position
+DISABLE	equ	3AE2h		; zero out for escape disable (CPI 1Bh)
+NEWREC	equ	4D00h		; added record for PREDEFINED option
+				; ..(same as next load under DDT)
+ ENDIF	; VER241
+
+ IF VER241Z	; Z-80 dBase II version 2.41, sign-on date April 1, 1983
+BEGIN	equ	467Fh		; jump around installed parameters
+SKIP1	equ	482Ch		; skip date hook
+SKIP2	equ	4904h		; skip date destination
+DATEFIX	equ	00FEh		; date fix for re-entry
+CONSIO	equ	3A75h		; KEYIN hook
+SAVE1	equ	3A64h		; direct BIOS hook
+MESSAGE	equ	4910h		; first byte of sign-on message
+MESS1	equ	495Dh		; NEWBASE message hook
+FCB1	equ	42E7h		; fcb1 for DBASEOVE.COM
+FCB2	equ	4308h		; fcb2 for DBASEOVR.COM
+XALTDRV	equ	3B90h		; ALTDRV hook
+ALTRET	equ	3B93h		; jump-back location
+BUFFERS	equ	493Ch		; start of buffers
+HELLO	equ	4A7Ch		; hello message
+FREE	equ	4480h		; un-used program space
+ENDCODE	equ	44FFh		; end of safe area
+DEFDRV	equ	0165h		; default drive storage
+DELIMIT	equ	2B25h		; label delimiter position
+DISABLE	equ	3A48h		; zero out for escape disable (CPI 1Bh)
+NEWREC	equ	4D00h		; added record for PREDEFINED option
+				; ..(same as next load under DDT)
+ ENDIF	; VER241Z
+
+ IF VER243	; dBase II version 2.43*, sign-on date April 30, 1985
+BEGIN	equ	4C0Fh		; jump around installed parameters
+SKIP1	equ	4DD6h		; skip date hook
+SKIP2	equ	4DF2h		; skip date destination
+DATEFIX	equ	4941h		; date fix for re-entry
+CONSIO	equ	3F24h		; KEYIN hook
+SAVE1	equ	4867h		; dBase II cubby-hole
+MESSAGE	equ	4EC8h		; first byte of sign-on message 1
+MESS1	equ	4F1Bh		; NEWBASE message hook
+DAYS30	equ	4F3Eh		; "30 days hath" message
+MESS2	equ	5049h		; first byte of sign-on message 2
+FCB1	equ	4820h		; fcb1 for DBASEOVE.COM
+FCB2	equ	4841h		; fcb2 for DBASEOVR.COM
+XALTDRV	equ	404Dh		; ALTDRV hook
+ALTRET	equ	4050h		; jump-back location
+BUFFERS	equ	4ECDh		; start of buffers
+HELLO	equ	5339h		; hello message
+FREE	equ	4A0Fh		; un-used program space
+ENDCODE	equ	4A7Fh		; end of safe area
+DEFDRV	equ	0165h		; default drive storage
+DELIMIT	equ	2E36h		; label delimiter position
+DISABLE	equ	3ED9h		; zero out for escape disable (CPI 1Bh)
+NEWREC	equ	5480h		; added record for PREDEFINED option
+				; ..(same as next load under DDT)
+ ENDIF	; VER243*
+
+;=========================================================================
+
+WBOOT	equ	0		; warm boot 
+BDOS	equ	5		; BDOS entry
+OPEN	equ	0Fh		; open file function
+FAILED	equ	0FFh		; disk i/o failed
+CR	equ	0Dh		; carriage return
+LF	equ	0Ah		; line feed
+
+ IF CDELIMIT
+	org	DELIMIT
+
+	db	DLMTCHR
+ ENDIF	; CDELIMIT
+
+ IF ESCAPEOFF
+	org	DISABLE
+
+	db	0		; zero out byte 1 (FEh=CPI instruction)
+	db	0		; zero out byte 2 (1Bh=ASCII code for ESC)
+ ENDIF	; ESCAPEOFF
+
+;   Patch here if either SKIPDATE or COMMAND options are true.
+;      Note COMMAND option has highest priority
+
+ IF SKIPDATE
+	org	SKIP1
+
+	ld	hl,0
+	ld	(DATEFIX),hl
+	jp	SKIP2		; bypass date stuff at sign-on
+ ENDIF	; SKIPDATE
+;				; ..or
+ IF FORCE
+	org	SKIP1
+
+	jp	WBOOT		; ..force a command file
+ ENDIF	; FORCE
+;
+ IF VER243 AND SKIPDATE AND SKIP30
+	org	DAYS30		; print version instead
+
+	db	'DBASE II, VERSION 2.43*'
+	db	0
+ ENDIF	; VER243 AND SKIPDATE AND SKIP30
+;
+ IF PREDEFINED
+	org	100h
+
+	jp	CLINE
+ ENDIF	; PREDEFINED
+;
+ IF SKIPSIGNON
+	org	MESSAGE
+
+	db	0		; cancel sign on message
+
+	org	MESS1
+
+	ld	hl,HELLO	; NEWBASE options message
+ ENDIF	; SKIPSIGNON
+;
+ IF VER243 AND SKIPSIGNON
+	org	MESS2		; more to skip the sign-on
+
+	db	0
+ ENDIF	; VER243 AND SKIPSIGNON
+;
+; Patch for new KEYIN psudo-function
+;
+ IF KEYIN
+	org	CONSIO
+
+	jp	XKEYIN
+ ENDIF	; KEYIN
+;
+ IF KEYIN AND (VER241Z OR VER23B)
+	org	SAVE1		; fix direct BIOS hook
+
+	ld	(XKEYIN+1),hl
+ ENDIF	; KEYIN AND (VER241Z OR VER23B)
+;
+; Fix the buffers
+
+	org	BUFFERS
+
+ IF VER24 OR VER241 OR VER243 OR VER23B
+	sbc	a,h		; bump buffer 1 pointer
+	adc	a,d		; add offset
+	xor	(hl)		; adjust by buffer 1 value
+ ENDIF	; VER24 OR VER241 OR VER243 OR VER23B
+
+ IF VER241Z
+	or	h		; fix buffer offset in Z-80 version
+	ld	e,(hl)
+ ENDIF	; VER241Z
+
+	add	a,h		; bump again
+	add	a,d		; ..and again
+	and	(hl)		; now do buffer 2
+	adc	a,d
+	db	40h,40h
+
+ IF SKIPOPT
+	org	HELLO
+
+	db	0
+ ENDIF	; SKIPOPT
+
+ IF NOT SKIPOPT
+	org	HELLO
+
+	db	CR,LF
+ ENDIF	; NOT SKIPOPT
+
+ IF KEYIN AND NOT SKIPOPT
+	db	'KEYIN at 337'
+ ENDIF	; KEYIN AND NOT SKIPOPT
+
+ IF KEYIN AND CDELIMIT AND NOT SKIPOPT
+	db	', '
+ ENDIF	; KEYIN AND CDELIMIT AND NOT SKIPOPT
+
+ IF CDELIMIT AND NOT SKIPOPT
+	db	'Label delimiter "'
+	db	DLMTCHR
+	db	'"'
+ ENDIF	; CDELIMIT AND NOT SKIPOPT
+
+ IF (KEYIN OR ALTDRV) AND NOT SKIPOPT
+	db	CR,LF,0
+ ENDIF	; (KEYIN OR ALTDRV) AND NOT SKIPOPT
+
+; New, added code begins here and must end before 44FFh
+
+ IF KEYIN
+	org	KEYPATCH
+XKEYIN:
+ ENDIF	; KEYIN
+
+ IF (VER24 OR VER241 OR VER243) AND KEYIN
+ 	ld	(SAVE1),a	; save for DBASE.COM
+ ENDIF	; (VER24 OR VER241 OR VER243) AND KEYIN
+
+ IF (VER241Z OR VER23B) AND KEYIN
+	call	0		; patched by Z-80 dBase II
+ ENDIF	; (VER241Z OR VER23B) AND KEYIN
+
+ IF KEYIN
+	ld	(SAVE2),a	; save for KEYIN
+	ret
+SAVE2:	ds	1		; KEYIN cubby-hole (decimal value)
+ ENDIF	; KEYIN
+
+ IF ALTDRV AND (NOT VER23B)
+	org	XALTDRV
+
+	jp	CHKALT
+
+	org	FREE
+
+CHKALT:	cp	FAILED
+	jp	nz,ALTRET	; file open OK, so return
+	ld	de,FCB1
+	ld	a,OVLDRV	; set up for OVLDRV drive
+	ld	(de),a
+	ld	(FCB2),a
+ ENDIF	; ALTDRV AND (NOT VER23B)
+
+ IF (VER241 OR VER241Z OR VER243 ) AND ALTDRV
+	ld	(DEFDRV),a	; default drive storage
+ ENDIF	; (VER241 OR VER241Z OR VER243 ) AND ALTDRV
+
+ IF ALTDRV AND (NOT VER23B)
+	ld	c,OPEN
+	call	BDOS		; try to open DBASEOVR.COM
+	cp	FAILED		; ..on default drive
+	jp	nz,ALTRET	; go back if found
+	ret			; return with zero set if not
+ ENDIF	; ALTDRV
+
+ IF ALTDRV AND VER23B
+	org	FCB1
+
+	db	OVLDRV
+
+	org	FCB2
+
+	db	OVLDRV
+ ENDIF	; ALTDRV AND VER23B
+
+BODYEND	equ	$
+
+ IF PREDEFINED
+	org	NEWREC
+
+CLINE:	ld	hl,COMMAND	; point to pre-defined command line
+	ld	de,80h		; default command line buffer
+	ld	b,(hl)		; length of command line
+CLINE1:	ld	a,(hl)
+	ld	(de),a		; move it to buffer as though it
+	inc	hl		; ..had been entered from the keyboard
+	inc	de
+	dec	b
+	jp	m,CLINE2
+	jp	CLINE1
+
+CLINE2:	ld	hl,5Ch
+	ld	de,XFCB
+	ld	b,12
+CLINE3:	ld	a,(de)
+	ld	(hl),a
+	inc	hl
+	inc	de
+	dec	b
+	jp	nz,CLINE3
+	jp	BEGIN
+
+; Try to keep the following command line short because there isn't much
+; room left if all the options are installed.
+
+COMMAND:
+	db	CMDEND-COMMAND
+	db	'MENU.CMD'	; put command line here as you would type it
+
+CMDEND	equ	$
+
+; COMMAND file control block -- '@' for default drive.  Filespec must be
+; exactly 11 characters, like 'MYFILE  CMD':  filename of eight characters,
+; padded with trailing spaces, and a filetype of three characters.  No
+; period is included.
+
+XFCB:	db	'@'-40h
+	db	'MENU    CMD'
+ ENDIF	; PREDEFINED
+
+	end
+

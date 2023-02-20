@@ -1,0 +1,74 @@
+
+                      BASIC Compiler - BCBC
+                      ---------------------
+
+Dies ist ein Basic-Compiler, der von Bruce Tonkin entwickelt wurde. Mr Tonkin 
+ist wirklich ein absoluter Profi auf dem Gebiet der Basic-Programmierung. Er 
+hat sogar ein schnelles WordStar-kompatibles Textverarbeitungsprogramm fuer 
+den IBM-PC in QuickBasic geschrieben!
+
+Der Basic-Compiler selbst in Microsoft-Basic geschrieben. Die Datei BCBC.PRO 
+zeigt den Quellcode in einem strukturierten Basic-Dialekt. Ein Programm von 
+Bruce Tonkin (nicht Public-Domain) hat es in eine MBASIC-Quelldatei }bersetzt. 
+Diese heisst BCBC.BAS und wurde von Martin Kotulla geaendert, um sie mit 
+BASCOM compilieren zu koennen. So koennen auch alle, die weder MBASIC noch 
+Mallard-Basic besitzen, BCBC einsetzen. 
+
+Das Laufzeitmodul des compilierten Programms ist BRUN.COM und ist Copyright by 
+Microsoft.
+
+Starten des Programms:
+
+MBASIC:                  A>MBASIC BCBC
+Mallard-Basic:           A>BASIC BCBC
+BASCOM:                  A>BCBC
+
+Martin Kotulla
+22.6.1987
+
+---------------------------------------
+
+Unfortunatly, there was no documentation.  Most of what documentation there 
+is, is in the file BCBC.PRO which is the 'structured' BASIC version.
+
+Also, the compiler will not compile itself because of certain statements like 
+DEFINT and DEF FN. That's really too bad. The ultimate test of a compiler is 
+to write it in the language it compiles. I haven't heard anything about newer 
+versions. Also, there is an address in the BCBC.PRO file where you can write 
+for a manual ($10.00).  I never sent for it because I read the source and got 
+a good feel for what it expects. A good rule is: don't get too complicated 
+with expressions.
+
+I can't say much for the error messages the compiler generates. It gives you 
+an error at the compiled code address, not the offending line number. I always 
+compile with the FULL DOCUMENTATION option. Then at least I can check the .ASM 
+file for the problem line.
+
+This certainly isn't BASCOM but what the heck, it's free.
+
+---------------------------------
+
+Added information for BCBC users:
+
+There are some undocumented features in BCBC. Unfortunately, these features 
+were added after the manual was written, or were overlooked while writing the 
+manual. Sorry!
+
+You may include the whole library (all functions) by including a line in your 
+BASIC program that reads #ALL
+
+You may include a selected library routine with the preprocessor directive 
+#INCLUDE N, where N is the number of the routine to include.
+
+You may insert assembler code directly in the body of your program with the 
+directive #ASM which must be all alone on a line (the line need not be 
+numbered). All lines following this directive will be passed through without 
+parsing or translation until a line containing the directive #ENDASM is 
+encountered. #ENDASM should also be on its own line.
+
+The assembler routine can be called as a subroutine, or may be the object of a 
+GOTO. Please let me know of any bugs in BCBC!
+
+Bruce Tonkin
+6/1/84
+

@@ -1,0 +1,78 @@
+bel	equ	07h
+lf	equ	0ah
+cr	equ	0dh	;Enter Taste
+esc	equ	1bh
+clrscr	equ	1ah	;Bildschirm l|schen
+			;
+prtstr	equ	09h	;Funktionsnummer f}r Ausgabe einer Zeichenkette
+			;auf den Bildschirm
+fnein	equ	01h	;Funktionsnummer f}r Eingabe von der
+			;Tastatur
+fnaus	equ	02h	;Funktionsnummer f}r Ausgabe auf
+			;den Bildschirm
+
+bdos	equ	0005h	;Adresse des CP/M Verteilerprogramms
+			;
+wboot	equ	0000h	;R}cksprung
+			;
+			
+;------------------------
+; Hauptprogramm
+;------------------------			
+	org 	100h		;Startadress		
+start	ld	de,hello	;Zeiger auf Zeichenkette laden
+	ld	c,prtstr	;Funktionsnummer f}r Ausgabe einer
+				;Zeichenkette auf Bildschirm laden
+	call	bdos		;Und Ausgabe				 
+
+echo	ld	c,fnein		;Funktionsnummer f}r Eingabe von der
+				;Tastatur laden
+	call	bdos		;Zeichen von der Tastatur ins A-Register
+				;holen
+	ld	e,a		;Zeichen in Parameter-Register bringen
+	push	de
+	ld	de,line	
+	ld	c,prtstr
+	call	bdos
+	pop	de	
+	ld	c,fnaus		;Funtkionsnummer f}r Ausgabe auf Bildschirm
+				;laden
+	call	bdos		;Zeichen auf den Bildschirm ausgeben
+;--------------------------------
+	ld	de,line		;Zeilevorschub und Nachricht
+	ld	c,prtstr	
+	call	bdos
+	ld	hl,kette	;Zeiger auf Speicher
+lies	ld	c,fnein	
+	push	hl		;Zeiger sichern
+	call	bdos		;Zeichen von Tastatur holen
+	pop	hl		;Zeiger restaurieren
+	ld	(hl),a		;Zeichen in Speicherbereich ablegen
+	inc	hl		;auf n{chsten freien Speicherplatz
+				;zeigen
+	cp	cr		;Zeichen mit Endmarkierung vergleichen
+	jp	nz,lies		;Lesen, bis Endmarkierung gelesen wurde
+	ld	hl,kette	;Zun{chst wird die Zeichenkette gesichert
+	ld	de,nambuf	;
+	ldir			;Speichertransfer
+ausg	ld	de,schlu	;und dann mit Meldung ausgegeben					
+	ld	c,prtstr
+	call	bdos
+		
+	jp	wboot		;Und Schlu~
+;------------------------
+; Nachrichten
+;------------------------
+line	defb	cr,lf,'Zeichen: '
+	defb	'$'
+hello	defb	clrscr,cr,lf,esc,'R','Taste.COM',esc,'S',' liest und schreibt'
+	defb	' Zeichen von der Tastatur auf Monitor',lf,cr
+	defb	'$'
+schlu	defb	cr,lf,'Zeichenfolge '
+nambuf	defb	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+	defb	' '
+	defb	'$'
+;------------------------	
+kette	defs	12		;Speicher f}r Zeichenkette
+
+	end	start 

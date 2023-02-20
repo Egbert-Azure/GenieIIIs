@@ -1,0 +1,825 @@
+
+
+
+
+                    Internet und UUCP mit CP/M
+                    ==========================
+
+   Ein Bericht }ber die Installation von UUCP 2.1b auf CP/M Plus.
+
+
+
+Das Internet
+============
+
+
+ Das Internet ist eines der gr|~ten Computer-Netze, die es }berhaupt gibt. Es 
+handelt sich hierbei um einen internationalen Zusammenschlu~ von Computern mit 
+dem Unix Betriebssystem, der europ{ische Teil dieses Netzes hei~t Eunet. 
+Internet ben|tigt neben dem Unix-Rechner auch eine Standleitung, was das Ganze 
+teuer macht. Im Gegensatz zu FIDO oder ZERBERUS zum Beispiel kostet der 
+Account in einer Internet-Box Geld. Die monatlich zu entrichtenden Betr{ge 
+betragen im g}nstigsten Fall 10,- DM f}r Sch}ler bis zu mehreren hundert Mark 
+f}r Firmen.
+ 
+ Internet gibt zum einen die M|glichkeit, pers|nliche Mails rund um die Welt 
+zu schicken. Es gibt au~erdem Gateways zu anderen Netzen wie ZERBERUS oder 
+lokalen Netzen wie in Kiel das KIEL-NETZ. Ausserdem bietet Internet Zugriff auf 
+mehrere hundert Newsgroups, vergleichbar mit den Brettern aus den anderen 
+Netzen. Die meisten Mailboxen haben Software Archive und gegen einen erh|hten 
+Monatsbeitrag kann man 'ftp','file transfer protocol', nutzen, und so 
+online von anderen Rechnern Files downloaden. Es gibt meines Wissens ausser 
+dem Monatsbeitrag keine Geb}hren f}r }bertragene Information. Bei der Kieler 
+Box 'Toppoint' wird jeder User angehalten, monatlich nicht mehr als 500 KByte 
+private Mail zu versenden.
+
+ Ausserdem bieten Internet-Anschl}sse den Zugriff auf einen Unix-Rechner, man 
+ist dort ganz normaler User und kann etwas in die Unix-Welt hineinschnuppern.
+
+
+ Der andere Grund f}r mein Interesse ist die Newsgroup 'comp.os.cpm'. Von allen 
+Brettern, die das Wort CPM in sich f}hren, die ich in anderen Boxen 
+kennengelernt habe, ist hier am meisten los. Man trifft hier auf so bekannte 
+Namen wie Jay Sage, Joe Wright oder David Goodenough. Nat}rlich werden hier 
+auch meistens nur Fragen nach bestimmten Systemen gestellt oder hie und da mal 
+ein Computer zum Verkauf angeboten, aber man beh{lt das Gef}hl da~ man mit 
+CP/M noch nicht ganz hinter dem Mond lebt.
+
+
+UUCP
+====
+
+
+ In der Unixwelt gibt es einen Standard, um Files, also auch Nachrichten oder 
+Briefe von einem Unixsystem zu einem anderen zu }bertragen. UUCP hei~t 'Unix 
+to Unix Copy'. Zu diesem Verfahren geh|ren eine ganze Menge Files. SMAIL 
+bereitet Files zum Transfer vor. Die mit einem Editor geschriebenen Files 
+werden um z.B. den 'From: <username>'-Eintrag  sowie den Pfad zur}ck zu diesem 
+System und einer fortlaufenden Nummer, um die Nachricht genau identifizieren 
+zu k|nnen erweitert, und unter einem anderen Namen in einem Verzeichnis 
+abgelegt, nennen wird es 'transferdrive'. Und es wird ein zweites File Šerzeugt, welches beschreibt, was mit diesem File auf dem Zielsystem geschehen 
+soll, also zum Beispiel 'Sende dieses File weiter an irgendwohin'.
+
+ Sollen Files }bertragen werden, ruft man UUCP auf, es funktioniert {hnlich 
+wie PIP, blo~ da~ auch UUCP die Files nicht sofort }bertr{gt, sondern auch 
+eine Art Batchfile erzeugt. Um diese Files dann wirklich zu }bertragen wird 
+UUCICO ben|tigt.  Es stellt eine Verbindung zu einem anderen Rechner 
+her, der nach dem login ein UUCICO im Slavemodus als Shell startet. Die beiden 
+Rechner machen etwas 'handshake' um das Protokoll zum ]bertragen zu kl{ren 
+und dann werden die Files in Paketen }bertragen. Wenn der Slave nun auch Files 
+f}r den Master hat, wechseln beide ihre Rollen und das urspr}nglich angerufene 
+System sendet nun seinerseits die Files blockweise. Ist die ]bertragung 
+beendet, wird die Leitung unterbrochen. 
+
+ Wurden nun Files empfangen, so m}ssen sie aus dem oben erw{hnten Format in 
+die private Mailbox (File) einsortiert werden. Sie heisst }blicherweise 
+<USERNAME>.MAI. Mit einem Mailreader k|nnen so die empfangenen Nachrichen mehr 
+oder weniger komfortabel zu Hause bearbeitet werden.
+
+
+ Um UUCP nutzen zu k|nnen, mu~ man zun{chst also erstmal einen normalen Account 
+auf einer Box, die am Internet angeschlossen ist, erwerben. Dort kann man 
+nat}rlich Online Mails und News verschicken und lesen. Die dort vorhandenen 
+Mail- und News-Reader sind sehr komfortabel. Meistens handelt es sich um den 
+News-Reader NN (No News - are good news !) und f}r private Mails ist meistens 
+ELM vorhanden. Als User hat man nat}rlich eine email-Adresse, sie setzt sich 
+zusammen aus Usernamen (bei mir 'v_p_dose') und einer Art Pfad inklusive Namen 
+der Mailbox. Die Kieler Box heisst 'toppoint', die vollst{ndige Adresse lautet 
+bei mir:
+
+ 'v_p_dose@tpki.toppoint.de'.
+          !  !     !     !- Nationalit{t 
+          !  !     !- Name der Mailbox
+          !  !- 'hostname' der Mailbox
+          !- Kennung f}r Internet Adresse
+  
+  
+ F}r UUCP ben|tigt man einen zweiten, unabh{ngigen Account. Auf der Toppoint 
+heisst dieser Vorgang 'Point beantragen'. Man erh{lt einen zweiten Usernamen, 
+und nach dem Login wird keine normale Unix-Shell oder ein Men}-Programm 
+gestartet, sondern UUCICO im Slave-Mode. Als zweiten Usernamen w{hlte ich das 
+Wort 'cpmgut', die email-Adresse dieses neuen Points ist
+'v_p_dose@cpmgut.toppoint.de'.
+ 
+
+ 
+UUCP und CP/M
+=============
+
+
+ Nun gibt es auf der J.Sage Disk #27 das File UUCP21.LBR. Der Author ist David 
+Goodenough, er schrieb auch das geniale Terminalprogramm QTERM.COM! Das Paket 
+besteht aus 9 Files, die es erm|glichen von einem CP/M-System aus Verbindung 
+}ber UUCP zum Internet und auch zu einem einzelnen Unix-Rechner aufzunehmen.
+
+Folgende Files werden hierzu ben|tigt:
+
+- SMAIL.COM         verarbeitet zu sendende private Mails
+- RMAIL.COM         verarbeitet mit UUCP empfangene private Mails
+Š- PNEWS.COM         verarbeitet Mails, die in eine Newsgroup eingeordnet 
+                    werden sollen
+- RNEWS.COM         sortiert eingegangene News in einzelne Newsgroups
+
+- UUCP.COM          erm|glicht File transfer zwischen Rechnern
+- WAIT.COM          erm|glicht zeitgesteuertes Ablaufen von SCCICO.COM o.{.
+
+- CCICO.COM         aktiv, entspricht UUCICO im Master-Mode
+- SCCICO.COM        passiv, entspricht UUCICO im Slave-Mode
+
+- MAIL.COM          der Mail-Reader
+
+au~erdem sind enthalten:
+
+- UUCP.DOC          Dokumentation zum Paket
+- QTCHAT.DOC        Dokumentation zu Chatfiles bei QTERM, gilt auch f}r CCICO
+
+
+ Die Dokumentation zu UUCP ist zwar recht kurz, enth{lt aber sehr viel 
+Informationen. Der Author ging aber davon aus, da~ grunds{tzliches Vorwissen 
+um UUCP vorhanden sei, ich hatte z.T. erhebliche Schwierigkeiten.
+
+ Ich werde das DOC File nicht komplett }bersetzen, sondern nur dort 
+kommentieren, wo ich Schwierigkeiten hatte. Mein Wissen ist aus bitterer 
+Erfahrung und aus diversen man-pages (Online-Handbuch) von Unix sowie einem 
+File mit FAQs zum Thema UUCP gespeist.
+
+
+INSTALLATION
+============
+
+
+ Die Erstellung eines QTERM-{hnlichen Patches f}r CCICO, SCCICO und WAIT sollte 
+kein gro~es Problem sein, es gibt dieses Overlay f}r sehr viele Rechner und 
+f}r CP/M Plus gibt es eins, welches die AUX: Schnittstelle benutzt. Dies ist 
+sehr praktisch zum Testen, wenn man zwei serielle Schnittstellen hat, und ein 
+Terminal um die Programmausgaben zu beobachten. Ich habe diese Overlay 
+disassembliert und die Terminal Control Codes f}r das Genie IIIs eingef}gt. 
+Bei Interesse sende ich es gerne jedem zu.
+
+ Da RMAIL, SMAIL, PNEWS und RNEWS  Zeit und Datum des Empfangens bzw. des 
+Sendens eintragen, ben|tigen sie, ebenso wie WAIT einen Overlay, um die 
+aktuelle Uhrzeit samt Datum in einem bestimmten Format zu erhalten. Dieses 
+Routine ist nat}rlich vom jeweiligen Rechner abh{ngig, obwohl f}r CP/M Plus 
+ein kompaktibles OVL geschrieben werden kann. Ich habe aber eine BIOS-Routine 
+des Holte-BIOS benutzt. Es d}rfte nicht allzu schwierig sein, so eine Routine 
+zu implementieren. Die Voraussetzung ist nat}rlich eine fortlaufende Uhrzeit 
+auf dem Rechner, besser nat}rlich eine Hardware-Uhr.
+
+ Mit SETDRV.COM wird im jeweils letzten Sektor jedes relevanten Files eine 
+User/Laufwerksbezeichnung eingetragen, in dem sich das CONFIG.SYS File 
+befindet.  Dies mu~ nicht dieselbe sein, in der die COM-Files sich befinden.
+
+
+CONFIG.SYS
+==========
+
+ Am meisten Fehler machte ich bei der Anpassung von 'CONFIG.SYS'. Dieses File 
+enth{lt mehrere User- und auch Systemspezifische Informationen. Es ist ein 
+ganz normales ASCII File mit mehreren einzeiligen Zuweisungen.Š
+
+
+'hostname' -   Hier muss der Name des Systems eingetragen werden, er ist 
+               identisch mit dem Usernamen des Points, bei mir also:
+
+               'hostname       v_p_dose'
+
+'user'     -   Dieser Eintrag spezifiziert den bzw. die User die auf dem
+               'host' angesprochen werden k|nnen. Sinnvollerweise steht hier
+               der eigene Username plus der ausgeschriebene richtige Name.
+               Ich habe bei mir die vollst{ndige email-Adresse eingetragen,
+               bin mir aber nicht ganz sicher, ob das so richtig ist.
+               Zumindest PNEWS erzeugt im Briefkopf hinter dem Usernamen noch
+               den String '@<hostname>.UUCP'. Das w{re auch die richtige 
+               Adresse, aber Post soll ja an meinen Point in der Mailbox gehen
+               und nicht direkt an meinen Computer zuhause. SMAIL erzeugt
+               aus meinem Eintrag aber die richtige (also die Point-) Adresse.
+
+               'user           v_p_dose@cpmgut.toppoint.de (Volker Dose)'
+                
+               Wird in einer zu versendenden Mail kein 'From:' eingetragen, so
+               wird von SMAIL und PNEWS der erste User in dem CONFIG.SYS-File
+               als Absender eingetragen. Ausserdem benutzt MAIL diesen Namen,
+               wenn es ohne Parameter gestartet wird. Dies funktioniert aber
+               nicht, wenn die vollst{ndige email Adresse eingetragen wurde.
+
+'defsys'   -   Hier wird angegeben, welche Systeme mit CCICO angerufen werden
+               sollen. Jedes System hat eine Kennung bestehend aus drei
+               Buchstaben, diese Kennung wird auch als Fileextension benutzt.
+               Es k|nnen mehrere solcher Buchstabenkombinationen angegeben 
+               werden, wird CCICO dann ohne die '-S' Option (nur ein System !)
+               aufgerufen, werden alle in der Kette enthaltenen Systeme 
+               angerufen. (siehe 'remote'!)
+
+               'defsys          TPK'  
+
+'xferdrv'  -   gibt eine User/Laufwerksbezeichnung an, in die die tempor{ren 
+               Files abgespeichert werden. Sinnvollerweise sollte man hier eine
+               Ramdisk angeben, so vorhanden. Es kann die Usernummer mit
+               angegeben werden. Der Doppelpunkt mu~ mit eingegeben werden.
+
+               'xferdrv         m7:'
+
+'workdrv'  -   Auf diesem 'Drive' liegen sowohl die Scriptfiles als auch die
+               Mailboxfiles. Diese Files sind von l{ngerer G}ltigkeit.
+
+               'workdrv         d7:'
+
+'remote'  -    Diese Eintr{ge bezeichnen die Systeme, die angesprochen werden
+               k|nnen. Der erste Eintrag mu~ der eigene 'hostname' sein. Jeder
+               Eintrag setzt sich aus einer drei Buchstaben langen Folge sowie
+               dem kompletten 'hostname' zusammen. Es sind also mindestens 
+               zwei Eintr{ge n|tig. Nach dem Login sendet der Slave einer 
+               UUCP-Verbindung eine Kennung  '^PShere=<hostname>' und der Master
+               sendet '^PS<hostname>'. Bei mir sendet also die Mailbox 
+               '^PShere=tpki' woraufhin CCICO '^PScpmgut' sendet. 
+
+               'remote          CPMcpmgut'
+               'remote          TPKtpki'Š
+
+'alias'   -    Solche Aliasnamen werden von SMAIL und RMAIL eingesetzt. Aller-
+               dings nicht in der 'To:' Zeile einer Mail sondern nur in dem
+               zur Mail geh|renden D-File bzw. X-File (siehe weiter unten)
+
+               alias           norbert                 nobs@isys-hh.hanse.de
+               alias           jay                     sage@ll.mit.edu
+
+'$drv'    -    Hier wird die Laufwerksbezeichnung eingetragen,in dem der CCP
+               das $$$.SUB File bei der Batchabarbeitung erzeugt.
+
+               '$drv           m:'
+
+'smarthost' -  Die Bedeutung dieses Eintrages ist mir noch unklar, meiner
+               scheint aber zu funktioneren.
+
+               'smarthost	cpmgut.toppoint.de!v_p_dose'
+
+'inethost'  -  Dies gibt einen Host an, der mit Adressen im Internet-Styl 
+               weiterleiten kann. Also die Internet-Mailbox.
+   
+               'inethost	tpki.toppoint.de'
+
+'progdrv'  -   Dies ist die Laufwerksbezeichnung, die angibt, wo sich die
+               COM-Files befinden. Insbesondere WAIT braucht diese Angabe,
+               au~erdem wird sie bei der Batch-Abarbeitung gebraucht.
+     
+               'progdrv		d7:'
+
+'feed'     -   Dies ist das System, zu dem PNEWS die zu }bertragenen Nach-
+               richten verschickt. Also wieder die Internet-Mailbox.
+       
+               'feed		tpki'
+
+'newsgroup' -  RNEWS sortiert eingegangene Nachrichten in verschieden Mail-
+               boxen. Das sind Files mit der Extension 'MAI'. In jedem
+               Eintrag steht also der Filename exklusive Extension. 
+ 
+
+               'newsgroup	comp.os.cpm		cpm'
+               'newsgroup	tp.sysinfo		tpsysinf'
+               'newsgroup	tp.hilfe		tphilfe'
+               'newsgroup	tp.forum		tpforum'
+               'newsgroup	tp.test			tptest'
+               'newsgroup	kiel.biete		ki-biete'
+               'newsgroup	kiel.suche		ki-suche'
+               'newsgroup	kiel.allgemein		ki-allge'
+               'newsgroup	comp.sys.tandy		tandy'
+
+
+
+
+
+
+
+
+
+
+Š
+
+
+               ERL[UTERUNGEN ZU DEN EINZELNEN PROGRAMMEN
+               =========================================
+
+
+
+SMAIL.COM
+=========
+
+ SMAIL hei~t 'SEND MAIL', dient also zum Verschicken von privaten Nachrichten.
+Jede Mail wird mit einem Editor wie z.B. ZDE geschrieben und enth{lt einen 
+Kopf sowie die tats{chliche Nachricht. Der Kopf muss mindestens die 
+Zieladresse (To:) enthalten, er kann aber noch ein Thema (Subject:) oder auch 
+einen Pfad (Path:) und diverses anderes enthalten. Wird kein Absender (From:) 
+angegeben, setzt SMAIL den ersten User aus CONFIG.SYS hier ein. Aus einer 
+kleinen Nachricht, abgespeichert in TEST.OUT 
+
+---------------------------------------------------------------------------
+To: nobs@isys-hh.hanse.de
+Subject: Test Nachricht
+
+Hallo Norbert.
+Ist dies angekommen ?
+---------------------------------------------------------------------------
+
+erzeugt der Befehl 'SMAIL TEST.OUT' im 'xferdrv' vier Files.
+
+-    C--0A500.TPK
+-    C--0A501.TPK
+-    D-D59E1B.CPM
+-    D-D59E1C.CPM
+
+
+ Die C-Files (Command-Files) enthalten Befehle f}r CCICO. Sie sind bestimmt f}r 
+das System mit der Abk}rzung 'TPK', also 'tpki'.
+
+Der Inhalt vom ersten C-File :
+
+'S D.cpmguA0a500 D.cpmguA0a500 uucp - m7:D-d59e1b.CPM 644'
+
+
+ Das 'S' steht f}r 'Senden', die beiden Teilstrings die mit 'D.cp..' beginnen 
+dienen zur Identifizierung und der String ab 'uucp' ist dann der eigentliche 
+Befehl. Hei~t : 'Unix to Unix Copy das File auf M7: mit dem Namen.' Die 
+Bezeichnung 644 ist eine Oktal Zahl die die Art des Files angibt. Das erste C- 
+File enth{lt also den Befehl zur ]bertragung des ersten D-Files (Daten-File).
+
+
+Der Inhalt des zweiten C-Files: 
+
+'S D.cpmguA0a501 X.cpmguA0a501 uucp - m7:D-d59e1c.CPM 644
+
+
+ Es enth{lt den Befehl zum Versenden des zweiten Datenfiles.
+
+
+
+Š
+
+
+ Das erste Datenfile enth{lt die zu versendende Nachricht :
+
+--------------------------------------------------------------------------
+From v_p_dose@cpmgut.toppoint.de  Tue Jul 27 15:42:34 1993
+remote from cpmgut
+Received: by cpmgut.UUCP (CP/M MAIL V2.1b)	
+id XX000000a5; Tue, 27 Jul 93 15:42:34 MSZ
+To: nobs@isys-hh.hanse.de
+Subject: Test Nachricht
+From: cpmgut!v_p_dose@cpmgut.toppoint.de (Volker Dose)
+Date: Tue, 27 Jul 93 15:42:34 MSZ
+Message-Id: <XX000000a5@cpmgut.UUCP>
+
+Hallo Norbert.
+Ist dies angekommen ?
+---------------------------------------------------------------------------
+
+ Der Absender ist korrekt eingetragen worden, es sei beachtet, da~ sich neben 
+der ersten Zeile mit einem 'From'-Eintrag ohne Doppelpunkt noch ein zweiter 
+Eintrag weiter unten befindet, die durchaus verschieden sind.
+
+
+ Die abgeschickte Mail ist also von 'cpmgut.UUCP' empfangen worden. Sie wird 
+weitergeleitet nach dem 'inethost', also in Richtung tpki. Wenn sie dort 
+empfangen wird kommt ein weiterer 'Received'-Eintrag dazu, wenn Files }ber 
+weite Entferungen zum Beispiel nach USA }bertragen werden, kommen schnell vier 
+bis f}nf 'Empf{nger' dazu, die die Nachricht weiterleiten (to forward) . SMAIL 
+hat auch das Datum des Versendens eingetragen. Es ist aber beileibe noch nicht 
+wirklich losgeschickt, dies besorgt erst ein CCICO-Lauf.
+
+
+ Der Eintrag <Message-Id:> sorgt f}r die Identifizierung dieser Mail. Es ist 
+die '0A5H'te }bertragene Mail. Diese Ziffer wird in dem File 'SEQ.NUM' 
+gespeichert und weitergez{hlt. SEQ.NUM wird auf 'progdrv' abgelegt.
+
+
+ Das zweite D-File wird auch auf den 'inethost' }bertragen und enth{lt Befehle, 
+die auf dem System ausgef}hrt werden.
+
+----------------------------------------------------------------------------
+U uucp cpmgut
+Z
+R uucp
+F D.cpmguA0a500
+I D.cpmguA0a500
+C rmail nobs@isys-hh.hanse.de 
+----------------------------------------------------------------------------
+
+ Die Adresse in der letzten Zeile w}rde von SMAIL eingesetzt werden, wenn 
+anstatt der ganzen Adresse nur der Alias 'norbert' eingetragen worden w{re.
+
+ Wird SMAIL mit der Option '-O' gestartet, so werden diese abgeschickten Mails 
+in der Mailbox (File) 'OUTMAIL.MAI' abgespeichert. So k|nnen ausgehende Mails 
+gesichert werden.
+
+
+Š
+
+
+
+RMAIL.COM
+=========
+
+
+ RMAIL soll nach einem CCICO-Lauf eingegangene Post in die Mailbox 
+<username>.MAI, in meinem Fall 'v_p_dose.mai' einsortieren. Ist Post an einen 
+anderen User auf diesem System eingegangen, so wird eine andere Mailbox 
+erzeugt (Ich habe eine Mail an 'v_p_@cpmgut.toppoint.de' erhalten, es wurde 
+die Mailbox 'v_p_.mai' erzeugt).
+ 
+ Die eingegangenen Files sind, analog zu den ausgehenden, wieder zwei st}ck pro 
+Mail, ein Datenfile mit einer oder mehreren Nachrichten, sowie ein Command- 
+File, dieses ist mit 'X' bezeichnet, f}r 'Execution'. Einige Post, die an mich 
+gerichtet war, enthielt in diesen X-Files den Befehl
+ 'rmail cpmgut.toppoint.de!v_p_dose'. Dies wurde von RMAIL nicht als meine 
+Adresse erkannt, sondern die Nachricht wurde in Richtung 'inethost', also zur 
+toppoint hin, weitergeleitet. Aus dem D- und dem X-Files wurden, wie bei SMAIL 
+beschrieben, zwei C-Files und zwei D-Files. Mir ist nicht klar, warum diese 
+Mail an mich mit dieser Adresse geschickt wurde, andere Mails sind einwandfrei 
+angekommen. Es mu~ also in dem X-File stehen: 'rmail v_p_dose'. Das mu~ ich 
+bis jetzt leider kontrollieren und von Hand {ndern, da die Post sonst verloren 
+geht.
+
+
+
+PNEWS.COM
+=========
+
+
+ PNEWS dient vzum Versenden von Nachrichten in 'Newsgroups', also in 
+|ffentliche Bretter. Die Nachricht mu~ {hnlich wie die private Mail aufgebaut 
+sein, allerdings mu~ ein Kopfeintrag 'Newsgroups:' vorhanden sein. PNEWS 
+erweitert Mails {hnlich wie SMAIL. Aus der Nachricht:
+
+-----------------------------------------------------------------------------
+Newsgroups: comp.sys.cpm
+Subject: UUCP with CP/M
+
+Hello.
+UUCP works !!!!!
+-----------------------------------------------------------------------------
+
+werden zwei C-Files analog zum Beispiel bei SMAIL und zwei D-Files.
+
+Das eine enth{lt :
+-----------------------------------------------------------------------------
+Path: cpmgut!v_p_dose@cpmgut.toppoint.de
+From: v_p_dose@cpmgut.toppoint.de@cpmgut.UUCP (Volker Dose)
+Newsgroups: comp.sys.cpm
+Subject: UUCP with CP/M
+Date: Tue, 27 Jul 93 16:24:04 MSZ
+Message-Id: <XX000000a6@cpmgut.UUCP
+Hello.
+UUCP works !!!!!
+-----------------------------------------------------------------------------
+Š
+ Der Absender ist hier eindeutig falsch! Wenn man in der Nachricht einen 
+'From:' Eintrag einf}gt, mit der kompletten email Adresse, so bleiben die 
+Eintr{ge 'Path:' und 'From:' (oberhalb des Eintrages 'Newsgroups') leer, bzw. 
+erscheint  'Path: cpmgut!' und 'From: @cpmgut.UUCP'. Unter dem Eintrag 
+'Subject:' erscheint dann aber der richtige 'From:'-Eintrag.
+
+ Auch PNEWS z{hlt im File SEQ.NUM die Anzahl der herausgehenden Mails. 
+
+
+
+ Da die Frage der Adresse bisher nicht abschliessend gel|st ist, benutze ich 
+ein Fu~teil am Ende jeder Mail, in der meine richtige email Adresse angegeben 
+ist. Mit dem Block-Einlesekommando von ZDE ist so etwas schnell eingef}gt.
+
+Meine 'signature':
+
+-----------------------------------------------------------------------------
+
+---
+Volker Dose			         email: v_p_dose@cpmgut.toppoint.de
+Dorfstrasse 10
+D-24235 Brodersdorf
+Tel.: 04343/1357   	           CP/M is not dead, it just smells funny !  
+---------------------------------------------------------------------------
+
+
+RNEWS.COM
+=========
+
+
+ RNEWS sortiert eingegangene Nachrichten in die verschiedenen Newsgroup- 
+Mailboxen (siehe 'newsgroup'-Eintr{ge im CONFIG.SYS). Die Internet-Mailbox 
+darf die Nachrichten nicht komprimieren. Scheinbar k|nnen die {quivalenten 
+Programme unter MS-DOS und Unix etwas mehr. Meine News wurden mir auch 
+komprimiert zugesandt, mit ZPATCH entdeckte ich am Beginn eines jeden solchen 
+Files den String '!# cunbatch'. Das ist eine Anweisung an RNEWS die Files zu 
+entpacken. Der oder die Sysops der Mailbox k|nnen aber auch auf nicht 
+komprimierte ]bertragung umstellen. Mir ist noch nicht klar, wie man die 
+Newsgroups bestimmt, die man erhalten will. Bei dem NN (siehe oben) gibt es 
+ein File '.newsrc', in dem die gew}nschten Bretter markiert werden. So etwas 
+{hnliches mu~ auch f}r den Pointbetrieb existieren.
+
+
+
+MAIL.COM
+========
+
+
+ MAIL ist der Offline Reader sowohl f}r die eingegangenen privaten Mails als 
+auch f}r die Newsgroups. Mit der Option '-u' kann die 'Mailbox' (File) 
+angew{hlt werden. Ich habe mir einen Alias geschrieben, der den ZFILER mit der 
+Option 'UUCP:*.MAI' aufruft. So kann ich die gew}nschte Mailbox anw{hlen und 
+mit 'ESC M' wird MAIL mit dem markierten File aufgerufen.
+
+ MAIL ist nicht besonders komfortabel, der CRR f}r das FIDO-Netz ist erheblich 
+m{chtiger. Insbesonders kann man nicht sehr einfach auf eine Mail antworten, 
+man mu~ das File mit 's' abspeichern und dann den Editor aufrufen. Ich habe 
+mir einen ZDE-Macro geschrieben, der 'quoting' erlaubt, in jede Zeile wird 
+also ein '> TAB' eingef}gt.Š
+
+
+
+CCICO.COM
+=========
+
+
+ Dieses Programm leistet die ]bertragung zum Zielsystem. CCICO entspricht in 
+der Unix-Welt einem UUCICO im Master-Modus. SCCICO w{re UUCICO im Slave-Modus. 
+Wird CCICO aufgerufen, sucht es ein Chatscript, mit der Extension des 
+gew}nschent Systems. Bei mir hei~t dieses File 'SYSTEM.TPK'. Wenn dies 
+gefunden wurde, wird zun{chst einmal der String '+++ATH0' an das Modem 
+gesendet, um eine eventuell zu bestehende Verbindung zu trennen. Dann wird das 
+Scriptfile abgearbeitet. Es handelt sich um ein File {hnlich den Chatfiles, 
+die QTERM verarbeiten kann. Dieses File soll die Internet-Box telefonisch 
+anw{hlen und das Login durchf}hren. Meine Mailbox besitzt 7 Modemports, diese 
+sieben Telefonnummern werden dreimal nacheinander gew{hlt. Wenn vom Modem 
+entweder 'BUSY' oder 'NO CARRIER' gesandt wird, wird zur n{chsten 
+Telefonnummer weitergegangen. Sendet das Modem 'CONNECT' beginnt das Login.
+
+Filename: SYSTEM.TPK
+----------------------------------------------------------------------------
+!: reset
+!@ z z + 1
+!# z > 3 `exit
+!> Das Modem wird initialisiert\r\n
+ .ATM0V1X4B0\r.OK\r\n.5.5
+!> Die erste Tel.-Nummer wird gewaehlt\r\n
+ .AT\r.OK\r\n.5.5.
+ .ATDP0431549061\r..
+![ - 10 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+!: nummer2
+!> Die zweite Tel.-Nummer wird gewaehlt\r\n
+ .AT\r.OK\r\n.5.5.
+ .ATDP0431549062\r..
+![ - 10 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+!: nummer3
+!> Die dritte Tel.-Nummer wird gewaehlt\r\n
+ .AT\r.OK\r\n.5.5.
+ .ATDP0431549063\r..
+![ - 10 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+!: nummer4
+!> Die vierte Tel.-Nummer wird gewaehlt\r\n
+ .AT\r.OK\r\n.5.5.
+ .ATDP0431549064\r..
+![ - 10 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+!: nummer5
+!> Die fuenfte Tel.-Nummer wird gewaehlt\r\n
+ .AT\r.OK\r\n.5.5.
+ .ATDP0431549065\r..
+![ - 10 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+!: nummer6
+!> Die sechste Tel.-Nummer wird gewaehlt\r\n
+ .AT\r.OK\r\n.5.5.Š .ATDP0431549066\r..
+![ - 10 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+!: nummer7
+!> Die siebte Tel.-Nummer wird gewaehlt\r\n
+ .AT\r.OK\r\n.5.5.
+ .ATDP0431549067\r..
+![ - 10 .CONNECT.BUSY.NO CARRIER.
+![ = CONNECT `connect
+![ = BUSY `reset
+![ = NO CARRIER `reset
+!# a = a `reset
+
+
+
+!: exit
+!> Das script ist beendet\r\n
+ .ATH0\r.OK\r\n.5.5.
+!Q
+
+!: connect
+!> Das login beginnt\7\r\n
+ ..Login:®                         » Daó <SPACE® in dieseî drei
+ .cpmgut\r.Password:®              » Zeileî muþ nat}rlicè entfernt
+ .PASSWORD\r.®                     » werden. 
+!d
+------------------------------------------------------------------------------
+
+ In der W{hlschleife d}rfen keine leeren Zeilen stehen. Ist dieser Login- 
+Vorgang beendet beginnt eine 'handshake'-Periode. Dies l{~t sich sehr sch|n 
+verfolgen, wenn CCICO mit dem Parameter '-X127' aufgerufen wird.
+
+ Jeder gesendete String beginnt mit einem '^P' und endet mit einer bin{ren 
+Null. Dieser 'initial handshake' geht folgenderma~en ab:
+
+called = das angerufene System
+caller = das anrufende System, hier CCICO
+
+   
+called : 'Shere=<hostname>' 'hostname' ist der UUCP Name des angerufenen
+                             Systems
+
+caller : 'S<hostname>'       das anrufende System sendet seinen Namen
+called : 'ROK'               das angerufene System sendet 'OK', wenn der
+                             <hostname> in Ordnung war.
+called : 'P<protocols>'      das angerufene System }bermittelt, mit welchen
+                             Protokollen die nachfolgende ]bertragung statt-
+                             finden kann. ]blich sind das 'g' und das 'e' 
+                             Protokoll. Das 'g' Protokoll ist Paket-
+                             orientiertund  Fehlerkorrigierend. Es wird von
+                             allen UUCP Installationen unterst}tzt. Bei der
+                             CP/M Version ist die Paketgr|~e auf 64 Byte
+                             begrenzt.     
+caller : 'U<protocol>'       Das CP/M UUCP sendet 'Ug'.
+
+
+ 
+ Zum Abschlu~ des 'initial handshake' werden die Strings 'INITA', 'INITB' und 
+'INITC' gesendet und zur}ckgeschickt. Jetzt beginnt die eigentliche 
+]bertragung mit dem gew{hlten Protokoll (hier 'g').Š
+ Der Master hat die M|glichkeit vier verschiednene Befehle zu senden. CCICO 
+liest nacheinander alle C-Files auf dem 'xferdrv' (siehe SMAIL.COM). Auf so 
+einen 'Sende'-Befehl reagiert der Slave mit 'SY', wenn er bereit zum Empfangen 
+ist. Ist der Slave nicht bereit sendet er 'SN4', wenn der Transfer im Moment 
+nicht durchgef}hrt werden kann oder 'SN2', wenn der Transfer niemals gelingen 
+kann, falls zum Beispiel auf das Ziel-Directory nicht zugegriffen werden kann.
+
+ Ist der Transfer gegl}ckt, sendet der Slave 'CY'. Der Master bearbeitet nun 
+das n{chste C-File. Sind diese alle abgearbeitet, so sendet CCICO ein 'H', 
+womit er signalisiert, da~ von seiner Seite aus die Verbindung getrennt werden 
+kann. Der Slave sendet nun seinerseits 'HY', wenn er auch dieser Auffassung 
+ist. Er kann aber auch 'HN' senden, dies bedeutet, da~ der Slave jetzt Master 
+werden will, um Files zum urspr}nglichen 'caller' zu }bertragen. Die Systeme 
+tauschen dann die Rollen, es werden Kommandos wie in den C-Files beschrieben, 
+ausgef}hrt. Sind nun alle Files von dem angerufenen System }bertragen, sendet 
+es wieder 'H' und CCICO antwortet mit 'HY.  Dieses 'HY' wird geechot und die 
+]bertragungsphase ist beendet.
+
+ Es folgt der 'final handshake'. Der Master sendet 'CLOSE', der Slave 
+antwortet mit 'CLOSE' und zum Schlu~ sendet der 'caller' '000000', also sechs 
+ASCII-Nullen, die so geechot werden. Dananch unterbricht der 'called' die 
+Verbindung. CCICO sendet hiernach noch einmal '+++ATH0' an das Modem und kehrt 
+dann zum CCP zur}ck.
+
+
+
+
+UUCP.COM
+========
+
+
+ UUCP nun dient zum ]bermitteln von Files von einem System zu einem anderen. 
+UUCP erzeugt pro zu }bertragendem File je ein C-File, welches den Befehl zum 
+]bertragen enth{lt, und je ein D-File, welches das zu }bertragende File 
+enth{lt. Das C-File wird von CCICO ausgef}hrt. Da Unix ein relativ 'sicheres' 
+Betriebssystem ist, ist es meistens nicht m|glich Files wirklich zu 
+}bertragen. Der Sender ben|tigt eine Schreiberlaubnis f}r das Directory, in 
+das das File gesandt wird, die er in der Regel nicht hat. Beim n{chsten Login 
+erh{lt der User eine Mail mit dem Inhalt 'Request Denied'. Es ist aber 
+normalerweise m|glich, in das Unterdirectory '/usr/spool/uucppublic' Files zu 
+senden. Ebenso wird es kaum m|glich sein, Files zu 'requesten', da das Login 
+ja nicht mit dem 'normalen' Usernamen erfolgte, sondern mit dem Pointnamen.
+
+
+SCCICO.COM
+==========
+
+
+ Dieses Programm ist der Gegenpart von CCICO. Es wird dann aufgerufen, wenn 
+WAIT einen Anrufer (ein anderes System) erkannt hat und den Zugang zu dem 
+Hostsystem erlaubt. Mangels einem zweiten Rechner habe ich das Programm bisher 
+nicht ausprobieren k|nnen.
+
+
+WAIT.COM
+========
+
+ WAIT funktioniert beim mir nicht! Da es auch nur f}r SCCICO n|tig ist, ist 
+dies zu verschmerzen. Š
+
+
+ Soweit meine Erfahrungen mit der CP/M Version von UUCP. Abschliessend mu~ 
+gesagt werden, da~ es sich hierbei wirklich um ein gro~artiges Programmpaket 
+handelt. Die ]bertragung mit CCICO zum Internet hin funktioniert 
+ausgezeichnet.
+
+ Dieser Bericht ist kein K|nigsweg zum Installieren von UUCP 21b. 
+Insbesondere meine Einsch{tzungen }ber die Bedeutung der Eintr{ge 'user', 
+'inethost' und 'smarthost' sind wahrscheinlch falsch, mindestens 
+korrekturbed}rftig. Die Internetkundigen unter den Lesern werden gebeten, ihre 
+Erkenntnisse hierzu beizusteuern.
+
+
+Brodersdorf, 27.7.1993
+Volker Dose
+
+
+ERG[NZUNGEN
+===========
+
+ Zum Thema WAIT.COM sei noch hinzugef}gt, da~ dieses Programm auf meinem 
+Rechner (Genie IIIs mit 9.2 MHz und Z180 CPU) sofort abbricht. Der Timer-OVL, 
+der auch f}r SMAIL usw. n|tig ist, wird bei WAIT.COM gar nicht durchlaufen. 
+Eventuell enth{lt WAIT.COM Illegals oder ist nur f}r CP/M 2.2 geeignet.
+
+ Ich verwende in diesem Artikel den Begriff 'Internet-Adresse'. Dies ist nicht 
+ganz korrekt. Der String 'v_p_dose@cpmgut.toppoint.de' ist zun{chst einmal 
+mein vollst{ndiger Username. Au~erdem ist dies meine 'Usenet'-Adresse. Eine 
+Internet-Adresse haben nur Rechner mit TCP/IP, ein bestimmtes 
+]bertragungsprotokoll f}r Unix-Rechner. Solche Adressen sehen folgenderma~en 
+aus º  '193.174.3.<irgendwas>'.
+
+ Zu dem Problem mit dem richtigen Absender hier eine Antwort von Cornelius Kock 
+(vicki@vicki.toppoint.de) aus Kiel:
+ 
+Zitat Anfang
+------------------------------------------------------------------------------ 
+Die Adressierung im Use/Internet ist i.d.R. von der Form
+
+	user@kiste.subdomain.domain.topleveldomain
+
+user@kiste ist klar. Domains sind Verwaltungsbereich eines Netzes, eine Sub-
+domain ein Teilbereich einer Domain, topleveldomain ist ein Oberbereich.
+Oberbereiche sind z.B.
+	de -- Deutschland
+	ch -- Schweiz
+	uk -- England
+	com -- Commercial: Kommerzielles aus den USA
+	mil -- Military : US-Army und aehnliches
+	edu -- Educational : Amerikanische Unis.
+
+Beispiel: Der Rechnername 
+
+	methan.chemie.fu-berlin.de zerfaellt in
+				^ de -- Deutschland
+		      ^ Freien Uni Berlin in
+	       ^ Fachbereichs Chemie der
+	^ der Rechner methan des Š Domains sind also hierarchisch geordnet. Es gibt in .de eine Domain .toppoint,
+in welcher der Rechner cpmgut zu finden ist. Dein Rechnername im Usenet
+ist also cpmgut.toppoint.de, Dein (vollstaendiger) Username
+v_p_dose@cpmgut.toppoint.de. Die Domain .UUCP ist fuer diejenigen Rechner
+gedacht, die noch keiner Domain angehoeren. Dummerweise sind sie damit mail-
+maessig nur noch schwer erreichbar, weil Mail in eine Domain ueber bestimmte
+Knotenrechner weitergeleitet wird. Der Knoten fuer .toppoint.de ist die tpki.
+In anderen Worten: Irgendwo muss bei Dir noch eine Domainangabe rumliegen,
+welche dafuer sorgt, dass cpmgut sich nicht wie cpmgut.toppoint.de fuehlt.
+---------------------------------------------------------------------------
+Zitat Ende.
+
+
+ Ich habe jetzt eine L|sung gefunden, damit PNEWS und SMAIL die richtige 
+Adresse in den 'From:'-String eintragen. Dazu mu~te ich beide Programme 
+patchen. In PNEWS findet sich der ein Codesegment, welches f}r den Eintrag des 
+String '@cpmgut.UUCP' verantwortlich ist.
+
+          ORG       01A96H
+          DEFB      'From: %s@%s.UUCP',0Ah,00h
+
+ C-Kundige werden hierin einen String erkennen, der dem in einer 'printf'- 
+Anweisung sehr {hnlich ist. Ich habe ihn ge{ndert in:
+
+          DEFB      'From: %s',0Ah,00h
+
+ Somit wird in News der richtige Absender eingetragen.
+
+ In SMAIL kann man {hnlich vorgehen. In dem 'From: '-Eintrag wird folgendes 
+eingetragen, soweit man keinen 'From:'-Eintrag im Header definiert:
+
+From: <hostname>!<user-ID>
+
+bei mir also 'From: cpmgut!v_p_dose@cpmgut.toppoint.de (Volker Dose)'
+
+ Da die Anweisung im Programm nicht so einfach zu {ndern war wie in PNEWS 
+(hier stehen zwei '%s'), habe ich SMAIL um einen Record erweitert und in diesen 
+dann den 'From:'-Header so eingetragen, wie er mir richtig erscheint, also ohne 
+den vorgestellten <hostname>. 
+
+          ORG       2580H
+          DEFB      'From: v_p_dose@cpmgut.toppoint.de (Volker Dose)',0Ah,00h
+
+ Au~erdeí m}sseî zweé Zeigeò auæ deî neueî Strinç gerichteô werden.
+
+          ORG       0B2CH
+          LD        HL,02580H        ; vorher 0227FH
+
+          ORG       022BFH
+          DEFW      2580H            ; vorher 0227FH
+
+ Diese [nderungen m|gen brutal erscheinen, resultieren aber wahrscheinlich 
+daraus, da~ David Goodenough dieses Programm f}r wirkliche UUCP-Points 
+erstellt hat. Ich will jedoch nur die Nachrichten und Mails von meiner UUCP- 
+Box zuhause bearbeiten k|nnen (siehe Cornelius' Erl{uterungen zu Domains und 
+Adressen).
+
+     

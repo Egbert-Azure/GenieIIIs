@@ -1,0 +1,11 @@
+.. Here's an example of a format file.
+.. To print a document called "myfile" using these parameters:
+..      A> bradford article myfile
+..
+.fnselect      Read the "select" font.
+.ml15          1.5-inch left margin
+.mr65          1.5-inch right margin
+.tm9           1.5-inch top margin
+.bm9           1.5-inch bottom margin
+ogram" for Bradford that makes it
+.. print a gri

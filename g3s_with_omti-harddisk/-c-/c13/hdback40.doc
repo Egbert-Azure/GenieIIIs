@@ -1,0 +1,473 @@
+HDBACK40 by Rick Charnes
+
+*******************************************************************
+*                                                                 *
+*                       HARD DISK BACKUP SCRIPT                   *
+*                                                                 *
+*                *** TELLS YOU DATE OF LAST BACKUP ***            *
+*                      *** FOR EACH DIRECTORY ***                 *
+*                                                                 *
+*******************************************************************
+
+
+August 29, 1989  --- I've been procrastinating and procrastinating on 
+finishing writing this documentation.  (I started it in early July!)  
+So I decided I was going to get it done tonight no matter what.  It's 
+a tad haphazard and poorly written but I hope you'll get the idea.  I 
+think it's a really nice concept.
+
+I would appreciate if you not use this program for too long without 
+contacting me to let me know how you liked it.  I can be reached at 
+1165 Shotwell, San Francisco, CA 94110 or (415) 826-9448.
+
+                                * * *
+
+     This is a release of the BACKUP alias and ZEX script which I 
+described in my column in The Computer Journal #38, May/June 1989.  It 
+also continues the series I began with my release of HD-ARC2.LBR which 
+was written up in Echelon's Z-News #704 of 9 March 1987 and released 
+on Echelon's Software Update Service (R.I.P.) diskette #9.  It 
+requires ZSDOS, ZDDOS or DateStamper.  
+
+     I would encourage users of these scripts to first read the TCJ 
+column to get some idea of the philosophy behind it.  I am including 
+my disk copy of the column in this library.
+
+     This hard disk backup technique has two very nice features that 
+particularly recommend it and that I have never seen on any other 
+CP/M-compatible backup program: 
+
+     (1) It keeps a non-volatile record of, and displays, the date and 
+         time of the _previous_ backup.
+
+     (2) By alphabetically ordering files on the backup floppies it 
+         ensures that a given file from the hard disk will always and 
+         for each backup be copied on to the same copy of that file on 
+         the same floppy.  Without some technique of this nature there 
+         is no way of ensuring that one will not end up with multiple 
+         and different copies of one's hard disk files on different 
+         backup floppies.
+
+     In addition, thanks to both the wonderful work Hal Bower has done with 
+the new ZCPR3 extended TCAP which for those computers capable of it 
+allows for straight-line graphics characters, and to Dave Ramsey's new 
+BOX.COM which avails itself of these characters, HDBACK40 has graphic 
+and box displays quite unlike anything generally seen in the CP/M 
+world.
+
+     It requires ZSDOS/ZDDOS or DateStamper, and just about everything 
+I describe here also assumes you have Hal Bower's extended TCAP 
+(inside TCAP-HB3.LBR or TCAP-HB4.LBR) installed on your system for 
+graphics.  If you don't have graphics capability, just modify 
+everything (ZEX script and ALIAS.CMD) to not use BOX.COM and 
+GXYMSG.COM and you'll do fine.
+
+Operation
+---------
+
+     HDBACK40 is a combination ARUNZ alias and ZEX script that uses 
+the shell variable feature to store the date of each backup.  It will 
+back up large hard disk directories onto six (this number can be 
+changed if you like) separate backup floppies.  It is perfect for 
+one's incremental/regular backups, setting the archive bit after its 
+execution; many other backup programs are only useful for one-time 
+backups.  It stores files from the hard disk onto floppies 
+alphabetically in the following sequence:
+
+Floppy 1       Files beginning with the letter A through D
+Floppy 2                                       E through J
+Floppy 3                                       K through P
+Floppy 4                                       Q through U
+Floppy 5                                       V through Y
+Floppy 6       Files beginning with that infamous letter Z
+
+
+     Syntax is either 'BACKUP [DIR|DU:]' or 'BACKUP [o]' where 
+'DIR|DU' and 'o' are both optional.  [O]ptions are:
+
+     'TWO', 'THREE', 'A', 'B', 'C', 'D', or 'E'
+
+and are explained below.
+
+     My largest directories, which run 1 - 1.5 megs, need all six 
+floppies.  However, smaller directories require only three or even 
+two.  For these I still use HDBACK40 as I still want to ensure that 
+files are stored on the floppies alphabetically.  If you determine 
+that all files on your directory can fit on two floppies, then the 
+syntax is 'BACKUP TWO'.  For three, 'BACKUP THREE.'
+
+     Further, you will occasionally need to (re)start the backup 
+process in the middle of a multi-floppy backup, after a number of 
+floppies have received their respective files.  For this purpose the 
+following options are provided:
+
+To restart at the backing-up at floppy #1         BACKUP A
+                                       #2         BACKUP B
+                                       #3         BACKUP C
+                                       #4         BACKUP D
+                                       #5         BACKUP E
+
+     You will need to modify your ZCPR3 startup sequence for 
+HDBACK40's 'date storage' feature to work.  You will need to run an 
+ARUNZ alias which in turn executes a ZEX script.  Any sequence you 
+presently use can be incorporated into either of these.  The alias is:
+
+     dw
+     reg s2 $dd q;go s3 $dc q
+     rs laston %startdat$$|zex startup $$r2 $dy $$r3:$dn $da
+
+
+     ARUNZ's $dd and $dc symbols always return a 2-digit number which 
+doesn't always look nice.  We don't want to see 
+
+                     SEPTEMBER 03, 1989, 04:45 PM
+
+but rather 
+
+                      SEPTEMBER 3, 1989, 4:45 PM
+
+To deal with this situation we use REG to store the date in register 
+2 and the hour in register 3 respectively.  In the following alias we 
+use the $Rfnn form of ARUNZ where the 'f' (=floating decimal) ensures 
+that a single digit is returned if that's all that exists.
+
+     We also set register 7 to the 'number' of the month.
+
+
+HDBACK40 requires:
+
+[Included in HDBACK40.LBR:]
+
+INPUT      companion aliases included in this LBR inside HDBACK40.CMD
+INPUTERA   
+
+GXYMSG 0.1 (included in this LBR; ver 0.2 locks my system; seems to be 
+            buggy
+
+PPIP19    I have modified this to set the ZCPR3 error flag as 
+described in my column in TCJ #38.  We need this for our script. 
+Briefly:
+
+     Backup disk is full                       = error flag set to 7 
+     User abort entered                        = error flag set to 8
+     Backup disk has no more directory entrres = error flag set to 9
+
+I have left PPIP19 named exactly that in the ZEX script, as I think 
+many ZSDOS users are using the ZSDOS 'COPY.COM' by Hal Bower for their 
+many file copy utility.
+
+
+[NOT INCLUDED:]
+---------------
+
+ZEX50J    See Bridger Mitchell's superb ZEX50x.LBR
+
+GOTO14    Also inside ZEX50J.LBR
+
+BOX       These two are included in Dave Ramsey's 
+GOTOXY    GST02.LBR, available at fine Z-Nodes everywhere.
+
+
+REG13     executing at 100 hex, NOT at 8000h; or REG in your RCP.
+          Rename to REG.COM
+
+IF.COM    You'll need two copies: one, loading at 100h named IF100.COM 
+          and one other loading at 8000h named IF.COM  If your 
+          everyday IF.COM is the version that executes at 8000h or is 
+          a type 4, that's fine.  But for our purposes here, unless 
+          you have the IF REG option turned on in your FCP, you'll 
+          need an additional copy of the version that runs at 100h, 
+          named to IF100.COM.
+
+DW.COM    From Edward Barry's DW.LBR from February 1989.
+
+SHVAR13   Howard Goldstein's update of Rick Conn's classic
+          Rename to SHV.
+
+RESOLV13  Renamed to RS
+or later
+
+ARUNZ09Q 
+or later  Type 4 version (possible TPA problems with type 3!)
+
+HOLD.COM  Get it from HOLDZ.LBR.  You can even substitute SAK.COM as 
+          'SAK /P3' or any of the other "pause operations for 'n' 
+          seconds"-type programs.  Just modify the ZEX script 
+          accordingly.
+
+NSWEEP    (Renamed to NS)
+
+LASTBACK.COM   Use with terminals that turn on reverse video with ^G4 
+               and on with ^G0, such as my Qume 102.  In this case, 
+               you should use the BACKUP2QUME alias instead of 
+               BACKUP2.  Others should use the regular BACKUP2 alias.
+
+
+HOW IT WORKS
+------------
+
+The scheme works by storing a variable in SH.VAR for each directory 
+with the date and time each was backed up.  For directory A15: our 
+variable is named BUDATA15, "BackUpDAT of A15."  For C0: it would be 
+BUDATC0.  You don't have to worry about this; the ZEX script does it 
+for you.
+
+
+Let's say it's 9:30 p.m., August 29, 1989.  Here's the ARUNZ script:
+
+backup	  $tp1:;reg s2 $dd q;go s3 $dc q; backup2
+backup2	  rs echo last time directory $td1$tu1: was backed up: 
+          %budat$td1$tu1$$|zex backup budat$hb %day, 
+          %month $rf02, 19$dy $rf03:$dn $da $1
+
+We log on to the (optional) directory specified on the command line 
+parameter.  We save the date to register 2 and the hour in register 3. 
+Now we log on to the second alias.  Say we're logged on to A15.  
+RESOLVE (renamed to RS) reads the variable named BUDAT15.  Thanks to 
+the last time we ran the BACKUP script, the variable BUDAT15 is 
+defined as the string:
+
+                 SATURDAY, AUGUST 5, 1989 10:10 A.M.
+
+(We'll see how that's done in a minute -- SHVAR does it in the ZEX 
+script.)  So we send the long parameter to ECHO:
+
+     LAST TIME DIRECTORY A15: WAS BACKED UP:  SATURDAY, AUGUST 5....
+
+which is echoed to our screen.  Then, still in RESOLVE ('$|' is 
+RESOLVE's substitute multiple command line separator), the following 
+command is sent to RESOLVE
+
+ZEX BACKUP BUDAT15 %DAY, %MONTH 29, 1989 9:30 PM
+
+And since we have installed my requisite STARTUP.ZEX in our startup 
+procedure (also thanks to Edward Barry's DW), the variables %DAY and 
+%MONTH were defined today as TUESDAY and AUGUST respectively.  So 
+RESOLVE then sends to ZEX the following:
+
+BACKUP BUDAT15 TUESDAY, AUGUST 26, 1989 9:30 PM
+
+Then when ZEX and BACKUP.ZEX get that, we see at the very top of the 
+script the line 'SHVAR /Q $1 $2 $3 $4 $5 $6 $7.  Those parameter 
+symbols aren't there for nothing!  The command line becomes:
+
+SHVAR /Q BUDAT15 TUESDAY, AUGUST 26, 1989 9:30 P.M.
+
+With RESOLVE v1.3, this first turns off all console display (you can 
+remove the '/Q' at first to see/confirm what is happening), then 
+takes the first parameter, here 'BUDAT15', as the variable name, and 
+defines it to the rest of the command line, here the string:
+
+TUESDAY, AUGUST 26, 1989 9:30 PM.
+
+And that's how it works!
+
+There's a lot I didn't explain, especially about INPUTERA.  Just read 
+my TCJ column for those and others.
+
+
+Notes
+-----
+
+     Regarding video displays, I should add that HDBACK40 (along with 
+most of what I write!) suffers terribly from the lack of a 
+ZCPR3 TCAP that incorporates terminal codes for more than one 
+"standout mode." Many terminals have dim, reverse, blink, 
+reverse/blink, underline, etc.  Since different terminals use 
+different escape sequences for these video modes, I cannot include any 
+particular set in these scripts.  It is wonderful that the new TCAP 
+standardizes graphics characters, as without this I never would have been 
+able to offer the graphics boxes; the next step will be to 
+standardize the above video escape sequences so ZEX scripts, aliases, 
+ECHO.COM, and others will be able to offer several video modes.  
+The script BU-QUME.ZEX included in this library is my personal copy 
+which I use on my Qume 102A terminal that incorporates (by 
+hard-coding) reverse video, reverse video/blink, etc.  Those with the 
+same terminal should be able to use it directly; others should be able 
+to use it as a skeleton which they can adapt to their own terminal's 
+codes for the desired video attribute.  The way I originally wrote the 
+script (in BU-QUME.ZEX) and as I still have it for myself is to have 
+some of the screen displays inside graphics boxes but others inside 
+what I call reverse video boxes.  Here are a samples of how I create 
+boxes of this latter type:
+
+gotoxy 7 1
+|say|
+              ^[G4                                                 ^[G0
+              ^[G4 Welcome to Rick's archiving program!            ^[G0
+              ^[G4 Put BACKUP DISK #1 in your backup drive,        ^[G0
+              ^[G4 Make yourself comfortable in the pilot's seat,  ^[G0
+              ^[G4 And hit RETURN . . .                            ^[G0
+              ^[G4                                                 ^[G0
+|end say|
+                                 -- or --
+gotoxy 8 1
+|say|
+              ^[G6                                                 ^[G0
+              ^[G6 * SETTING ARCHIVE BIT WHERE APPROPRIATE  . . .  ^[G0
+              ^[G6                                                 ^[G0
+|end say|
+                                 -- or --
+|"|
+                 ^[G4                                           ^[G0
+                 ^[G4 * BACKING UP FILES "A" THROUGH "D" . . .  ^[G0
+                 ^[G4                                           ^[G0
+|"|
+
+On my Qume 102a, ^[G4 turns on reverse video, ^[G6 turns on blink and 
+reverse video, and ^[G0 turns them both off.  These create very nice 
+'reverse video' boxes, where the box is filled with highlighted space. 
+These provide a nice complement to the more traditional boxes in which 
+the border is delineated with graphics characters.
+
+NOTES ON ZEX50: notice that in the doc files to ZEX50 it says that 
+"spaces and tabs at the begining of a line are ignored."  Of course 
+this does not apply to spaces at the beginning of a line *inside a 
+|say| ... |end say| directive, and the above spaces *are* 
+acknowledged.  Also note that, unlike NZEX-D, the (hidden) CR/LF's at 
+the end of each line inside a |say| ... |end say| directive _are_ read 
+by ZEX.  In other words, in the old NZEX-D, I had to put a ^| 
+directive at the end of each of the above lines to ensure that a CR/LF 
+was fed to the displayed text so that the next line would begin on the 
+next screen line.  ZEX50j is more flexible; if we DON'T want a CR/LF 
+here we can continue our display text on the next script line with a 
+|JOIN| directive which discards the CR/LF; on the other hand if we do 
+we simply leave it as is.
+
+     By the way, when drawing text inside of |say| ... |end say| 
+directives (or |"|, which is the same thing), do not use the TAB key 
+if you are in VDE/NW/WS's non-document mode.  This inserts a genuine 
+TAB character (09h) which will not be read properly by the directive.  
+Fill everything with spaces.  You can do this even while in VDE's 
+N)on-document mode by toggling to "variable tab" mode with ^OV; this 
+will insert spaces instead of the ^I character.
+
+     As I prepared BACKUP.ZEX for public presentation, I thought it 
+would be nice to do something that I had been meaning to do for the 
+last few weeks: modify the script to take advantage of the 'ZCPR3 
+registers as ASCII characters' feature of ARUNZ09R, which along with 
+the ability of REG to increment registers opens up some nice 
+possibilities.  The way ARUNZ09R is set up, the $Ra00 symbol will 
+display the ASCII character 'A' when register 0 is set to 193, 'B' 
+when it is 194, and so on up to 'Z' when the register is 218.  So I 
+thought that instead of 26 different executions of COPY (COPY A*.* 
+BACKUP: /AE ... COPY B*.* BACKUP /AE ... COPY Z*.* BACKUP /AE) it 
+would be nice to have a single execution and then loop through it 26 
+times.  I figured I would first set register 0 (or any other) to 193 
+at the beginning of the ZEX script, then have an ARUNZ alias as 
+follows:
+
+                  copy $Ra00*.* BACKUP: /AE;reg p0 q
+
+The first time the ZEX script invoked this alias it would resolve as 
+'COPY A*.* BACKUP /AE', then 'REG P0 Q' would increment register 0, so 
+the second time it would come out as 'COPY B*.* BACKUP /AE', and the 
+third as 'COPY C*.* BACKUP /AE', etc., etc.  The dynamic duo of the 
+$RAnn feature and REG incrementing the register is quite powerful.  
+However, due to the structure of BACKUP.ZEX with its multiple labels 
+indexing the particular letter being backed up as well as testing PPIP 
+for user abort or disk full makes this infeasible here.  
+
+     Then I thought I could use this feature of ARUNZ09R where the 
+script says "BACKING UP FILES X THROUGH Y..." inside a box.  If I set, 
+at the beginning of the ZEX script, register 0 (for instance) to 193 
+(corresponds to 'A') and register 1 to 196 (corresponds to 'D'), then 
+I could have a single alias as follows:
+
+box 0 7 16 5 50
+rs gxymsg 9 25 backing up files "$ra00" through "$ra01"...
+reg p0 q
+go p0 q
+go p0 q
+.
+.
+go p1 q
+go p1 q
+.
+.
+
+These last executions of REG.COM (for GO to work, type 1 would be 
+necessary, not TYPE 3) would increment the respective registers.  If, 
+for instance, we had 5 incrementations each of register 0 and 1, then 
+the next time the alias ran it would say:
+
+                   BACKING UP FILES 'F' THROUGH 'I'
+
+('F' and 'I' are 5 characters after 'A' and 'D' respectively),
+
+and then the third time,
+
+                   BACKING UP FILES 'K' THROUGH 'N'
+
+In other situations this might work nicely.  However, in addition to 
+the aforementioned conflicts with the ZEX labels we have here an 
+additional factor: I have grouped the alphabetized files by floppy in 
+a very specific and deliberate manner:
+
+Floppy 1 gets files from A to D
+Floppy 2 gets files from E to J
+Floppy 3 gets files from K to P
+Floppy 4 gets files from Q to U
+Floppy 5 gets files from V to Y
+Floppy 6 gets files starting with Z
+
+This was worked out with much trial and error and is what I have 
+determined to be the most efficient grouping, based on the average 
+occurence of file names beginning with each letter.  The alias above 
+would lock us into a rigid pattern with each of the two letters being 
+incremented by the exact same number each time.
+
+In a less complex situation, $RAnn and REG would be ideal and would 
+save a great deal of space in the ZEX script (or alias).  Except for 
+matters of 'principle' we don't really need to be concerned about 
+space here, however; as long as we are using the type 4 ARUNZ we will 
+not have TPA difficulties.  It is true that due to the size of 
+BACKUP.ZEX we are effectively running at a TPA fully 10k less than 
+what our system is normally, yet if we are using a type 4 ARUNZ this 
+will present no problems.
+
+     Undaunted, I thought next I could still take advantage of REG's 
+incrementing abilities, but without the $RAnn "registers as ASCII 
+characters" feature, and rather simply use 'REG Pn' to increment the 
+registers as numeric values.  For instance, instead of the many 
+individual executions of BOX and GXYMSG that say:
+
+               PLEASE REMOVE DISK N and INSERT DISK N+1
+
+I tried setting register 0 to 1, and 1 to 2 at the beginning of the 
+ZEX script, and then putting the following as a label in ZEX to which 
+I could make references when appropriate:
+
+;=remove-msg
+box 0 7 6 7 65
+resolve gxymsg 10 19 please remove disk $r0 and insert disk $r1
+reg p0 q
+go p1 q
+
+However, I realize without a RET or GOSUB this was impossible.  GOTO 
+would not work correctly, as after the label executes we need to 
+return to where the call was made.
+
+     I decided to keep the ZEX script as is -- long and 
+straightforward.
+
+
+Random notes
+------------
+
+I would have preferred to use Paul Pomerleau's unknown and exotic 
+program PUSH (see his PUSH11.LBR) to save the current DIR/DU before we 
+log over to the BACKUP directory.  However it seems to work 
+erratically under low TPA situations.  I am therefore "pushing" the 
+current DIR/DU into a named shell variable with a RESOLVE/SHVAR duo 
+(see if you can figure out how I am doing it) and popping it back 
+later with RESOLVE.
+
+Unfortunately, GXYMSG has no way of displaying lower case letters.  I 
+don't like all upper-case display; it always reminds me too much of 
+vintage 1981 Apple II's.  So on many of the status reporting messages                        
+I use a combination of GOTOXY and ZEX's console display directive, 
+|"|.
+
+                              HAVE FUN!
+

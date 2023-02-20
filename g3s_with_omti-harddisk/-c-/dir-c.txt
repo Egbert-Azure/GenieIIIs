@@ -1,0 +1,243 @@
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-
+
+[.]           [..]          banner        [c0]          [c1]        
+[c10]         [c11]         [c12]         [c13]         [c14]       
+[c2]          [c3]          [c4]          [c5]          [c9]        
+dir-c.txt     index.html    
+       17 file(s)       9.490 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c0
+
+[.]             [..]            alias.cmd       banner          ccp.cpm       
+clrhist.cpm     cmdrun.cpm      cpm3.sys        fxpark.cpm      if.cpm        
+index.html      profile.sub     sh.var          startz3p.cpm    submit.cpm    
+z3plus.cpm      z3plus.lbr      zfiler.cmd      zfiler.cpm      zrlsh.cpm     
+ztime.cpm       
+       21 file(s)     181.299 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c1
+
+[.]             [..]            asm.vmn         atob.cpm        atob.czm      
+autotog.cpm     autotog.czm     banner          bcomp.cpm       bcomp.czm     
+box.cpm         box.czm         btoa.cpm        btoa.czm        bu.cpm        
+bu.czm          cd.cpm          cd.czm          chaos.cpm       chaos.czm     
+charset.cpm     charset.czm     clrhist.cpm     clrhist.czm     command.lbr   
+config.lbr      copy.cpm        copy.czm        copysys.cpm     copysys.czm   
+corner.cpm      corner.czm      cpset.cpm       cpset.czm       crunch.cpm    
+crunch.czm      d.cpm           d.czm           danal.cpm       danal.czm     
+device.cpm      device.czm      diskcat.vmn     diskinfo.cpm    diskinfo.czm  
+diskstat.cpm    diskstat.czm    do.cpm          do.czm          doscom.pma    
+dump.cpm        dump.czm        ed.cpm          ed.czm          editndr.cpm   
+editndr.czm     editz3pl.cpm    editz3pl.czm    erabox.cpm      erabox.czm    
+eraline.cpm     eraline.czm     erase.cpm       erase.czm       fbad.cpm      
+fbad.czm        font12.cpm      font12.czm      font14.cpm      font14.czm    
+format.cpm      format.czm      fremd.cpm       fremd.czm       ftasten.cpm   
+ftasten.czm     gdospara.cpm    gdospara.czm    gencom.cpm      gencom.czm    
+get.cpm         get.czm         gotoxy.cpm      gotoxy.czm      graoff.cpm    
+graoff.czm      graon.cpm       graon.czm       gtv.cpm         gtv.czm       
+gxymsg.cpm      gxymsg.czm      hbar.cpm        hbar.czm        hexcom.cpm    
+hexcom.czm      holdz11.cpm     holdz11.czm     if.cpm          if.czm        
+index.html      initdir.cpm     initdir.czm     iobug.cpm       iobug.czm     
+isec.cpm        isec.czm        jetldr.cpm      jetldr.czm      konfig.cpm    
+konfig.czm      kopier.cpm      kopier.czm      ldir.cpm        ldir.czm      
+lget.cpm        lget.czm        liesgdos.cpm    liesgdos.czm    line.cpm      
+line.czm        lput.cpm        lput.czm        lrepair.cpm     lrepair.czm   
+lsh.cpm         lsh.czm         lshinst.cpm     lshinst.czm     lt.cpm        
+lt.czm          lx.cpm          lx.czm          m6845.cpm       m6845.czm     
+manchmal.cpm    manchmal.czm    menu.vmn        msdos.cpm       msdos.czm     
+msform.cpm      msform.czm      mu3.cpm         mu3.czm         notepad.cpm   
+notepad.czm     nsweep.cpm      nsweep.czm      nulu.cpm        nulu.czm      
+patch.cpm       patch.czm       path.cpm        path.czm        pause.cpm     
+pause.czm       pip.cpm         pip.czm         pkxarc.zex      pmarc.cpm     
+pmarc.czm       pmext.cpm       pmext.czm       pmsfx2.cpm      pmsfx2.czm    
+print.cpm       print.czm       prtdrv.cpm      prtdrv.czm      put.cpm       
+put.czm         rename.cpm      rename.czm      rsv.cpm         rsv.czm       
+rsxmap.cpm      rsxmap.czm      sainst.cpm      sainst.czm      sak.cpm       
+sak.czm         salias.cpm      salias.czm      save.cpm        save.czm      
+savendr.cpm     savendr.czm     scrsav.cpm      scrsav.czm      sdz.cpm       
+sdz.czm         selpr           set.cpm         set.czm         setdef.cpm    
+setdef.czm      sh.cpm          sh.czm          shctrl.cpm      shctrl.czm    
+shdefine.cpm    shdefine.czm    show.cpm        show.czm        shset.cpm     
+shset.czm       shvar.cpm       shvar.czm       sid.cpm         sid.czm       
+sio.cpm         sio.czm         szap4.cpm       szap4.czm       tcselect.cpm  
+tcselect.czm    tcview24.cpm    tcview24.czm    tdir.cpm        tdir.czm      
+term3.vmn       type.cpm        type.czm        unarc.cpm       unarc.czm     
+uncr.cpm        uncr.czm        v.cpm           v.czm           valias.cpm    
+valias.czm      vbar.cpm        vbar.czm        vcinst21.cpm    vcinst21.czm  
+vcomp.cpm       vcomp.czm       vid.cpm         vid.czm         vmenu.cpm     
+vmenu.czm       vmenuc.cpm      vmenuc.czm      vren.cpm        vren.czm      
+w.cpm           w.czm           xref.cpm        xref.czm        zcnfg.cpm     
+zcnfg.czm       zde.cpm         zde.czm         zdt.cpm         zdt.czm       
+zeisatz.cpm     zeisatz.czm     zerrinst.cpm    zerrinst.czm    zerrlsh.cpm   
+zerrlsh.czm     zex.cpm         zex.czm         zex.rsx         zlt.cpm       
+zlt.czm         zp.cpm          zp.czm          zshow.cpm       zshow.czm     
+ztime.cpm       ztime.czm       
+      272 file(s)   2.751.924 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c10
+
+[.]           [..]          banner        index.html    mp.cpm      
+mp.hlp        mp.ovr        mp80          
+        8 file(s)     113.965 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c11
+
+[.]             [..]            -read.me        banner          help.cpm      
+help.hlp        index.html      lbrhlpcf.txt    lhc.cpm         lhq.cpm       
+menue.hlp       zhelp.cpm       
+       12 file(s)      75.977 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c12
+
+[.]           [..]          banner        index.html    kermit.cpm  
+lync.cpm      qterm.cpm     
+        7 file(s)      48.499 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c13
+
+[.]             [..]            backup.zex      banner          gxymsg.cpm    
+hdback40.cmd    hdback40.doc    hdback40.for    hdback40.lbr    index.html    
+lastback.cpm    ppip19.cpm      start.zex       tcj-38.col      
+       14 file(s)     137.558 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c14
+
+[.]             [..]            banner          index.html      ini.bak       
+ini.tst         kermit.cpm      local.sub       lync.arc        lync280.cpm   
+makemex.sub     mex.hlp         mex112.lbr      mex114.lbr      mex2g3s.cpm   
+mload.cpm       move3.cpm       moveit.lbr      movit280.cpm    phone.lst     
+phone.num       qterm280.cpm    set.mex         sz.sub          zcpm.sub      
+zmconfig.ovr    zmconfig.ozr    zminit.ovr      zminit.ozr      zmovl.zz0     
+zmp-cpm3.lbr    zmp-cpm3.z80    zmp-z280.lbr    zmp.cfg         zmp.cpm       
+zmp.czm         zmp.fon         zmp.for         zmp.fzn         zmp.hlp       
+zmpx.cpm        zmterm.ovr      zmterm.ozr      zmxfer.ovr      zmxfer.ozr    
+zmyapp.ovr      
+       46 file(s)     813.051 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c2
+
+[.]             [..]            apfel.cpm       apfel.pas       apfelman.hrg  
+apinstal.cpm    applmenu.cmd    arc.pas         as-edit.cmd     as-frame.cmd  
+as-gets.cmd     as-locat.cmd    as-main.cmd     as-pack.cmd     as-posn.cmd   
+as-some.cmd     asv.add         asv.cmd         asv.dbf         asv.frm       
+asv.old         asvdel.txt      asvind.ndx      asvlbl.cmd      asvmsk1.cmd   
+asvmsk2.cmd     asvrpt.cmd      asvrpt2.cmd     auswdemo.cpm    auswdemo.pas  
+autodat.cmd     banner          calc.hlp        calc.pas        calcdemo.mcs  
+calcmain.cpm    calcmain.pas    chain.pas       choose.cpm      choose.dem    
+cline127.inc    cmdlin.pas      convert.pas     cp-edit.cmd     cp-frame.cmd  
+cp-gets.cmd     cp-locat.cmd    cp-main.cmd     cp-pack.cmd     cp-posn.cmd   
+cp-some.cmd     cpmind.ndx      cpmlib.txt      cpmlibs.dbf     cpmlist.cmd   
+cpmtools.pas    d.for           d.his           d.pas           dbase.cpm     
+dbasemsg.txt    dbaseovr.cpm    dgen.cmd        dgen.ovl        dir.pas       
+dropdown.cpm    dropdown.dem    drucker.pas     dsort.cpm       erax.pas      
+error.dem       feier.pas       fenster.pro     filegen.cmd     formgen.cmd   
+fxpark.pas      grafik.cpm      grafik.pas      graph.cmd       head.txt      
+index.html      initprt.cmd     jubil.cmd       jubil10.txt     jubil25.txt   
+lab2.pas        labelgen.cmd    liste.txt       lister.pas      lspt-nw.cmd   
+menugen.cmd     minited.pas     minitedg.pas    mouse.pas       msform.pas    
+pos-dem.cpm     pos-dem.pas     qfile-1.cpm     qfile-1.dem     qfile-2.dem   
+readstat.dem    rechner.cpm     rechner.dem     rekursiv.pas    schreibm.pas  
+scrsav.cpm      scrsav.pas      select.cpm      select.dem      send.pas      
+setprint.cmd    shuttle.hrg     sideways.pas    tab.pas         tdb-2.pas     
+tdb.pas         test.1          test.mas        testchar.pas    ueber.pas     
+uppercas.pas    verk.mcs        wator.pas       win7test.pas    window.cpm    
+window.pas      wintest.cpm     wintest.pas     wintest1.cpm    wintest1.pas  
+wintest2.cpm    wintest2.pas    zins.pas        zufall.pas      
+      134 file(s)   1.478.336 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c3
+
+[.]             [..]            anagram.cpm     article         ascii         
+banner          bf2tny.cpm      brad2.not       braddemo.s      bradfont.cpm  
+bradford.cpm    chart.bf2       chart2.bf2      chart2h.bf2     config.bf     
+digit.bf2       digit2.bf2      extend.bf2      greek.bf2       idigit.bf2    
+index.html      intro           iorator.bf2     ipizza2b.bf2    ipizzaw.bf2   
+iselectw.bf2    itype.bf2       itypex.bf2      ivanil.bf2      jazz.bf2      
+jazz2.bf2       jazz2h.bf2      jazzh.bf2       main            modern.bf2    
+movein          mx              nostalg.bf2     orator.bf2      partb.doc     
+pizza.bf2       pizza2.bf2      pizza2b.bf2     pizza2c.bf2     pizza2h.bf2   
+pizzaw.bf2      sample1         sample2         sample3         select.bf2    
+select2.bf2     select2b.bf2    select2c.bf2    selectw.bf2     smalcap.bf2   
+st              stripe2.bf2     summary         tiny.bf2        tinyw.bf2     
+type.bf2        typex.bf2       unfont.cpm      usetabs         vanilla.bf2   
+winstall.cpm    wordfreq.cpm    ws#.cpm         ws.bf           ws.cpm        
+ws.ovr          ws4.cpm         wschange.cpm    wschange.ovr    wschhelp.ovr  
+wshelp.ovr      wsindex.xcl     wsmsgs.ovr      wsp.cpm         wsprint.ovr   
+wsshort.ovr     
+       81 file(s)     720.598 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c4
+
+[.]             [..]            apfel1.hrg      as.zex          banner        
+bdosgraf.z80    box.z80         cl10.cpm        cl10.rel        cl10.z80      
+ddh.txt         dslib.rel       dslibs.rel      erabar.z80      erabox.z80    
+eraline.z80     font12.z80      font14.z80      fremd.z80       freset.rel    
+g3sk.z80        gdospara.z80    gotoxy.z80      grafik.z80      graoff.z80    
+gxymsg.z80      hbar.z80        hd.txt          hddtbl.asm      hddtbl.cpm    
+hddtbl.rel      hddtbl.sym      holte.z80       hrg.cpm         index.html    
+iopzxr.z80      isec.z80        l80.cpm         l80.zex         lesezeit.cpm  
+lesezeit.z80    libvers.cpm     libvers.z80     liesgdos.z80    line.z80      
+link.cpm        loadhrg.cpm     loadhrg.z80     m80.cpm         mac.cpm       
+mdrv.mac        mload.cpm       mysort.rel      newbas12.z80    newlibc.rel   
+rdump.rel       readme.lnk      relhex.cpm      rmac.cpm        rsxinit.asm   
+sak22.obj       savehrg.cpm     savehrg.z80     setatr.z80      slr180.cpm    
+slrnk#.cpm      syslib.rel      syslibs.rel     taste.z80       trs80.asm     
+trs80.bak       trs80.cpm       trs80.z80       umap18.z80      umapcf.z80    
+uneras12.mac    vbar.z80        vlib.rel        vlibs.rel       wash.asm      
+window.z80      window0.z80     wnboot.z80      xcpm3.lib       z3lib.rel     
+z3libs.rel      z80-008.mac     z80.cpm         z80.lib         z80dis.000    
+z80dis.001      z80dis.002      z80dis.cpm      zap.mac         zap51.mac     
+zas.cpm         zdinstal.cpm    zdinstal.dta    zdinstal.msg    zfmake.zex    
+zlink.cpm       zmac.cpm        zr16c-sc.lbr    zxriop.cpm      zxriop.z80    
+      105 file(s)   1.116.345 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c5
+
+[.]             [..]            arcadd.inc      arcdef.inc      arcdel.inc    
+arcdir.inc      arcext.inc      arcfunc.inc     arcio.inc       arclst.inc    
+arclzw.inc      arcmisc.inc     arcpack.inc     arcsqu.inc      auswahl.bib   
+banner          bbtree.$$$      d-eng.in1       d.in5           d.in6         
+dirscan.fun     dnscan.fun      duscan.fun      dutdir.fun      dynstr.bib    
+error.inc       eval.fun        external.doc    fenster.bib     fenster.inc   
+files           get.fun         getfirst.inc    getndr.fun      grafik.inc    
+hex.fun         index.html      lauf.bib        lieschar.inc    lifo.bib      
+logud.pro       longfunc.inc    longint.bib     macro.bib       maske-1.bib   
+nameddir.inc    newchai0.inc    newchai1.inc    newchain.inc    newchain.sou  
+nz-turbo.con    nz-turbo.syn    nz-turbo.typ    nz-turbo.var    parse.pro     
+pos.inc         probe.eps       probe.tab       put.pro         qfile.inc     
+qsort.bib       qsort.inc       readchar.bib    readchar.inc    readext.bib   
+readstat.inc    rechner.bib     retud.fun       select-1.bib    select-2.bib  
+sio1.inc        sort.dem        tdb-00.inc      tdb-01.inc      tdb-02.inc    
+tdb-03.inc      tdb-04.inc      tdb-05.inc      tdb-06.inc      tdb-07.inc    
+ted-1.inc       ted-2.inc       ted-3.inc       theinst.cpm     theinst.pas   
+tpatch.for      tpatch.hex      tpatch.ins      tpatch.lbr      tpatch.z80    
+tpatch0.hex     tpatch0.ins     tpatch1.hex     tpatch1.ins     turbo.cpm     
+turbo.msg       turbo.ovr       turbomsg.ovr    turbovr.ins     turbovr.z80   
+video.bib       windef.inc      windefmi.inc    window.bib      window.par    
+window7.bib     windowg.bib     z3env.inc       z3log.pro       
+      109 file(s)     657.485 bytes used
+
+...\eaca\genie_3s\my_genie_3s\image\g3s_with_omti-harddisk\-c-\c9
+
+[.]             [..]            $exec.cpm       ackerman.h      an.cpm        
+an.h            assert.h        banner          bios.h          bios3.c       
+bios3.h         booz.cpm        c.cpm           cct.cpm         cdefs.h       
+cgen.cpm        conio.h         cp.cpm          cpm.h           cpm.huf       
+cpp.cpm         cref.cpm        crtcpm.obj      crtcpm.old      ctype.cpm     
+ctype.doc       ctype.h         cvidlib.lbr     debug.cpm       dehuff.cpm    
+environ         errno.h         exec.h          fcntl.h         fib.h         
+float.h         float.huf       gen.huf         getargs.h       grafik.h      
+grep.cpm        hcat.cpm        hitech.h        holte.h         holte.lib     
+index.html      libc.lib        libc.old        libc.txt        libcold.txt   
+libf.lib        libholte.txt    libholte.ws     libr.cpm        libr.for      
+libz.lib        libz01.lbr      limits.h        link.cpm        math.h        
+objtohex.cpm    options.txt     p1.cpm          pcc.cpm         pcx.h         
+rrtcpm.obj      setjmp.h        signal.h        stat.h          stdarg.h      
+stddef.h        stdio.h         stdio.huf       stdio.old       stdlib.h      
+string.h        sys.h           testbild.as     testbild.obj    time.h        
+unixio.h        window.c        z3.h            zas.cpm         zcrtcpm.as    
+       85 file(s)     883.572 bytes used
+Total files listed:
+      911 file(s)     8.988.099 bytes used
+                    8.478.986 K bytes free

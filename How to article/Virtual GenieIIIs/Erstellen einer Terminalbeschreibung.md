@@ -1,4 +1,4 @@
-# Erstellung einer Terminalbeschreibung ##
+# Erstellen einer Terminalbeschreibung ##
 
               Am Beispiel Genie IIIs unter Kaempf CP/M 3.0
                      Egbert Schroeer, November 1992

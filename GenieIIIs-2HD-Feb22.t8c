@@ -10,7 +10,7 @@ clock1=1.77
 clock3=2.03
 clock4=4.06
 disk0=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\DMK\g3s-holte-cd.dmk
-disk1=
+disk1=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\DMK\dummy.dmk
 disk2=
 disk3=
 disk4=
@@ -23,7 +23,7 @@ doubler=percom
 emtsafe
 fdc
 nofullscreen
-foreground=0xff00
+foreground=0xffffff
 guibackground=0x344843
 guiforeground=0xe0e0ff
 hard0=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\HDV\g3s-hard21-f2.hdv
@@ -81,4 +81,4 @@ wafer4=
 wafer5=
 wafer6=
 wafer7=
-window=0,23,1288,1124
+window=0,23,1920,1009

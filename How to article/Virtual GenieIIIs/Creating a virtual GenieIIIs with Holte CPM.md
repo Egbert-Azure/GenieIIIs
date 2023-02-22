@@ -12,6 +12,7 @@ Then create a "Hard Disk" image (Alt-H) with the following parameters in `sdltrs
 
 ![image](https://user-images.githubusercontent.com/55332675/219958640-1cf13e8e-c9d4-4292-b11b-0bffc0cffedc.png)
 
+> Note: muss noch geschrieben werden: Hier ist die "Boot-Disk" (Holte CP/M 3b, 4 * Festplatten mit je 21,6 MB, 60K TPA und 55K RAM-Disk) ... INITDIR und set [update=on, create=on] wurden aufgerufen ... in GENCPM.DAT gibt es bestimmt noch "Optimierungsbedarf" ...
 
 ### DISCIO.MAC
 

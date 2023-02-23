@@ -14,7 +14,7 @@ hard0=g3s-hard21-f1.hdv
 romfile1=g3s_8501004_bootrom_2732.bin
 ```
 
->Result:
+>Result: works
 
 ### 2. Test
 
@@ -29,7 +29,7 @@ hard1=g3s-hard36
 romfile1=g3s_8501004_bootrom_2732.bin
 ```
 
->Result:
+>Result: works
 
 ### 3. Test
 
@@ -44,4 +44,12 @@ hard1=g3s-D21.hdv
 romfile1=g3s_8501004_bootrom_2732.bin
 ```
 
->Result:
+Code
+A: RW, Space:        16k
+C: RW, Space:     4,848k  
+E: RW, Space:     4,848k
+... alle HDV-Dateien haben 22 MB (22671616 Bytes) ...
+
+JenGun edited this message 1 times, last: 9 hours ago.
+>Result:   
+copy to d: works, back to c: doesn't. Looks like WD controler limitations due the fact `maxdive` is `3` in `driver.mac`

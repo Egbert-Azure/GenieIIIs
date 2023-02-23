@@ -52,4 +52,4 @@ E: RW, Space:     4,848k
 
 JenGun edited this message 1 times, last: 9 hours ago.
 >Result:   
-copy to d: works, back to c: doesn't. Looks like WD controler limitations due the fact `maxdive` is `3` in `driver.mac`
+copy to d: works, back to c: doesn't. Looks like WD controler limitations due the fact `maxdrive` is `3` in `driver.mac`

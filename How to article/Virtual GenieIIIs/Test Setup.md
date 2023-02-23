@@ -44,12 +44,12 @@ hard1=g3s-D21.hdv
 romfile1=g3s_8501004_bootrom_2732.bin
 ```
 
-Code
+``` consol
 A: RW, Space:        16k
 C: RW, Space:     4,848k  
 E: RW, Space:     4,848k
-... alle HDV-Dateien haben 22 MB (22671616 Bytes) ...
+and all HDV-files have 22 MB (22671616 Bytes) 
+```
 
-JenGun edited this message 1 times, last: 9 hours ago.
->Result:   
+>Result:    
 copy to d: works, back to c: doesn't. Looks like WD controler limitations due the fact `maxdrive` is `3` in `driver.mac`

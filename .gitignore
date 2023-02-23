@@ -1,3 +1,4 @@
+SDL2trs.exe
 sdl2trs64.exe
 SDL2.dll
 DMK/g3s-holte-4wd.dmk
@@ -12,3 +13,4 @@ HDV/g3s-hard21-f2.hdv
 HDV/g3s-hard21.hdv
 HDV/g3s-hard36
 HDV/gs3-hard21.hdv
+*.tc8

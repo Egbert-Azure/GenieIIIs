@@ -3,9 +3,10 @@
 ### Different versions we tested
 
 21 MB hardisk parameter for `SDLTRS64`:
-Cylinder count: 2460
-Head count : 4
-Sector Count: 36
+`ALT-H`
+- Cylinder count: 2460
+- Head count : 4
+- Sector Count: 36
 
 ### 1. Test
 

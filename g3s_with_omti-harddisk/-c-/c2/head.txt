@@ -1,7 +1,0 @@
-.mb 3
-.cw 8
-.PL 72
-.rm 72
-.HE ASV Mitgliederliste                                           Seite #
-.HE            Name               PLZ  Ort                            Geb.     Eintr.  LFV-Nr 
-PT  CMDASVRPT2 CMDAUTODAT CMDBUFFER  DBFCLEARSEQCMDCP-

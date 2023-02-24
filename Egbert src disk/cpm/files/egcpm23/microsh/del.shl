@@ -1,9 +1,0 @@
-%print -n "Delete File $1 - O.K. ? (Y/N) "
-%getchr %A$ <TTY:
-%print "!"
-%UpCase %A$
-%if %A$ # Y then %EXIT
-stat $1 $R/W
-era $1
-%print "  and  deleted."
-

@@ -1,8 +1,0 @@
-{ User-defined Constants for NZ Turbo Pascal }
-const
-  biov  = 1;
-  bdov  = 6;
-  tbuf  = $80;
-  env   = $109;
-
-

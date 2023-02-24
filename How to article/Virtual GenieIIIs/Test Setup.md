@@ -2,6 +2,13 @@
 
 ### Different versions we tested
 
+21 MB hardisk parameter for `SDLTRS64`:
+`ALT-H`
+- Cylinder count: 2460
+- Head count : 4
+- Sector Count: 36
+>Note 02/24/23: change in sdltrs Hard Disk Management. The parameters ("Cylinder Count", "Head Count" and "Sector Count") of the "Disk" selected above are now displayed at the bottom. Also the "manual conversion" for "Sector Count" no longer has to be done: if there is e.g. "Head Count" 4 and "Sector Count" 9, it is now automatically converted to 36 (= "Head Count" * "Sector Count") when creating a new HDV file. So the "real" parameters can be entered.
+>
 ### 1. Test
 
 - g3s-holte-21.dmk

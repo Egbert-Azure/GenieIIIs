@@ -1,5 +1,0 @@
-wsi zmp-cpm3.z80
-slr zmp-cpm3.z80/h;
-:mload zmp.com=zmpx.com,zmp-cpm3.hex
-zmp
-

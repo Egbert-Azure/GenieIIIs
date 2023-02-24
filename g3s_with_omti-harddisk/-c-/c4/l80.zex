@@ -1,3 +1,0 @@
-asm:l80 /p:100,cl10,c4:vlib/s,c4:z3lib/s,c4:dslib/s,c4:syslib/s,freset/s,rdump/s,mysort/s,cl10/n,/u,/e
-
-

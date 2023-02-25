@@ -15,3 +15,6 @@ Next, the program prompts the user for some information, such as the type of har
 The program then formats the hard disk by looping over all the sectors on the disk and writing the formatting data to each one. For each track, the program checks for bad sectors by reading the spare directory, and if it finds any, it adds them to a list.
 
 Finally, the program writes the spare directory to the last sector on the last track, updates the disk parameter block, and saves it to disk. The program then prints a message indicating that the hard disk is formatted and ready to use.
+
+`INITW.COM` does not read `CPM3.SYS` from the "boot disk", but `CPM3HD.SYS`. If this file is missing, after the "initialization" appears: `Can't open CPM3HD.SYS`.
+During the the process the `DPB` of `CPM3HD.SYS` is changed in memory and then written as `CPM3.SY`S (together with CCP.COM) on drive C:

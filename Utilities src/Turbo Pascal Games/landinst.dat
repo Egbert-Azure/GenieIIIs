@@ -1,0 +1,23 @@
+     LANDER is a game which simulates landing a ship on a planet.  The
+ship's fuel, speed, and height, as well as the gravity and the maximum
+successful landing speed on the planet, are randomly determined at the
+start of each game,   though they are weighted  according to the skill
+level chosen.  In order of increasing difficulty the choices are:
+
+               B        Beginner
+               E        Expert
+               N        Navigator
+               A        Astronaut
+
+      In  addition  to the usual  dangers of  running out of  fuel and
+landing too quickly (also known as crashing),  a swarm of meteors will
+occasionally get on a collision course with you.  If you do not change
+your course enough by burning a sufficient amount of fuel,  each has a
+20 % chance of hitting you.   Even if you do so,  10 % of the time one
+of the rocks will stray and still hit you.
+
+      This program  uses its own integer conversion  routines,  and so
+will not 'bomb' if the amount of fuel is mistyped.  A simple <carriage
+return> when the fuel is asked for is equivalent to '0'.
+
+

@@ -1,6 +1,6 @@
 # Hard drive definitions C P M S Y S 5 a #
 
-To initilaize with a new INITW tool
+To initalize with a new INITW tool a Winchester drive
 
 ``` c
 /******************************************************************************

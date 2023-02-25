@@ -26,8 +26,8 @@ nofullscreen
 foreground=0xffffff
 guibackground=0x344843
 guiforeground=0xe0e0ff
-hard0=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\g3s-hard21-c.hdv
-hard1=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\g3s-hard21-d.hdv
+hard0=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\HDV\g3s-hard21-c.hdv
+hard1=C:\Users\eschr\OneDrive\Dokumente\GitHub\GenieIIIs\HDV\g3s-hard21-d.hdv
 hard2=
 hard3=
 harddir=.\

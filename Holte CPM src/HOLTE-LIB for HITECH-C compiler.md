@@ -63,8 +63,8 @@ MOVE.OBJ
 
 UNCIRCLE.OBJ
 
-  U _system       D_uncircle     U cret          U indir
-  U ncsv
+    U _system       D_uncircle     U cret          U indir
+    U ncsv
 
 BIOS3.OBJ
 

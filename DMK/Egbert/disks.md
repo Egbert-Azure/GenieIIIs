@@ -32,3 +32,4 @@
 - egcpm29.dmk - lesbar;content: "Diskettenweitwurf" Volker & Egbert & Fritz
 - egcpm30.dmk - lesbar;content: DFUE stuff
 - egcpm34.dmk - lesbar;content: Systemerstellung Testdisk
+- egcpm38.dmk - Assembler (in USER 1); format is Kaempf CP/M 3. To read with Holte CP/M use `format.com` tool and virtual drive P:

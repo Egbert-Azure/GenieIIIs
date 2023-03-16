@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=SDL2TRS
+Comment=TRS-80 Model I/III/4/4P Emulator
+Exec=sdl2trs %F
+Icon=sdl2trs
+Terminal=true

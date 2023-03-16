@@ -1,0 +1,22 @@
+.job_template: &job_definition
+ only:
+  changes:
+   - CMakeLists.txt
+   - meson.build
+   - src/*
+   - .gitlab-ci.yml
+
+before_script:
+ - apt-get update -qq 1> /dev/null
+
+build:
+ <<: *job_definition
+ script:
+ - apt-get install -y -qq cmake libreadline-dev libsdl2-dev 1> /dev/null
+ - mkdir -p build && cd build && cmake .. && cmake --build .
+
+build-clang:
+ <<: *job_definition
+ script:
+ - apt-get install -y -qq clang meson libreadline-dev libsdl2-dev 1> /dev/null
+ - CC="clang" meson build && cd build && ninja

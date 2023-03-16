@@ -1,0 +1,50 @@
+#!/usr/bin/make -f
+
+PACKAGE := sdl2trs
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+build: build-arch
+build-arch: build-stamp
+build-stamp:
+	dh_testdir
+	./autogen.sh
+	./configure --prefix=/usr --enable-readline --enable-zbx
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+	[ ! -f Makefile ] || $(MAKE) distclean
+	rm -f ./aclocal.m4 ./compile ./config.* ./configure \
+	      ./depcomp ./install-sh ./missing ./Makefile.in
+
+# Build architecture-dependent files here.
+binary-arch: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	# Add here commands to install the files into debian/$(PACKAGE)
+	$(MAKE) install prefix=`pwd`/debian/$(PACKAGE)/usr mandir='$${prefix}/share/man'
+
+	dh_installchangelogs
+	dh_installdocs
+	dh_installman
+	dh_installmenu
+
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch
+
+.PHONY: build clean binary-arch binary

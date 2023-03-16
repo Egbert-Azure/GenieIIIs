@@ -1,0 +1,539 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>SDLTRS Text GUI</title>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+</head>
+
+<body>
+<table border="0" cellpadding="0" cellspacing="20">
+  <tr>
+    <td><img src="images/TRS-80.png" alt="TRS-80 Model III"></td>
+    <td><h1>SDLTRS</h1><h2>Text GUI</h2>
+      <a href="index.html">Introduction</a> |
+      <a href="Features.html">Features</a> |
+      <a href="Options.html">Options</a> |
+      <a href="TextGUI.html">Text GUI</a> |
+      <a href="KnownBugs.html">Known Bugs</a> |
+      <a href="ReleaseHistory.html">Release History</a> |
+      <a href="Credits.html">Credits</a></td>
+  </tr>
+</table>
+
+<ul>
+  <li><a href="#Main_Menu">Main Menu</a></li>
+  <li><a href="#Floppy_Disk_Management">Floppy Disk Management</a></li>
+  <li><a href="#Hard_Disk_Management">Hard Disk Management</a></li>
+  <li><a href="#Cassette_Management">Cassette Management</a></li>
+  <li><a href="#Stringy_Wafer_Management">Stringy Wafer Management</a></li>
+  <li><a href="#Emulator_Settings">Emulator Settings</a></li>
+  <li><a href="#Display_Settings">Display Settings</a></li>
+  <li><a href="#Miscellaneous_Settings">Miscellaneous Settings</a></li>
+  <li><a href="#ConfigurationState">Configuration/State Files</a></li>
+  <li><a href="#Joystick_Settings">Joystick Settings</a></li>
+  <li><a href="#Default_Directories">Default Directories</a></li>
+  <li><a href="#ROM_File_Selection">ROM File_Selection</a></li>
+</ul>
+
+<h2><a name="Main_Menu"></a><u>Main Menu</u></h2>
+
+<p><img alt="Main Menu" src="images/MainMenu.png"></p>
+
+<p>The main menu is the entry point for the Text GUI. You may move up and down
+through the menu items using the arrow keys. The <b>Home</b> and <b>End</b>
+keys moves to the first or last menu item. Typing the first letter of a menu
+item marks it for selection. Pressing a number key from <b>0</b> to <b>9</b>
+jumps to the line in the menu. A menu item may be selected by pressing the
+<b>Enter</b>, <b>Insert</b>, <b>Space</b> or <b>Tab</b> key when the item is
+highlighted. Pressing <b>F7</b>, <b>BackSpace</b> or <b>ESC</b> moves up a
+menu level (or exits the GUI if you are at the top level). Besides entering
+the GUI using <b>F7</b>, <b>Alt-M</b> or <b>Alt-Comma</b>, submenus may be
+entered by using the key shortcuts shown after the menu items.</p>
+
+<h2><a name="Floppy_Disk_Management"></a><u>Floppy Disk Management</u></h2>
+
+<p><img alt="Floppy Menu" src="images/FloppyMenu.png"></p>
+
+<p>The floppy disk management menu allows you to insert and remove floppy
+images into the emulated drives, as well as save and load disk sets, create
+new disk images, and set emulated disk drive options.</p>
+
+<p>For the first 8 options in the menu, there are three options:</p>
+
+<ul>
+  <li>Hitting <b>Enter</b>, <b>Insert</b> or <b>Tab</b> while the item
+      is selected, will move to the disk image selection screen.</li>
+  <li>Hitting <b>Delete</b> will remove a disk image in the drive.</li>
+  <li>Hitting <b>Space</b> will toggle the write protect for the drive.
+      The indicator for write protect is an asterisk "*" in front of the
+      "Disk" in the menu item.</li>
+</ul>
+
+<h3>Save Disk Set:</h3>
+
+<p>This option allows the user to save the names of the disk images that are
+currently in the drives to a file, to be loaded later. The file that the set
+is save in has an extension of <code>.set</code>, and it is a human readable
+text file, containing the paths of the image files, or a blank line for a
+drive for a drive that has no disk.</p>
+
+<h3>Load Disk Set:</h3>
+
+<p>This button allows the user to load a disk set saved earlier with the Save
+Disk Set Button. The user is allowed to browse for the set file, displaying
+files ending in <code>.set</code>. The emulator then loads the disk images
+specified in the file into the corresponding drives. If a drive in the set
+file is a blank line, no changes are made to the drive. This allows the user
+to load multiple disk sets sequentially.</p>
+
+<p><img alt="Floppy Selection" src="images/FloppyLoad.png"></p>
+
+<p>When the user presses <b>Enter</b> on a Drive item in the Floppy Disk
+Management screen, the file open menu is displayed. The arrow keys and page
+up/down may be used to scroll through the list of files. <b>Home</b> and
+<b>End</b> moves to beginning or end of the list. Pressing <b>Enter</b> on the
+&lt;..&gt; item will take you to the parent directory. On Windows, the Drive
+letters are listed as the last items in the menu, and you can change drives by
+pressing <b>Enter</b> on those items. You may also go to a particular section
+of the file list by pressing the first letter of the file name.</p>
+
+<p><img alt="Floppy Creation Menu" src="images/FloppyCreationMenu.png"></p>
+
+<p>In the Floppy Creation screen, you may choose a format of a disk. It may
+be created in either the JV1, JV3, or DMK disk image format (See the <a
+href="Features.html#Emulated_5-inch_floppy_disks">Features</a> page for info
+on the disk formats).</p>
+
+<p>If the "Insert Created Disk Into This Drive" is set to something besides
+none, the created image will be mounted on the specified floppy drive.</p>
+
+<p><img alt="Floppy Options Menu" src="images/FloppyOptionsMenu.png"></p>
+
+<p>The first eight items allows you to set the size of each disk drive, as
+either a 5" or 8" drive.</p>
+
+<h3>Floppy Disk Controller:</h3>
+
+<p>Enables or disables the Floppy Disk Controller (Expansion Interface) of the
+TRS-80. Without activated FDC, ROM BASIC is booted and access to floppy disks
+is not possible.</p>
+
+<h3>Doubler Type:</h3>
+
+<p>Specify what type of double density adaptor to emulate (Model I mode only).
+The type may be <b>Percom</b>, <b>Tandy</b>, <b>Both</b>, or <b>None</b>. The
+default is <b>Both</b>, which causes the double density adaptor emulation to
+respond to the special commands of both the Percom and Tandy cards.</p>
+
+<h3>True DAM Emulation:</h3>
+
+<p>Turn off the single density data address mark remapping kludges described
+in the "Emulated floppy disks" and "Real floppy disks" sections above. With
+this option given, the distinction between F8 and FA data address marks is
+strictly observed on both writing and reading. This option is probably not
+useful unless you need to deal with Model I disks that use the distinction as
+part of a copy-protection scheme.</p>
+
+<p><b>Note:</b> only on Linux there is the last menu that allows to set the
+drive steps for real floppys:</p>
+
+<p><img alt="Floppy Steps Menu" src="images/FloppyStepMenu.png"></p>
+
+<h2><a name="Hard_Disk_Management"></a><u>Hard Disk Management</u></h2>
+
+<p><img alt="Hard Disk Menu" src="images/HardMenu.png"></p>
+
+<p>The hard disk management menu allows you to insert and remove floppy
+images into the emulated drives, as well as save and load disk sets and
+create new disk images.</p>
+
+<p>For the first 4 options in the menu, there are three options:</p>
+
+<ul>
+  <li>Hitting <b>Enter</b>, <b>Insert</b> or <b>Tab</b> while the item is
+      selected, will move to the image selection screen, which is explained
+      above in the floppy disk section.</li>
+  <li>Hitting <b>Delete</b> will remove a disk image in the drive.</li>
+  <li>Hitting <b>Space</b> will toggle the write protect for the drive.
+      The indicator for write protect is an asterisk "*" in front of the
+      "Hard" in the menu item.</li>
+</ul>
+
+<h3>Save Disk Set:</h3>
+
+<p>This option allows the user to save the names of the disk images that are
+currently in the drives to a file, to be loaded later. The file that the set
+is save in has an extension of <code>.set</code>, and it is a human readable
+text file, containing the paths of the image files, or a blank line for a
+drive for a drive that has no disk.</p>
+
+<h3>Load Disk Set:</h3>
+
+<p>This button allows the user to load a disk set saved earlier with the Save
+Disk Set Button. The user is allowed to browse for the set file, displaying
+files ending in <code>.set</code>. The emulator then loads the disk images
+specified in the file into the corresponding drives. If a drive in the set
+file is a blank line, no changes are made to the drive. This allows the user
+to load multiple disk sets sequentially.</p>
+
+<p>The next three options allows you to specify parameters for creating a hard
+disk image (See the <a href="Features.html#Emulated_hard_disks">Features</a>
+page for info on the hard disk formats).</p>
+
+<p>If the "Insert Created Disk Into This Drive" is set to something besides
+none, the created image will be mounted on the specified hard drive.</p>
+
+<p>The final option allows you to create a blank hard disk image.</p>
+
+<h2><a name="Cassette_Management"></a><u>Cassette Management</u></h2>
+
+<p><img alt="Cassette / Tape Menu" src="images/CassetteMenu.png"></p>
+
+<p>The cassette management menu allows you to insert and remove cassette
+images into the emulated drive, as well as create new cassette images.</p>
+
+<p>For the first option in the menu, there are three options:</p>
+
+<ul>
+  <li>Hitting <b>Enter</b>, <b>Insert</b> or <b>Tab</b> while the item is
+      selected, will move to the image selection screen, which is explained
+      above in the floppy disk section.</li>
+  <li>Hitting <b>Delete</b> will remove a cassette image in the drive.</li>
+  <li>Hitting <b>Space</b> will toggle the write protect for the cassette.
+      The indicator for write protect is an asterisk "*" in front of the
+      "Cass" in the menu item.</li>
+</ul>
+
+<p>The second option allows you to set the position of the cassette tape by
+changing the Position field. Valid values are 0 (fully rewound) through the
+number of bytes on the tape (at end of tape).</p>
+
+<p>The third option allows you to define the default sample rate in Hz.</p>
+
+<p>The fourth option allows you to choose a format of a cassette
+(<code>.cas</code> or <code>.wav</code>).</p>
+
+<p>If the "Insert Created Cassette Into Drive" is set to Yes, the created
+image will be used in the cassette drive.</p>
+
+<p>The final option allows you to create a blank cassette image.</p>
+
+<h2><a name="Stringy_Wafer_Management"></a><u>Stringy Wafer Management</u></h2>
+
+<p><img alt="Stringy Wafer Menu" src="images/StringyMenu.png"></p>
+
+<p>The stringy wafer management menu allows you to insert and remove wafer
+images into the emulated drives, as well as save and load disk sets, and
+create new wafer images with default parameters.</p>
+
+<p>For the first 8 options in the menu, there are three options:</p>
+
+<ul>
+  <li>Hitting <b>Enter</b>, <b>Insert</b> or <b>Tab</b> while the item is
+      selected, will move to the image selection screen, which is explained
+      above in the floppy disk section.</li>
+  <li>Hitting <b>Delete</b> will remove a wafer image in the drive.</li>
+  <li>Hitting <b>Space</b> will toggle the write protect for the wafer.
+      The indicator for write protect is an asterisk "*" in front of the
+      "Wafer" in the menu item.</li>
+</ul>
+
+<h2><a name="Emulator_Settings"></a><u>Emulator Settings</u></h2>
+
+<p><img alt="Emulator Settings Menu" src="images/EmulatorMenu.png"></p>
+
+<h3>Model:</h3>
+
+<p>Specifies what TRS-80 model to emulate. Selecting a different model will
+perform a "Cold Boot" in the Emulator after exiting the Emulator Settings.</p>
+
+<h3>CPU Clock Speed:</h3>
+
+<p>The default CPU speed of the selected TRS-80 model can be changed here,
+but use this with CAUTION: overclocking the Z80 will result in all forms of
+"timing-errors"!</p>
+
+<h3>Speedup Kit Emulation:</h3>
+
+<p>Selects the speed-up modification for the TRS-80 Model I: <b>None</b>,
+<b>Archbold</b>, <b>Holmes</b> or <b>Seatronics</b>. Select <b>Banking</b>
+for memory banking (by Martin Doppelbauer) on I/O-port <code>0xFE</code>.
+<b>LNW80</b> sets the CPU clock to 4 MHz and enables banking for the 480*192
+HRG in the lower 16 KB. Use <b>TCS SpeedMaster</b> for this enhanced Model I
+clone running at 5.35 MHz, with 480*192 HRG and memory banking support. Set
+<b>CT-80 Aster</b> for emulation of the dutch TRS-80 model I clone.</p>
+
+<h3>Exatron Stringy Floppy:</h3>
+
+<p>Emulates up to 8 Stringy Floppy Drives for the TRS-80 Model I.</p>
+
+<h3>Lowercase:</h3>
+
+<p>Emulate a "Lowercase Modification Kit" for the TRS-80 Model I.</p>
+
+<h3>Lubomir:</h3>
+
+<p>Emulates the "Lubomir Soft Banker" from Schmidtke electronic (Germany)
+for the TRS-80 Model I.</p>
+
+<h3>Graphics Emulations:</h3>
+
+<p>In Model III or 4/4P mode select which Hi-Res graphics card to emulate,
+the Micro-Labs Grafyx Solution Hi-Res graphics card or Radio Shack Hi-Res
+card. In Model I mode, the HRG1B 384x192 Hi-Res graphics card is emulated.
+Note that the Model III and Model 4/4P cards from Micro-Labs are very
+different from one another.</p>
+
+<p>The Lowe Electronics LE18 Graphics Adapter can also be emulated.</p>
+
+<h3>Memory Expansions:</h3>
+
+<p>Various memory expansions can be emulated for a total of 4 MB RAM.</p>
+
+<h2><a name="Display_Settings"></a><u>Display Settings</u></h2>
+
+<p><img alt="Display Settings Menu" src="images/DisplayMenu.png"></p>
+
+<h3>Emulator Colors:</h3>
+
+<p>Specifies the foreground and background color of the SDLTRS window.
+Default is white (<code>0xE0E0FF</code>) for foreground and black
+(<code>0x000000</code>) for background.</p>
+
+<h3>GUI Colors:</h3>
+
+<p>Specifies the foreground and background color of the fullscreen Text GUI.
+Default is white (<code>0xE0E0FF</code>) for foreground and dark green
+(<code>0x344843</code>) for background.</p>
+
+<h3>Character Sets:</h3>
+
+<p>Select among several sets of built-in character bitmaps. The three
+different options allow you to specify the character set used for each model,
+should you change models during SDLTRS execution using the GUI. In Model I
+mode, seven sets are available. The default, <b>Wider</b>, is a modified
+Model III set with characters 8 pixels wide; it looks better on a modern
+computer screen with square pixels than the real Model I fonts, which were 6
+pixels wide. <b>LCmod</b> is the character set in the replacement character
+generator that was supplied with the Radio Shack lower case modification.
+<b>Stock</b> is the character set in the stock character generator supplied
+with most upper case only machines. Since SDLTRS currently always emulates
+the extra bit of display memory needed to support lower case, this character
+set gives you the authentic, unpleasant effect that real Model I users saw
+when they tried to do homebrew lower case modifications without replacing the
+character generator: lower case letters appear at an inconsistent height,
+and if you are using the Level II BASIC ROM display driver, upper case letters
+are replaced by meaningless symbols. early is the same as stock, but with the
+standard ASCII characters [, \, ], and ^ in the positions where most Model
+I's had directional arrows. This was the default programming in the Motorola
+character generator ROM that Radio Shack used, and a few early machines were
+actually shipped with this ROM. <b>Genie</b> gives an emulation of the Genie
+I/II (relabled Video Genie in Germany) with German characters ("Umlauts").
+<b>HT-1080Z</b> emulates the HT-1080Z (relabled Video Genie in Hungary) with
+accented Hungarian characters. <b>Meritum I</b> is the uppercase charset of
+a TRS-80 Model I clone in Poland, build by Mera-Elzab. <b>Video Genie</b>
+displays the character set of the EACA Video Genie (also labeled as the System
+80 in Australia/New Zealand and PMC-80/81 in North America). <b>CT-80 Aster
+</b> is the character set of the dutch, improved TRS-80 Model I clone.</p>
+
+<p>In Model III, 4 and 4P modes, three sets are available:</p>
+
+<p><b>Katakana</b> (the default for Model III) is the original Model III set
+with Japanese Katakana characters in the alternate character positions. This
+set was also used in early Model 4's. <b>International</b> (the default for
+Model 4 and 4P) is a later Model 4 set with accented Roman letters in the
+alternate positions. <b>Bold</b> is a bold set from a character generator ROM
+found in one Model III, origin uncertain.</p>
+
+<h3>Window Border Width:</h3>
+
+<p>Put a border of width pixels around the TRS-80 display. default is 2.</p>
+
+<h3>Resize Window on Model 3 Mode Change:</h3>
+
+<p>In Model 3 mode, resize the window whenever the emulated display mode
+changes between 64x16 text (or 512x192 graphics) and 80x24 text (or 640x240
+graphics).</p>
+
+<h3>Resize Window on Model 4 Mode Change:</h3>
+
+<p>In Model 4/4P mode, resize the window whenever the emulated display mode
+changes between 64x16 text (or 512x192 graphics) and 80x24 text (or 640x240
+graphics).</p>
+
+<h3>Scale Factor for Window:</h3>
+
+<p>This options allows scaling of the SDLTRS window by the selected factor:
+"none", "2 x", "3 x" or "4 x".<p>
+
+<h3>LED Display for Disks and Turbo Mode:</h3>
+
+<p>This option allows the user to chose if disk activity indicators and
+Turbo Mode LED are shown in the TRS-80 Emulator window (lower edge).</p>
+
+<h3>Display Scanlines:</h3>
+
+<p>This option draws Scanlines on every second line of the emulator screen
+to simulate the pixel resolution of an old CRT monitor. The brightness of
+the scanlines can be adjusted from 0 (= dark) to 255 (= light).</p>
+
+
+<h2><a name="Miscellaneous_Settings"></a><u>Miscellaneous Settings</u></h2>
+
+<p><img alt="Miscellaneous Settings Menu" src="images/MiscMenu.png"></p>
+
+<h3>Close and Reopen Printer Output File:</h3>
+
+<p>Selecting this option will cause the printer output file to be closed, and
+the next file will be automatically created.</p>
+
+<h3>Emulator Traps Safe:</h3>
+
+<p>Turn on/off ability for emts (Emulation traps) to write to unexpected
+places in the host filesystem.</p>
+
+<h3>Keystretch Value:</h3>
+
+<p>Fine-tune the keyboard behavior. To prevent keystrokes from being lost,
+SDLTRS "stretches" the intervals between key transitions, so that the Z80
+program has time to see each transition before the next one occurs. Whenever
+the Z80 program reads the keyboard matrix and sees an emulated key go up or
+down, SDLTRS waits cycles Z80 clock cycles (T-states) before it allows the
+program to see another key transition. Key transitions that are received
+during the waiting period or when the Z80 program is not reading the
+keyboard are held in a queue. The default stretch value is 4000 cycles; it
+should seldom if ever be necessary to change it.</p>
+
+<h3>Printer Type:</h3>
+
+<p>Controls the type of printer emulation that is used for outputting to the
+TRS-80 printer: <b>None</b> and <b>Text</b>.
+<b>Text</b> simply sends the printer output to a text file (automatically
+created from <code>trsprn0000.txt</code> to <code>trsprn9999.txt</code>).</p>
+
+<h3>Serial Port Name:</h3>
+
+<p>Set the tty device to be used for I/O to the TRS-80's serial port. Setting
+the name to be empty emulates having no serial port.</p>
+
+<h3>Serial Port Switches:</h3>
+
+<p>Set the sense switches on the Model I serial port card. This option is
+meaningful only in Model I mode, and only when the Serial Port Name is not
+set to "". The default value is <code>0x6f</code>, which Radio Shack software
+conventionally interprets as 9600 bps, 8 bits/word, no parity, 1 stop bit.</p>
+
+<h3>Shift Bracket Emulation:</h3>
+
+<p>Chose Shift Bracket Emulation on or off. If on, emulate [, \, ], ^, and _
+as shifted keys, and {, |, }, and ~ as unshifted. This is the default in
+Model 4 and 4P modes, and it works well with the keyboard driver in Model 4
+TRSDOS/LS-DOS 6. If off, emulate [, \, ], ^, and _ as unshifted keys, and
+{, |, }, and ~ as shifted. This is the default in Model I and III modes, and
+it works well with many TRS-80 keyboard drivers. With some keyboard drivers
+these keys do not work at all, however.</p>
+
+<h3>Sound Output:</h3>
+
+<p>Turn Sound Output on or off. The <b>Alt-U</b> key binding may be used to
+switch Sound Output on or off while running the emulator.</p>
+
+<h3>Turbo Mode:</h3>
+
+<p>This will turn Turbo mode on or off. When turbo mode is on, the emulator
+will run faster than a normal TRS-80, by a factor of Turbo Rate, which is
+explained below, and also set on this page. The <b>F12</b> key or <b>Alt-N</b>
+may be used to switch Turbo mode on or off while running the emulator.</p>
+
+<h3>Turbo Speed:</h3>
+
+<p>Set the number of times normal TRS-80 speed that the emulator runs when in
+"Turbo" mode. Turbo mode can be used to speed compute intensive applications,
+compiling source code for example, on the emulator. The default setting is
+5x. Above around 8x you may experience problems with runaway keyboard repeat
+on the emulator, so use higher values with caution.</p>
+
+<h3>Turbo Paste:</h3>
+
+<p>While pasting from the clipboard to the TRS-80 emulator, Turbo mode is
+temporarily activated.</p>
+
+<h2><a name="ConfigurationState"></a><u>Configuration/State Files</u></h2>
+
+<p><img alt="Configuration / State Menu" src="images/ConfigFilesMenu.png"></p>
+
+<h3>Save State (Alt-S):</h3>
+
+<p>This menu item allows you to save the state of the emulator, so that it
+may be loaded later with the Load State command. Disk images inserted into
+the computer are stored in the state file.</p>
+
+<h3>Load State (Alt-L):</h3>
+
+<p>This menu item allows you load a state file (<code>.t8s</code>) previous
+saved with the Save State command.</p>
+
+<h3>Write Configuration (Alt-W):</h3>
+
+<p>This menu item allows you to save the configuration of the emulator, so
+that it may be loaded later with the Load Configuration command.
+Configuration files (<code>.t8c</code>) are discussed further on the <a
+href="Features.html#Configuration_Files">Features</a> page.</p>
+
+<h3>Read Configuration (Alt-R):</h3>
+
+<p>This menu item allows you load a Configuration file (<code>.t8c</code>)
+previous saved with the Save Configuration command.</p>
+
+<h2><a name="Joystick_Settings"></a><u>Joystick Settings</u></h2>
+
+<p><img alt="Joystick Settings Menu" src="images/JoystickMenu.png"></p>
+
+<h3>Use Keypad for Joystick:</h3>
+
+<p>This item determines if the numeric keypad is used for emulation of a
+joystick.</p>
+
+<h3>USB Joystick/Gamepad:</h3>
+
+<p>This item allows the user to select which USB joystick, if any, is used
+for emulation of the TRS-80 Joystick. It will bring up a list of the USB
+joysticks that SDL is aware of as shown below:</p>
+
+<p><img alt="Joystick Selection Menu" src="images/JoystickSelectMenu.png"></p>
+
+<h3>Map Button to Key/Function:</h3>
+
+<p><img alt="Joystick Mapping" src="images/JoystickMap.png"></p>
+
+<p>These options allows the user to map keys or functions of SDLTRS to Joystick
+buttons. Use "Write Configuration File" in the <a href="#ConfigurationState">
+Configuration/State File Management</a> menu to save the mapping.</p>
+<h2><a name="Default_Directories"></a><u>Default Directories</u></h2>
+
+<p><img alt="Default Directories Menu" src="images/DirectoryMenu.png"></p>
+
+<p>This menu allows the user to specify the default directories used for
+loading/saving various types of file used by the emulator. To choose the
+directory, press <b>Enter</b> when the appropriate entry is highlighted. That
+will bring up the Directory select screen. The arrow keys, page up/down and
+Home/End may be used to scroll through the list of directories. Pressing
+<b>Enter</b> on the &lt;..&gt; item will take you to the parent directory. On
+Windows, the Drive letters are listed as the last items in the menu, and you
+can change drives by pressing <b>Enter</b> on those items. The directory is
+selected by pressing the <b>Insert</b> or <b>Tab</b> key.</p>
+
+<p><img alt="Directory Selection Menu" src="images/DirectorySelect.png"></p>
+
+<h2><a name="ROM_File_Selection"></a><u>ROM File Selection</u></h2>
+
+<p><img alt="ROM File Selection Menu" src="images/ROMMenu.png"></p>
+
+<p>This menu allows you to chose the ROM files used in the emulation of the
+TRS-80. These files are not provided with the emulator. To select the file,
+press <b>Enter</b> when the appropriate item is highlighted, and the file
+selection menu will appear. It's operation is explained in the Floppy Disk
+section above.</p>
+
+</body>
+</html>

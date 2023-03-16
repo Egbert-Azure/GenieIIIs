@@ -1,0 +1,2 @@
+?package(sdl2trs):needs="x11" section="Applications/Emulators" \
+	title="SDL2TRS" command="sdl2trs" icon="/usr/share/pixmaps/sdl2trs.xpm"

@@ -1,0 +1,44 @@
+PROG	 = sdl2trs
+
+SRCS	+= blit.c
+SRCS	+= debug.c
+SRCS	+= dis.c
+SRCS	+= error.c
+SRCS	+= load_cmd.c
+SRCS	+= main.c
+SRCS	+= trs_cassette.c
+SRCS	+= trs_clones.c
+SRCS	+= trs_cp500.c
+SRCS	+= trs_disk.c
+SRCS	+= trs_hard.c
+SRCS	+= trs_imp_exp.c
+SRCS	+= trs_interrupt.c
+SRCS	+= trs_io.c
+SRCS	+= trs_memory.c
+SRCS	+= trs_mkdisk.c
+SRCS	+= trs_printer.c
+SRCS	+= trs_sdl_gui.c
+SRCS	+= trs_sdl_interface.c
+SRCS	+= trs_sdl_keyboard.c
+SRCS	+= trs_state_save.c
+SRCS	+= trs_stringy.c
+SRCS	+= trs_uart.c
+SRCS	+= z80.c
+SRCS	+= PasteManager.c
+
+OBJS	 = ${SRCS:.c=.o}
+
+ENDIAN	!= echo; echo "ab" | od -x | grep "6261" > /dev/null || echo "-Dbig_endian"
+LIBS	+= -lcurses -lreadline
+SDL_INC	!= sdl2-config --cflags
+SDL_LIB	!= sdl2-config --libs
+MACROS	+= -DREADLINE -DZBX
+CFLAGS	?= -g -Wall
+CFLAGS	+= ${SDL_INC} ${ENDIAN} ${MACROS}
+
+${PROG}: ${OBJS}
+	${CC} -o ${PROG} ${OBJS} ${LIBS} ${SDL_LIB} ${LDFLAGS}
+
+.PHONY: clean
+clean:
+	rm -f ${OBJS} ${PROG}

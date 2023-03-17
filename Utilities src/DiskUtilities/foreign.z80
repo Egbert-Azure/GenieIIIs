@@ -1,26 +1,26 @@
 ;********************************************************************************
-;* 																			   	*
-;* 						F O R E I G N . C O M 								   	*
-;* 																			   	*
-;* 																			   	*
-;* 			Utility for Genie IIIs with Holte CP/M Plus. 					   	*
-;* 			Created by Volker Dose & Egbert Schroeer 						   	*
-;* 							(c) 1992										   	*
-;* 																			   	*
-;* 				Update	for sdltrs emulator (c) 2023							*										   	*
-;* 																			   	*
+;* 									   	*
+;* 				F O R E I G N . C O M 			   	*
+;* 									   	*
+;* 									  	*
+;* 			Utility for Genie IIIs with Holte CP/M Plus	   	*
+;* 			Created by Volker Dose & Egbert Schroeer	   	*
+;* 				(c) 1992				   	*
+;* 									   	*
+;* 				Update	for sdltrs emulator (c) 2023		*										   	*
+;* 									   	*
 ;* This file contains the descriptions for various foreign formats that can    	*
 ;* be read with HOLTE-CP/M. The foreign disk is logged into drive P. Unlike 	*
-;* KONFIG, there is no need to reboot, as the parameters to be changed are 		*
-;* patched in memory. HOLTE-CP/M requires the following information to be 		*
-;* able to read foreign formats: 												*
-;* 																				*
-;* 1. The DPB disk parameter block 												*
-;* 2. The DTB drive control table 												*
-;* 3. The sector translation table 												*
-;* 																				*
-;* They must be created by hand first. 											*
-;* 																				*
+;* KONFIG, there is no need to reboot, as the parameters to be changed are	*
+;* patched in memory. HOLTE-CP/M requires the following information to be 	*
+;* able to read foreign formats: 						*
+;* 										*
+;* 1. The DPB disk parameter block 						*
+;* 2. The DTB drive control table 						*
+;* 3. The sector translation table 						*
+;* 										*
+;* They must be created by hand first. 						*
+;* 										*
 ;********************************************************************************
 
 
@@ -452,22 +452,21 @@ vortex	dw	0048h		; SPT : 128 byte records / track
 	db	  20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36
 	db	  37,38,39,40,41,42,43,44,45,46,47,48,49,50
 
-trs80   db  028H,000H   ;SPT= 128 	Byte records/track
+trs80   db  028H,000H   	;SPT= 128 	Byte records/track
 	db	004H        	;BSH= 4		block shift factor  
-    db 	00FH    		;BLM=  		block mask   
+    	db 	00FH    	;BLM=  		block mask   
 	db	000H        	;EXM=       extend mask  
-    db  0F9H,002H   	;DSM=  	   maximum block number 
+    	db  	0F9H,002H 	;DSM=  	   maximum block number 
 	db	0FFH,000H   	;DRM= 256  maximum directory number
 	db	0F0H        	;AL0=      allocation vector 0
-    db 	000H        	;AL1= 000      allocation vector 1
+    	db 	000H        	;AL1= 000      allocation vector 1
 	db	000H        	;CKS=   0      checksum size is zero
                         ;          ,permanently mounted
 	db	002H,000H   ;OFF=   2      reserved tracks 
  	db	002H        ;PSH=   2      physical sector shift
 	db	003H        ;PHM=   3      physical record mask
-	
 	db	51		; length of the skew table
-         		; skew table
+        			; skew table
 	db	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
 	db	20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36
 	db	37,38,39,40,41,42,43,44,45,46,47,48,49,50

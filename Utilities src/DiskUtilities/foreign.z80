@@ -1,45 +1,47 @@
-;*******************************************************************************
-;*         								       								   *
-;*                          F R E M D . C O M 				       			   *
-;*									       									   *
-;*									       									   *	
-;*               Utility fuer Genie IIIs mit Holte CP/M Plus.		       	   *
-;*				Volker Dose & Egbert Schroeer					       		   *
-;* 									       									   *
-;*									       									   *
-;*   Dieses File enthaelt die Beschreibungen fuer verschiedene Fremdformate      *
-;*   die mit dem HOLTE-CP/M gelesen werden koennen. Die fremde Diskette	       *
-;*   wird in Laufwerk P eingeloggt. Anders als beim KONFIG muss nicht neu       *
-;*   gebootet werden, weil die zu aenderden Parameter im Speicher gepatcht      *
-;*   werden. Das HOLTE-CP/M benoetigt folgende Informationen, um fremde         *
-;*   Formate lesen zu koennen:						       					   *
-;*									       									   *
-;*      1. Den DPB Diskettenparameterblock                                     *
-;*      2. Die DTB Drive control table 					       				   *
-;*      3. Die Sector translation table					       				   *
-;*									       									   *
-;*   Sie muessen vorerst von Hand erstellt werden.                              *
-;* 									       									   *
-;*******************************************************************************
+;********************************************************************************
+;* 																			   	*
+;* 						F O R E I G N . C O M 								   	*
+;* 																			   	*
+;* 																			   	*
+;* 			Utility for Genie IIIs with Holte CP/M Plus. 					   	*
+;* 			Created by Volker Dose & Egbert Schroeer 						   	*
+;* 							(c) 1992										   	*
+;* 																			   	*
+;* 				Update	for sdltrs emulator (c) 2023							*										   	*
+;* 																			   	*
+;* This file contains the descriptions for various foreign formats that can    	*
+;* be read with HOLTE-CP/M. The foreign disk is logged into drive P. Unlike 	*
+;* KONFIG, there is no need to reboot, as the parameters to be changed are 		*
+;* patched in memory. HOLTE-CP/M requires the following information to be 		*
+;* able to read foreign formats: 												*
+;* 																				*
+;* 1. The DPB disk parameter block 												*
+;* 2. The DTB drive control table 												*
+;* 3. The sector translation table 												*
+;* 																				*
+;* They must be created by hand first. 											*
+;* 																				*
+;********************************************************************************
 
 
-bel	equ	  07h			;auf dem Bildschirm auszugebende
-cr	equ	  0dh			;Zeichen
-lf	equ	  0ah
-esc	equ	  1bh
+; Define constants for special characters and BDOS functions
+bel   equ 07h   ; character to be displayed on the screen
+cr    equ 0dh   ; carriage return character
+lf    equ 0ah   ; line feed character
+esc   equ 1bh   ; escape character
+bdos  equ 0005h ; address of BDOS call
 
-bdos	equ	0005h			;Adresse des BDOS-Calls
+; Define BDOS function numbers
+wboot   equ 00h ; BDOS function warmstart
+prtstr  equ 09h ; BDOS function to print a string
+dirbios equ 50   ; BDOS function for a direct BIOS call
 
-wboot	equ	  00h			;BDOS-Funktion Warmstart
-prtstr	equ	  09h			;BDOS-Funktion String ausgeben
-dirbios	equ	   50			;BDOS-Funktion direkter BIOS-Aufruf
+; Define addresses for BIOS functions
+xmove  equ 0f857h ; BIOS function for interbank memory move
+move   equ 0f84bh ; BIOS function for moving memory
 
-
-xmove	equ    0f857h			;BIOS-Funktion Interbankmemorymove
-move	equ    0f84bh			;BIOS-Funktion Speicherverschieben
-
-xtail	equ	0082h			;Hier steht der eingegebene Name
-
+; Define the address where the entered name is stored
+xtail  equ 0082h
 
 	org	100h
 

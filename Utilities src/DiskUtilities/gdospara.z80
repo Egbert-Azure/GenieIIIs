@@ -98,7 +98,7 @@ bdct	db	70h		;Byte 1 der Original-DCT von Laufwerk B:
 	db	80h		;512 Bytes / sector
 	db	02h		;interleaving factor
 	db	20		;sector count / track
-	db	80		;number of usable trakcs
+	db	80		;number of usable tracks
 	
 
 
@@ -192,5 +192,3 @@ einstell
  	call	move			;und r}ber damit, und schon fertig
 
 	ret				;zur}ck zum Aufrufer
-	
- 

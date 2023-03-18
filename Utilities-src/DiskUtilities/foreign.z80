@@ -238,11 +238,11 @@ startlist
             dw      rair
             db      'VORTEX    ','$'
             dw      vortex
-			db      'TRS80    ','$'
+	    db      'TRS80    ','$'
             dw      trs80
             db      00
-    
-endlist
+	    
+ endlist
 
 
 s80dsdd	dw	0050h		; SPT : 128 byte records / track

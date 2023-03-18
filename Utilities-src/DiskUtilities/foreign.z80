@@ -241,7 +241,7 @@ startlist
 	    db      'TRS80    ','$'
             dw      trs80
             db      00
-	    
+
  endlist
 
 
@@ -453,7 +453,7 @@ vortex	dw	0048h		; SPT : 128 byte records / track
 	db	  20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36
 	db	  37,38,39,40,41,42,43,44,45,46,47,48,49,50
 
-trs80   db  028H,000H   	;SPT= 128 	Byte records/track
+trs80   db  	028H,000H   	;SPT= 128 	Byte records/track
 	db	004H        	;BSH= 4		block shift factor  
     	db 	00FH    	;BLM=  		block mask   
 	db	000H        	;EXM=       extend mask  
@@ -462,7 +462,7 @@ trs80   db  028H,000H   	;SPT= 128 	Byte records/track
 	db	0F0H        	;AL0=      allocation vector 0
     	db 	000H        	;AL1= 000      allocation vector 1
 	db	000H        	;CKS=   0      checksum size is zero
-                        	;          ,permanently mounted
+                        	;              , permanently mounted
 	db	002H,000H   	;OFF=   2      reserved tracks 
  	db	002H        	;PSH=   2      physical sector shift
 	db	003H        	;PHM=   3      physical record mask
@@ -471,4 +471,5 @@ trs80   db  028H,000H   	;SPT= 128 	Byte records/track
 	db	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
 	db	20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36
 	db	37,38,39,40,41,42,43,44,45,46,47,48,49,50
+
 	end	start

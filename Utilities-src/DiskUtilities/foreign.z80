@@ -9,7 +9,9 @@
 ;* 										*
 ;* 		Update	for sdltrs emulator (c) 2023 				*
 ;* 		first assembler code sinc 30yrs E. Schroeer		   	*
-;* 										*
+;* 			added: 							*
+;*			TRS80 format						*
+;*			MONTEZUMA CP/M format					*
 ;* This file contains the descriptions for various foreign formats that can    	*
 ;* be read with HOLTE-CP/M. The foreign disk is logged into drive P. Unlike 	*
 ;* KONFIG, there is no need to reboot, as the parameters to be changed are	*

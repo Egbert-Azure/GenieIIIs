@@ -35,7 +35,7 @@ bdos  equ 0005h ; address of BDOS call
 ; Define BDOS function numbers
 wboot   equ 00h ; BDOS function warmstart
 prtstr  equ 09h ; BDOS function to print a string
-dirbios equ 50   ; BDOS function for a direct BIOS call
+dirbios equ 50  ; BDOS function for a direct BIOS call
 
 ; Define addresses for BIOS functions
 xmove  equ 0f857h ; BIOS function for interbank memory move
@@ -43,10 +43,10 @@ move   equ 0f84bh ; BIOS function for moving memory
 
 ; Define the address where the entered name is stored
 xtail  equ 0082h
-org 100h
 
-start:
-	ld hl, xtail     ; the entered name must be saved
+	org 100h
+
+start	ld hl, xtail     ; the entered name must be saved
 	ld de, nambuff   ; in a buffer to prevent overwriting
 	ld bc, 10
 	ldir
@@ -58,11 +58,9 @@ start:
 	ld hl, startlist ; HL points to the start of the name list
 	ld (buff), hl    ; save it in a buffer for later use
 	
-loopy:
-	ld de, nambuff   ; DE points to the entered name
+loopy	ld de, nambuff   ; DE points to the entered name
 	
-loopx:
-	ld a, (de)       ; has the end of the name been reached?
+loopx	ld a, (de)       ; has the end of the name been reached?
 	cp 00h
 	jr z, einstell   ; if yes, then a valid name has been entered
 	
@@ -73,7 +71,7 @@ loopx:
 	inc de
 	jr loopx         ; and continue
 	
-dernicht:
+dernicht
 	ld hl, (buff)    ; reset HL to the beginning of the buffer
 	ld bc, 13        ; move to the end of the current entry
 	add hl, bc
@@ -128,69 +126,69 @@ einstell
 
 ; Copy the DPB to Common
 
-ld hl, (buff)       ; HL points to the name of the chosen format
-ld bc, 11           ; After 11 bytes comes the address of the corresponding parameter block, starting with the DPB
-add hl, bc
-ld e, (hl)          ; De points to the DPB to be loaded
-inc hl              ; HL points to the valid DPB in Common
-ld d, (hl)
-ld hl, (dpb)        ; HL points to the valid DPB in Common
-ld bc, 17           ; A DPB is 17 bytes long
-push de             ; DE points to the beginning of the parameter block and is still needed
-call move           ; Move data from DE to HL
+	ld hl, (buff)       ; HL points to the name of the chosen format
+	ld bc, 11           ; After 11 bytes comes the address of the corresponding parameter block, starting with the DPB
+	add hl, bc
+	ld e, (hl)          ; De points to the DPB to be loaded
+	inc hl              ; HL points to the valid DPB in Common
+	ld d, (hl)
+	ld hl, (dpb)        ; HL points to the valid DPB in Common
+	ld bc, 17           ; A DPB is 17 bytes long
+	push de             ; DE points to the beginning of the parameter block and is still needed
+	call move           ; Move data from DE to HL
 
 ; Copy the DCT of the format
 
-pop hl              ; Once again the beginning of the parameter block
-ld bc, 17           ; The DPB is 17 bytes long, followed by the Drive Control Table
-add hl, bc
-push hl             ; This address is saved again
-ld bc, 0001         ; Move data from Bank 1 to Bank 0
-call xmove
-ex de, hl           ; DE is the source address
-ld hl, (buff2)      ; Address of the XDPH in Bank 0
-ld bc, 25           ; After the XDPH of Drive P comes its DCT, which is where it should go
-add hl, bc
-ld bc, 5            ; 5 bytes
-call move           ; Move data from DE to HL
+	pop hl              ; Once again the beginning of the parameter block
+	ld bc, 17           ; The DPB is 17 bytes long, followed by the Drive Control Table
+	add hl, bc
+	push hl             ; This address is saved again
+	ld bc, 0001         ; Move data from Bank 1 to Bank 0
+	call xmove
+	ex de, hl           ; DE is the source address
+	ld hl, (buff2)      ; Address of the XDPH in Bank 0
+	ld bc, 25           ; After the XDPH of Drive P comes its DCT, which is where it should go
+	add hl, bc
+	ld bc, 5            ; 5 bytes
+	call move           ; Move data from DE to HL
 
 ; Copy the skew table
 
-pop hl              ; The length of the skew table to be copied is determined, which comes directly after the DCT
-ld bc, 5
-add hl, bc
-push hl             ; Save the address
-ld bc, 0001         ; Interbank move from Bank 1 to Bank 0
-call xmove
-pop de
-ld a, (de)          ; Length of the skew table
-inc de              ; Now points to the beginning of the skew table
-ld hl, (buf4)      ; Address of the table
-ld b, 0             ; The address of the table is the first word of the XDPH
-ld c, a             ; The length was stored in the accumulator
-call move           ; Move data from DE to HL
+	pop hl              ; The length of the skew table to be copied is determined, which comes directly after the DCT
+	ld bc, 5
+	add hl, bc
+	push hl             ; Save the address
+	ld bc, 0001         ; Interbank move from Bank 1 to Bank 0
+	call xmove
+	pop de
+	ld a, (de)          ; Length of the skew table
+	inc de              ; Now points to the beginning of the skew table
+	ld hl, (buf4)      ; Address of the table
+	ld b, 0             ; The address of the table is the first word of the XDPH
+	ld c, a             ; The length was stored in the accumulator
+	call move           ; Move data from DE to HL
 
 ; Report the success of the action
 
-ld hl, (buff)       ; Points to the name of the chosen format
-ld de, eintrag      ; It is copied into the output string
-ld bc, 10
-ldir
-ld de, gutis        ; Points to the message
-ld c, prtstr        ; BDOS-Call String output
-call bdos           ; Execute
-ld c, wboot         ; Warmstart back to the operating system
-call bdos
+	ld hl, (buff)       ; Points to the name of the chosen format
+	ld de, eintrag      ; It is copied into the output string
+	ld bc, 10
+	ldir
+	ld de, gutis        ; Points to the message
+	ld c, prtstr        ; BDOS-Call String output
+	call bdos           ; Execute
+	ld c, wboot         ; Warmstart back to the operating system
+	call bdos
 
 ; List of character strings to output
 
-hallo db cr, lf, esc, 'R', 'FOREIGN.COM', esc, 'S', ' sets drive P to foreign formats.', cr, lf
-      db '  Only runnable on Genie IIIs with Holte CP/M +!', cr, lf, '$'
-err1  db cr, lf, bel, bel, 'Incorrect format name specified!!!!!!!!!!!!', cr, lf
-err2  db 'The following format names are allowed:', cr, lf, lf, '$'
-gutis db cr, lf, 'The new format '
+hallo 	db cr, lf, esc, 'R', 'FOREIGN.COM', esc, 'S', ' sets drive P to foreign formats.', cr, lf
+      	db '  Only runnable on Genie IIIs with Holte CP/M +!', cr, lf, '$'
+err1  	db cr, lf, bel, bel, 'Incorrect format name specified !!!!!!!!!!!', cr, lf
+err2  	db 'The following format names are allowed:', cr, lf, lf, '$'
+gutis 	db cr, lf, 'The new format '
 eintrag ds 10
-      db 'is now valid for drive P!', cr, lf, '$'
+      	db 'is now valid for drive P!', cr, lf, '$'
 
 ; Intermediate buffer for register pair DE or HL
 buff        dw      0000h
@@ -203,6 +201,7 @@ ainh        db      00
 bcinh       dw      0000h      ; parameters to be passed are stored here
 deinh       dw      0000h
 hlinh       dw      0000h      ; the function number fnum=22 means "stop get ^DRVTBL"
+
 buf4        dw      0000       ; buffer for the XDPH of drive P
             dw      0,0,0,0
             db      0,0
@@ -240,9 +239,10 @@ startlist
             dw      vortex
 	    db      'TRS80    ','$'
             dw      trs80
+	    db      'MONTEZUMA  ','$'
             db      00
 
- endlist
+endlist
 
 
 s80dsdd	dw	0050h		; SPT : 128 byte records / track
@@ -264,8 +264,8 @@ s80dsdd	dw	0050h		; SPT : 128 byte records / track
 	db	  10		; sector count / track
 	db	  80		; number of usable tracks
 	
-	db	  51		; l{nge der Skewtabelle
-				; Skewtabelle
+	db	  51		; length of the skew table
+         			; skew table
 
 	db	  0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
 	db	  20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36
@@ -294,6 +294,7 @@ d80dsdd	dw	0050h		; SPT : 128 byte records / track
 	
 	db	  51		; length of the skew table
          			; skew table
+
 	db	  0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
 	db	  20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36
 	db	  37,38,39,40,41,42,43,44,45,46,47,48,49,50
@@ -468,8 +469,34 @@ trs80   db  	028H,000H   	;SPT= 128 	Byte records/track
 	db	003H        	;PHM=   3      physical record mask
 	db	51		; length of the skew table
         			; skew table
+
 	db	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
 	db	20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36
 	db	37,38,39,40,41,42,43,44,45,46,47,48,49,50
+
+MONTEZUMA
+	dw	0048h		; SPT : 128 byte records / track
+	db	  04h		; BSH : block shift
+	db	  0fh		; BSM : block mask
+	db	  00h		; EXM : extend mask
+	dw	0162h		; DSM : maximum block number
+	dw	007fh		; DRM : maximum directory entry number
+	db	 0C0h		; AL0 : allocation vector 0
+	db	  00h		; AL1 : allocation vector 1
+	dw	0020h		; CKS : checksum size
+	dw	  01h		; OFF : offset for system tracks
+	db	  01h		; PSH : physical sector size shift
+	db	  01h		; PHM : physical sector size mask
+	
+	db	  78h		; Byte 1 der drive control table
+	db	  80h
+	db	  01		; interleavingfaktor
+	db	  18		; sector count / track
+	db	  80		; number of usable tracks
+	db	  51		; length of the skew table
+         			; skew table
+
+	db	  0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
+
 
 	end	start

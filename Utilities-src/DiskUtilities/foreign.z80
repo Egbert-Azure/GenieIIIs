@@ -223,28 +223,25 @@ dphend                          ; End of this buffer
 ; The length of the character string is limited to 10.
 
 startlist
-            db      'S80 DSDD ','$'
-            dw      s80dsdd
-            db      'D80 DSDD ','$'
-            dw      d80dsdd
-            db      'PROF#4 ','$'
-            dw      prof4
-            db      'ALPHA ','$'
-            dw      alpha
-            db      'IBM-PC ','$' 
-            dw      ibmpc
-            db      'KONTRON ','$'
-            dw      kontron
-            db      'RAIR ','$'
-            dw      rair
-            db      'VORTEX ','$'
-            dw      vortex
-	    db      'TRS80 ','$'
-            dw      trs80
-	    db      'MONTEZUMA','$'
-            dw      montezuma
-            db      00
 
+	db	'S80  ','$'
+	dw	s80dsdd
+	db	'D80  ','$'
+	dw	d80dsdd
+	db	'PROF#4    ','$'
+	dw	prof4
+	db	'ALPHA     ','$'
+	dw	alpha
+	db	'IBM-PC    ','$' 
+	dw	ibmpc
+	db	'KONTRON   ','$'
+	dw	kontron
+	db	'RAIR      ','$'
+	dw	rair
+	db	'VORTEX    ','$'
+	dw	vortex
+	db	00	
+	
 endlist
 
 

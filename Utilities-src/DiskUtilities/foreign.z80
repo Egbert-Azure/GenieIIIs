@@ -241,7 +241,8 @@ startlist
             dw      vortex
 	    db      'TRS80    ','$'
             dw      trs80
-	    db      'MONTEZUMA  ','$'
+	    db      'MONTEZUMA ','$'
+	    dw      montezuma
             db      00
 
 endlist
@@ -469,6 +470,7 @@ trs80   db  	028H,000H   	;SPT= 128 	Byte records/track
 	db	002H,000H   	;OFF=   2      reserved tracks 
  	db	002H        	;PSH=   2      physical sector shift
 	db	003H        	;PHM=   3      physical record mask
+	
 	db	51		; length of the skew table
         			; skew table
 

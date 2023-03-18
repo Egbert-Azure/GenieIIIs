@@ -1,26 +1,27 @@
 ;********************************************************************************
-;* 									   	*
-;* 				F O R E I G N . C O M 			   	*
-;* 									   	*
-;* 									  	*
-;* 			Utility for Genie IIIs with Holte CP/M Plus	   	*
-;* 			Created by Volker Dose & Egbert Schroeer	   	*
-;* 				(c) 1992				   	*
-;* 									   	*
-;* 				Update	for sdltrs emulator (c) 2023		*										   	*
-;* 									   	*
+;* 									   											*
+;* 				F O R E I G N . C O M 			   								*
+;* 									   											*
+;* 									  											*
+;* 			Utility for Genie IIIs with Holte CP/M Plus	   						*
+;* 			Created by Volker Dose & Egbert Schroeer	   						*
+;* 				(c) 1992				   										*
+;* 									   											*
+;* 				Update	for sdltrs emulator (c) 2023 							*
+;* 		first assembler code sinc 30yrs E. Schroeer							   	*
+;* 									   											*
 ;* This file contains the descriptions for various foreign formats that can    	*
 ;* be read with HOLTE-CP/M. The foreign disk is logged into drive P. Unlike 	*
-;* KONFIG, there is no need to reboot, as the parameters to be changed are	*
-;* patched in memory. HOLTE-CP/M requires the following information to be 	*
-;* able to read foreign formats: 						*
-;* 										*
-;* 1. The DPB disk parameter block 						*
-;* 2. The DTB drive control table 						*
-;* 3. The sector translation table 						*
-;* 										*
-;* They must be created by hand first. 						*
-;* 										*
+;* KONFIG, there is no need to reboot, as the parameters to be changed are		*
+;* patched in memory. HOLTE-CP/M requires the following information to be 		*
+;* able to read foreign formats: 												*
+;* 																				*
+;* 						1. The DPB disk parameter block 						*
+;* 						2. The DTB drive control table 							*
+;* 						3. The sector translation table 						*
+;* 																				*
+;* They must be created by hand first. 											*
+;* 																				*
 ;********************************************************************************
 
 

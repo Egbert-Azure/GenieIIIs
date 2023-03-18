@@ -1,25 +1,25 @@
 ;*******************************************************************************
-;*         								       								   *
-;*                          F R E M D . C O M 				       			   *
-;*									       									   *
-;*									       									   *	
-;*               Utility fuer Genie IIIs mit Holte CP/M Plus.		       	   *
-;*				Volker Dose & Egbert Schroeer					       		   *
-;* 									       									   *
-;*									       									   *
-;*   Dieses File enthaelt die Beschreibungen fuer verschiedene Fremdformate      *
-;*   die mit dem HOLTE-CP/M gelesen werden koennen. Die fremde Diskette	       *
-;*   wird in Laufwerk P eingeloggt. Anders als beim KONFIG muss nicht neu       *
-;*   gebootet werden, weil die zu aenderden Parameter im Speicher gepatcht      *
-;*   werden. Das HOLTE-CP/M benoetigt folgende Informationen, um fremde         *
-;*   Formate lesen zu koennen:						       					   *
-;*									       									   *
+;*         								       *
+;*                          F R E M D . C O M 				       *
+;*									       *
+;*									       *	
+;*               Utility f}r Genie IIIs mit Holte CP/M Plus.		       *
+;*									       *
+;* 									       *
+;*									       *
+;*   Dieses File enth{lt die Beschreibungen f}r verschiedene Fremdformate      *
+;*   die mit dem HOLTE-CP/M gelesen werden k|nnen. Die fremde Diskette	       *
+;*   wird in Laufwerk P eingeloggt. Anders als beim KONFIG mu~ nicht neu       *
+;*   gebootet werden, weil die zu {nderden Parameter im Speicher gepatcht      *
+;*   werden. Das HOLTE-CP/M ben|tigt folgende Informationen, um fremde         *
+;*   Formate lesen zu k|nnen:						       *
+;*									       *
 ;*      1. Den DPB Diskettenparameterblock                                     *
-;*      2. Die DTB Drive control table 					       				   *
-;*      3. Die Sector translation table					       				   *
-;*									       									   *
-;*   Sie muessen vorerst von Hand erstellt werden.                              *
-;* 									       									   *
+;*      2. Die DTB Drive control table 					       *
+;*      3. Die Sector translation table					       *
+;*									       *
+;*   Sie m}ssen vorerst von Hand erstellt werden.                              *
+;* 									       *
 ;*******************************************************************************
 
 
@@ -473,3 +473,5 @@ vortex	dw	0048h		; SPT : 128 byte records / track
 
 
 	end	start
+	
+		 	

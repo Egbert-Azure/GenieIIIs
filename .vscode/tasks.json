@@ -1,0 +1,82 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build project",
+            "type": "shell",
+            "command": "make build",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "linux": {
+                "command": "make build",
+            },
+            "osx": {
+                "command": "make build",
+            },
+            "windows": {
+                "command": "make build",
+                "options": {
+                    "shell": {
+                        "executable": "C:\\WINDOWS\\System32\\cmd.exe",
+                        "args": ["/d", "/c"]
+                    }
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "isBackground": false,
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "clear": true,
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true
+            },
+            "problemMatcher": "$errmatcher-pasmo"
+        },
+        {
+            "label": "pasmo current file",
+            "type": "shell",
+            "command": "pasmo",
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "args": [
+                "--nologo",
+                "--lst=${fileBasenameNoExtension}.lst",
+                "${fileBasename}"
+            ],
+            "linux": {
+                "command": "/usr/local/bin/pasmo",
+            },
+            "osx": {
+                "command": "/path/to/pasmo",
+            },
+            "windows": {
+                "command": "X:\\path\\to\\pasmo.exe",
+                "options": {
+                    "shell": {
+                        "executable": "C:\\WINDOWS\\System32\\cmd.exe",
+                        "args": ["/d", "/c"]
+                    }
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "isBackground": false,
+            "presentation": {
+                "echo": false,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": "$errmatcher-pasmo"
+        }
+    ]
+}

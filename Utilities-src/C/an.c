@@ -152,4 +152,3 @@ getresp()	/* get nonwhite space character from keyboard input	*/
 #ifdef C/80
 #include "stdlib.c"	/* must be at end of source file for inclusion	*/
 #endif
-

@@ -218,7 +218,3 @@ char *argv[2];
   exit(0);
   }
 /* End of main() */
-
-1)/8;
-
-  

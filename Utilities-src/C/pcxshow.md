@@ -18,7 +18,7 @@ The main function of the program then opens the input file and reads the PCX hea
 /* Original by                      :  M. CLYNES   07-24-89            */
 /* Borland Compiler Enhancements by :  J. Braatz   02-16-92            */
 /* Adapted to Club-80 Terminal by   :  A. Schmid   06-07-93            */
-/* adapted to Genie IIIs by	    :  E. Schroeer 18-11-93            */
+/* adapted to Genie IIIs by     :  E. Schroeer 18-11-93                */
 /* ------------------------------------------------------------------- */
 /* WARNING Only with LIBZ and HOLTE !!!                                */
 

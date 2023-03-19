@@ -439,6 +439,3 @@ REG Enumeration	EnumParIn;
 	if (EnumLoc == Ident3) return (TRUE);
 	return (FALSE);
 }
-
-
-

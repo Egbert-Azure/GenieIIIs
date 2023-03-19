@@ -10,8 +10,8 @@
 ;* 		Update	for sdltrs emulator (c) 2023 				*
 ;* 		first assembler code sinc 30yrs E. Schroeer		   	*
 ;* 			added: 							*
-;*			TRS80 format						*
-;*			MONTEZUMA CP/M format					*
+;*			TRS80 format: TRS80					*
+;*			MONTEZUMA CP/M format: MM-D80				*
 ;* This file contains the descriptions for various foreign formats that can    	*
 ;* be read with HOLTE-CP/M. The foreign disk is logged into drive P. Unlike 	*
 ;* KONFIG, there is no need to reboot, as the parameters to be changed are	*
@@ -21,11 +21,13 @@
 ;* 		1. The DPB disk parameter block 				*
 ;* 		2. The DTB drive control table 					*
 ;* 		3. The sector translation table 				*
+;* 		They must be created by hand first				*
 ;* 										*
-;* They must be created by hand first. 						*
+;* 		change log 03/19/2023						*
+;*  Possible alian disk formats limited to 80 char in sum			*
+;*  reduced to 8 bytes per name compared to 10 bytes to the origin		*										*
 ;* 										*
 ;********************************************************************************
-
 
 ; Define constants for special characters and BDOS functions
 bel   equ 07h   ; character to be displayed on the screen
@@ -50,7 +52,7 @@ xtail  equ 0082h
 
 start	ld hl, xtail     ; the entered name must be saved
 	ld de, nambuff   ; in a buffer to prevent overwriting
-	ld bc, 10
+	ld bc, 8
 	ldir
 	
 	ld de, hallo     ; DE points to the greeting message
@@ -75,7 +77,7 @@ loopx	ld a, (de)       ; has the end of the name been reached?
 	
 dernicht
 	ld hl, (buff)    ; reset HL to the beginning of the buffer
-	ld bc, 13        ; move to the end of the current entry
+	ld bc, 11        ; move to the end of the current entry
 	add hl, bc
 	ld a, (hl)       ; check if the end of the list has been reached
 	cp 00h
@@ -96,8 +98,8 @@ loop
     ld (buff),de       ; stored to be incremented later.
     ld c,prtstr       ; All names are outputted until the end marker '00'.
     call bdos
-    ld hl,(buff)      
-    ld bc,13          ; The names are 13 bytes apart.
+    ld hl,(buff)
+    ld bc,11          ; The names are 11 bytes apart.
     add hl,bc         ; HL now points to the next name or '00'.
     ex de,hl          ; DE is loaded with HL
     ld a,(de)         ; for BDOS-Call #9.
@@ -122,14 +124,14 @@ einstell
     ld bc,0100h       ; A memory load operation from bank 0 to bank 1 is performed.
     call xmove
     ld hl,buf4        ; buf4 is the target address, copying the entire XDPH in order to access DPB
-    ld de,(buff2)     
+    ld de,(buff2)
     ld bc,dphend-buf4 ; and the address of the Skew table.
     call move         ; Perform memory load operation.
 
 ; Copy the DPB to Common
 
 	ld hl, (buff)       ; HL points to the name of the chosen format
-	ld bc, 11           ; After 11 bytes comes the address of the corresponding parameter block, starting with the DPB
+	ld bc, 9            ; After 9 bytes comes the address of the corresponding parameter block, starting with the DPB
 	add hl, bc
 	ld e, (hl)          ; De points to the DPB to be loaded
 	inc hl              ; HL points to the valid DPB in Common
@@ -174,7 +176,7 @@ einstell
 
 	ld hl, (buff)       ; Points to the name of the chosen format
 	ld de, eintrag      ; It is copied into the output string
-	ld bc, 10
+	ld bc, 8
 	ldir
 	ld de, gutis        ; Points to the message
 	ld c, prtstr        ; BDOS-Call String output
@@ -189,15 +191,15 @@ hallo 	db cr, lf, esc, 'R', 'FOREIGN.COM', esc, 'S', ' sets drive P to foreign f
 err1  	db cr, lf, bel, bel, 'Incorrect format name specified !!!!!!!!!!!', cr, lf
 err2  	db 'The following format names are allowed:', cr, lf, lf, '$'
 gutis 	db cr, lf, 'The new format '
-eintrag ds 10
+eintrag ds 8
       	db 'is now valid for drive P!', cr, lf, '$'
 
 ; Intermediate buffer for register pair DE or HL
 buff        dw      0000h
 buff2       dw      0000h      ; contains the address of the XDPH of LW P
-nambuff     ds      10         ; the selected name is saved here to prevent overwriting by CP/M
+nambuff     ds      8          ; the selected name is saved here to prevent overwriting by CP/M
 
-biospb                         ; The BIOS PARAMETER BLOCK must be specified
+biospb                          ; The BIOS PARAMETER BLOCK must be specified
 fnum        db      22         ; when a direct BIOS call is made through BDOS-Call 50
 ainh        db      00
 bcinh       dw      0000h      ; parameters to be passed are stored here
@@ -220,31 +222,30 @@ dct         db      0
 dphend                          ; End of this buffer
 
 ; List of possible foreign formats
-; The length of the character string is limited to 10.
+; The length of the character string is limited to 8.
 
 startlist
-
-	db	'S80 DSDD  ','$'
-	dw	s80dsdd
-	db	'D80 DSDD  ','$'
-	dw	d80dsdd
-	db	'PROF#4    ','$'
-	dw	prof4
-	db	'ALPHA     ','$'
-	dw	alpha
-	db	'IBM-PC    ','$' 
-	dw	ibmpc
-	db	'KONTRON   ','$'
-	dw	kontron
-	db	'RAIR      ','$'
-	dw	rair
-	db	'VORTEX    ','$'
-	dw	vortex
-	db	'TRS80     ','$'
-	dw	trs80
-	db	'MM D80    ','$'
+	db	'MM-D80  ','$' ;first entry is the default format
 	dw	MMD80
-	db	00	
+	db	'IBM-PC  ','$' 
+	dw	ibmpc
+	db	'KK-S80  ','$'
+	dw	s80dsdd
+	db	'KK-D80  ','$'
+	dw	d80dsdd
+	db	'KONTRON ','$'
+	dw	kontron
+	db	'PROF#4  ','$'
+	dw	prof4
+	db	'RAIR    ','$'
+	dw	rair
+	db	'TRS-80  ','$'
+	dw	trs80
+	db	'VORTEX  ','$'
+	dw	vortex
+	db	'ALPHA   ','$'
+	dw	alpha
+	db	00
 	
 endlist
 
@@ -494,13 +495,13 @@ MMD80	dw	0048h		; SPT : 128 byte records / track
 	
 	db	  78h		; Byte 1 der drive control table
 	db	  80h
-	db	  01		; interleavingfaktor
-	db	  18		; sector count / track
+	db	  02		; interleavingfaktor
+	db	  36		; sector count / track
 	db	  80		; number of usable tracks
 	db	  51		; length of the skew table
-         			; skew table
-
+				; skew table
 	db	  0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
 
 
-	end	start
+end	start
+

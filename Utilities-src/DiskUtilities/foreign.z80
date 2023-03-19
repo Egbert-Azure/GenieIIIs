@@ -229,9 +229,9 @@ startlist
 	dw	MMD80
 	db	'IBM-PC  ','$' 
 	dw	ibmpc
-	db	'KK-S80  ','$'
+	db	'S80-DD  ','$'
 	dw	s80dsdd
-	db	'KK-D80  ','$'
+	db	'D80-DD  ','$'
 	dw	d80dsdd
 	db	'KONTRON ','$'
 	dw	kontron

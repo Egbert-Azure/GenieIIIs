@@ -55,4 +55,3 @@ void get_status( char *status_ptr)
 {
     *status_ptr = inp(LPT1_PORT+1) & 0xF;   /* Statusport lesen.*/
 }
-

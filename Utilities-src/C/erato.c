@@ -32,4 +32,3 @@ main()
 printf("\7\n%d primes\n",count);
 exit(0);
 }
-

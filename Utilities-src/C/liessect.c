@@ -40,5 +40,3 @@ main()
     printf("den Hauptspeicher an die Adresse %x geladen\n",systab);
     }
 }	
-
-

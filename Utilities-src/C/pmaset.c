@@ -274,4 +274,3 @@ main(int argc, char *argv[]) {
 	printf("%d members changed.\n",changed);	/* say how many */
 	close(u);
 }
-

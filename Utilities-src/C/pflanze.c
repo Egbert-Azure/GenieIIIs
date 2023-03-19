@@ -11,7 +11,7 @@
 Definierte Konstanten fuer die Darstellung der 'Pflanze'.
 Diese Werte sind fuer das Aussehen der Figur verantwortlich.
 Sinnvolle Werte liegen etwa zwischen -3.0 und +3.0 fuer a,b
-und c.Die Konstants 'bunt' dient dazu, erst nach dem Zeichnen
+und c. Die Konstants 'bunt' dient dazu, erst nach dem Zeichnen
 einer groesseren Menge von Punkten die Farbe zu wechseln.
 Versuchen solltest du mal b=0.01 und b=0.005. Dargestelt
 werden Schnitte von Pflanzenstielen.
@@ -80,4 +80,3 @@ do	{
 	while (code != 'n');
 	closepl();
 }
-

@@ -25,9 +25,9 @@ $SYS1 	EQU  0FAH		;system byte 1
 ?XMOVE: LD   A,0FFH		;remark interbank move
 	LD   (IBANK),A
 	LD   A,C		;source bank number --> accu
-	ADÄ  A,A		;source bank number --> upper nibble
+	AD  A,A		;source bank number --> upper nibble
 	ADD  A,A
-	ADÄ  A,A
+	AD  A,A
 	ADD  A,A
 	ADD  A,B		;destination bank number --> lower nibble
 	LD   (BANK),A		;store bank numbers
@@ -140,4 +140,4 @@ SAVESP: DEFS 2			;temporary memory for stack pointer
 PORT:	DEFS 1			;temporary memory for system byte 0
 
 	END
-
+	

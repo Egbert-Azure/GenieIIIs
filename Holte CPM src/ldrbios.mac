@@ -61,7 +61,8 @@ PUSHHL	EQU  0E5H		;machine code of PUSH HL
  	
 
 *EJECT
-BOOT:Š;====
+BOOT:
+;====
 
 ;Initial entry point for system startup.
 
@@ -124,7 +125,8 @@ DPB0:	DEFW 80			;128 byte records per track
 ;directory buffer control block:
 DIRBCB:	DEFB 0FFH		;drive
 	DEFS 4			;record #, written ?
-	DEFB 0Š	DEFS 4			;track, sector
+	DEFB 0
+	DEFS 4			;track, sector
 	DEFW DIR		;buffer address
 
 ;data buffer:
@@ -187,7 +189,8 @@ SECTRN:
 
 ;Sector translate. Indexes skew table in reg. DE with sector in reg. BC.
 ;Returns physical sector in reg. HL. If no skew table (reg. DE = 0) then
-;returns physical = logical.Š
+;returns physical = logical.
+
 	LD   L,C
 	LD   H,B
 	RET
@@ -250,7 +253,8 @@ SERLEN	EQU  7			;length of serial number
 SERCHK:	LD   IX,SERNO  		;^serial number     	        --> reg. IX
 	DEFB 0FDH,2EH,SERLEN	;LD LY,SERLEN (length of number --> reg. LY)
 	LD   HL,0		;clear reg. HL (accumulator)
-	LD   D,H		;clear MSB of summandŠADDS:	LD   E,(IX)		;load first char of serial number
+	LD   D,H		;clear MSB of summand
+ADDS:	LD   E,(IX)		;load first char of serial number
 	ADD  HL,DE
 	INC  IX			;bump serial number pointer
 	DEFB 0FDH,2DH		;DEC LY (decrement loop counter)
@@ -269,7 +273,7 @@ SERCHK:	LD   IX,SERNO  		;^serial number     	        --> reg. IX
 	OR   A          	;16 bit compare
 	SBC  HL,DE
 ;	RET  Z       		;return if match
-        REÔ                     ;returî allways
+        RE                   ;retur allways
 	OR   A
 	SBC  HL,BC		;compare value not initialized ?
 	JR   Z,INISER		;jump to serialization
@@ -449,4 +453,3 @@ DIR     EQU  ALV0+49
 DATA   	EQU  DIR+512
 
 	END
-

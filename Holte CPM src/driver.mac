@@ -61,7 +61,8 @@ GS	EQU  1DH		;group separator
 RS	EQU  1EH		;record separator
 DEL	EQU  7FH		;delete
 	
-;common entry point for all driver routines:Š	PUSH BC			;save contents of reg. B & HL
+;common entry point for all driver routines:
+	PUSH BC			;save contents of reg. B & HL
 	PUSH HL
 	LD   B,0		;vector # * 2 --> reg. BC
 	SLA  C
@@ -124,7 +125,8 @@ $STIME3:DEFW $STIME3S		;set time and date in CP/M 3 format
 ;******************************************************************************
 
 DELAY1: DEFW 500   		;determines debounce time (start of key press)
-DELAY2: DEFW 5000  		;determines debounce time (end   of key press)ŠDELAY3: DEFW 35    		;determines wait time until key autorepeats
+DELAY2: DEFW 5000  		;determines debounce time (end   of key press)
+ï¿½DELAY3: DEFW 35    		;determines wait time until key autorepeats
 DELAY4:	DEFW 3  		;determines frequency of auto repeat
 KEYTAB:	DEFW NBOARD		;contains ^(keyboard table)
 
@@ -187,7 +189,8 @@ NBOARD:
 	DEFB ':','*',0  	;:, SHIFT-:, CTRL-:
 	DEFB ';','+',0  	;;, SHIFT-;, CTRL-;
 	DEFB ',','<',0  	;,, SHIFT-,, CTRL-,
-	DEFB '-','=',0  	;-, SHIFT--, CTRL--Š	DEFB '.','>',0  	;., SHIFT-., CTRL-.
+	DEFB '-','=',0  	;-, SHIFT--, CTRL--
+	DEFB '.','>',0  	;., SHIFT-., CTRL-.
 	DEFB '/','?',0 		;/, SHIFT-/, CTRL-/
 
 ;address 3840H (special keys):	
@@ -250,7 +253,8 @@ WBOARD:
 	DEFB 'a','A',SOH	;A, SHIFT-A, CTRL-A
 	DEFB 'b','B',STX	;B, SHIFT-B, CTRL-B
 	DEFB 'c','C',ETX	;C, SHIFT-C, CTRL-C
-	DEFB 'd','D',EOT	;D, SHIFT-D, CTRL-DŠ	DEFB 'e','E',ENQ	;E, SHIFT-E, CTRL-E
+	DEFB 'd','D',EOT	;D, SHIFT-D, CTRL-D
+ï¿½	DEFB 'e','E',ENQ	;E, SHIFT-E, CTRL-E
 	DEFB 'f','F',ACK	;F, SHIFT-F, CTRL-F
 	DEFB 'g','G',BEL	;G, SHIFT-G, CTRL-G
 
@@ -313,7 +317,8 @@ WBOARD:
 	DEFB NAK,0FDH,0  	;BREAK     , SHIFT-BREAK     , CTRL-BREAK
 				;BREAK = abort current operation
 	DEFB ENQ,8FH,90H 	;UP-ARROW  , SHIFT-UP-ARROW  , CTRL-UP-ARROW
-				;      UP-ARROW = cursor upŠ				;SHIFT-UP-ARROW = start of text
+				;      UP-ARROW = cursor up
+				;SHIFT-UP-ARROW = start of text
 				;CTRL -UP-ARROW = start of screen
 	DEFB CAN,91H,92H 	;DOWN-ARROW, SHIFT-DOWN-ARROW, CTRL-DOWN-ARROW
 				;      DOWN-ARROW = cursor down
@@ -376,7 +381,8 @@ WBOARD:
 ;address 38E0H (number & special keys [numeric keypad]):	
 	DEFB '8','8',0  	;8 , SHIFT-8 , CTRL-8
 	DEFB '9','9',0  	;9 , SHIFT-9 , CTRL-9
-	DEFB 0FEH,0FEH,0	;00, SHIFT-00, CTRL-00Š	DEFB 0,0,0      	;LOCK
+	DEFB 0FEH,0FEH,0	;00, SHIFT-00, CTRL-00
+	DEFB 0,0,0      	;LOCK
 	DEFB ',',',',0  	;, , SHIFT-, , CTRL-,
 	DEFB '-','-',0  	;- , SHIFT-- , CTRL--
 	DEFB '.','.',0  	;. , SHIFT-. , CTRL-.
@@ -439,7 +445,8 @@ TAB1S:	DEFB 0,BEL		;beep
 	DEFB 0,BS		;cursor left
 	DEFB 0,LF		;cursor down
 	DEFB 0,VT		;cursor up
-	DEFB 0,FF		;cursor rightŠ	DEFB 0,CR		;carriage return
+	DEFB 0,FF		;cursor right
+	DEFB 0,CR		;carriage return
 	DEFB 0,RS		;home cursor
 TAB2S:	DEFB 0FFH,'='		;absolute cursor addressing
 
@@ -502,7 +509,8 @@ DCT:    DEFB 01110000B          ;bit 7   : reserved
                                 ;                        do not alter)
         DEFB 2                  ;interleaving factor
         DEFB 20                 ;sector count per track
-        DEFB 80                 ;number of usable tracksŠ        DEFB 0                  ;current track
+        DEFB 80                 ;number of usable tracks
+        DEFB 0                  ;current track
 
 ;drive 1:
         DEFB 01110000B
@@ -522,7 +530,7 @@ DCT:    DEFB 01110000B          ;bit 7   : reserved
 ;drive control tables (8 inch):
 
 ;drive 0:
-;Megabytå 8:
+;Megabyte 8:
         
         DEFB 01110000B
         DEFB 11000000B
@@ -565,7 +573,8 @@ DCTW:   DEFB 01100000B          ;bits 7-5: no. of surfaces
         DEFB 10000000B          ;bits 7,6: sector length
                                 ;          0 =  256 bytes  1 = 512 bytes
                                 ;          2 = 1024 bytes  3 = 128 bytes
-                                ;bit 0   : drive status (used by disk driver --Š                                ;                        do not alter)
+                                ;bit 0   : drive status (used by disk driver --
+                               ;                        do not alter)
 	DEFB 32   		;starting track for write precomp / 4
         DEFB 1                  ;interleaving factor
         DEFB 9                  ;sector count per track
@@ -593,7 +602,7 @@ POWUP:	DEFS 1
 ;table of video parameters:
 VIDPAR: DEFB 110 		;horizontal total
 	DEFB 80			;horizontal displayed
-	DEFB 8¶  		;h sync position
+	DEFB 8  		;h sync position
 	DEFB 25			;h sync width
 	DEFB 29			;vertical total
 	DEFB 1			;v total adjust
@@ -628,7 +637,8 @@ CLOCK:	DEFB 1			;0 = software clock
 ;*******************
 ;*  $ V D I N I T  *
 ;*******************
-Š;entry: HL = address of video parameter table
+
+;entry: HL = address of video parameter table
 
 ;  struct {
 ;	    char R0, R1, R2 , R3 , R4 , R5 , R6 , R7 ,
@@ -691,7 +701,8 @@ CLOCK:	DEFB 1			;0 = software clock
 $CRTREG EQU  0F6H		;CRT controller address register
 $CRTCMD EQU  0F7H		;CRTC command register
 
-;initialize the video controller chip Í 6845:Š$VDINIT:LD   A,10H		;source      bank = 1
+;initialize the video controller chip ï¿½ 6845:
+$VDINIT:LD   A,10H		;source      bank = 1
 				;destination bank = 0
 VDINIT1:LD   DE,$VIDPAR		;^temp buffer 		   --> reg. DE
 	LD   B,16		;length of parameter table --> reg. B
@@ -754,7 +765,8 @@ $VIDPAR:DEFS 16     		;temporary buffer for video parameter table
 ;	      19200	       |   0
 
 
-RATE	EQU  0F1H		;baud rate registerŠBTx  	EQU  0F2H		;dual baud rate register
+RATE	EQU  0F1H		;baud rate register
+BTx  	EQU  0F2H		;dual baud rate register
 
 ;calc initialization routine entry:
 $RSINIT:LD   HL,RSTAB		;base of entry table --> reg. HL
@@ -817,7 +829,8 @@ WR0B	EQU  0D3H
 
 RSINIB: LD   C,A		;save data format
         AND  0C0H		;mask word length bits
-	SET  0,A     		;receiver enableŠ	LD   (WR3B),A		;load write register 3
+	SET  0,A     		;receiver enable
+	LD   (WR3B),A		;load write register 3
         LD   A,C   		;restore data format
 	AND  0FH		;mask stop bits and parity
         SET  6,A		;x 16 clock mode
@@ -880,7 +893,8 @@ $KBCHAR:LD   A,(RDYKEY)		;active key ?
 	OR   A
 	RET  NZ        		;return if yes
 	DI			;disable the interrupts
-	LD   A,(KLEN)		;A = buffer lengthŠ	OR   A			;jump if
+	LD   A,(KLEN)		;A = buffer length
+	OR   A			;jump if
 	JR   Z,KBCHAR2		;buffer empty
 	DEC  A			;dec the length
 	LD   (KLEN),A		;save it
@@ -943,7 +957,8 @@ SCAN:	LD   HL,KEYHLD		;HL = keyboard work area ptr
      	INC  IX			;increment ^row address table
 	DEC  D			;decrement row index
 CHKKEY:	INC  HL			;ten byte buffer indexed by row
-        LD   C,(IX)		;row address (LSB) --> reg. CŠ	LD   A,(BC)		;load row N
+        LD   C,(IX)		;row address (LSB) --> reg. C
+	LD   A,(BC)		;load row N
 	LD   E,A		;8 column bits
 	XOR  (HL)		;XOR with previous
 	LD   (HL),E   		;store column bits in buffer
@@ -1006,7 +1021,8 @@ ACTIVE:	LD   E,A		;save column bits
 	CALL DELAY		;delay for 7.33 milliseconds (may be varied)
 	POP  BC			;restore row address
 	LD   A,(BC)		;and reload original flags from active row
-	AND  E			;then combine current flag bits with originalŠ				;flag bits
+	AND  E			;then combine current flag bits with original
+				;flag bits
 	RET  Z			;rtn to caller if zero because row was not
 				;active on 2nd test
 	LD   (OLDROW),HL	;save row
@@ -1069,7 +1085,8 @@ UCASE:	AND  5FH                ;force upper case
 
 ;check if German character set:
 UMLAUT:	LD   A,(GERMAN)		;German character set ?
-	OR   AŠ	LD   A,(HL)		;restore char
+	OR   A
+	LD   A,(HL)		;restore char
 	JR   Z,DBOUNCE		;jump if US-ASCII
         LD   A,(3880H) 		;load SHIFT bit
 	BIT  0,A      		;SHIFT ?
@@ -1132,7 +1149,8 @@ $KBWAIT:LD   A,(COUNT3)		;letter counter --> accu
 	LD   A,(HL)		;get next key
 	LD   (RDYKEY),A		;store that sucker
 	LD   A,C		;restore active key
-	JP   TSTKEY+2Š
+	JP   TSTKEY+2
+
 ;scan for special key "00":
 DZERO:  LD   HL,RDYKEY		;^scanned key --> reg. HL
 	LD   A,(HL)		; scanned key --> accu
@@ -1195,7 +1213,8 @@ GERSE2:	CALL $VDCHAR
 	POP  HL
 GERSE3:	XOR  A			;clear key code	
 	JR   TSTKEY
-Š;test if function key:
+
+;test if function key:
 FKEY:	BIT  7,A		;check if code >= 80H
 	JR   Z,TSTKEY		;jump if not 	 
 	PUSH HL			;save ^key memory
@@ -1258,7 +1277,8 @@ $VDCHAR:LD   C,A		;save character
 	OR   01010100B		;disable boot EPROM
 				;enable full screen
 				;7.2 MHz clock frequency
-	OUT  ($SYS1),A		;write system byte 1Š	LD   A,C		;restore character
+	OUT  ($SYS1),A		;write system byte 1
+	LD   A,C		;restore character
 
         LD   IX,(VDTABP)	;^^screen constants --> reg. IX
 	LD   HL,ESCAPE 		;test if escape sequence
@@ -1321,7 +1341,8 @@ ESCEND:	LD   HL,CTRLJP		;jump vector --> reg. HL
 	LD   L,C
 	JP   (HL)		;execute function
 
-;second entry into escape sequence:ŠESCSQ1: RES  1,(HL)		;reset second escape bit
+;second entry into escape sequence:
+ESCSQ1: RES  1,(HL)		;reset second escape bit
 	SUB  20H		;adjust line/column no.
 	LD   D,A		;save it
 	LD   A,(ESCCHR)		;load first byte of escape sequence
@@ -1384,7 +1405,8 @@ BUZZON: NOP			;little delay for lower frequency
 	RET
 
 ;cursor left:
-CURLFT: LD   A,(IX+3)		;left column --> accuŠ	CP   (IX+9)		; > current column ?
+CURLFT: LD   A,(IX+3)		;left column --> accu
+	CP   (IX+9)		; > current column ?
 	JP   M,CURLFT1		;jump if not
 	LD   A,(WRAP)		;wrap around mode ?
 	OR   A
@@ -1447,7 +1469,8 @@ WINDOW:	LD   C,A		;save window #
 	LD   A,C		;restore window #
 	OR   A			;window # < 0 ?
 	RET  M			;return if yes
-	CP   8			;window # > 7 ?Š	RET  NC			;return if yes
+	CP   8			;window # > 7 ?
+	RET  NC			;return if yes
 	ADD  A,A		;multiply window number by 13
 	ADD  A,C
 	ADD  A,A
@@ -1510,7 +1533,8 @@ SETBOT:	CP   (IX)		;legal  line/column no. ?
 
 ;set left column:
 SETLFT: INC  IX			;adjust ^screen constants
-	JR   SETTOP		;set left columnŠ
+	JR   SETTOP		;set left column
+
 ;set right column:
 SETRGT: INC  IX			;adjust ^screen constants
 	JR   SETBOT		;set right column
@@ -1573,7 +1597,8 @@ STATON:	LD   A,(STONOFF)	;status line already enabled ?
 STATO1:	LD   DE,(VDTABP)
 	LD   BC,13
 	LDIR
-	LD   (STONOFF),A	;store markerŠ	JP   OUTCUR		;output cursor
+	LD   (STONOFF),A	;store marker
+	JP   OUTCUR		;output cursor
 
 ;set German character set:
 SETGER:	LD   A,0FFH		;set accu to ones
@@ -1627,7 +1652,7 @@ INSCH1:	LD   A,(IX+10)		;get erase char
 ;insert line:
 INSLIN:	LD   A,(IX+3)		;left column --> current column
 	LD   (IX+9),A
-	LÄ   A,(IX+4©		;bottoí linå --¾ accu
+	L   A,(IX+4		;bottoï¿½ linï¿½ --ï¿½ accu
 	SUB  (IX+8)		;calc. no. of lines to scroll
 	LD   B,(IX+4)		;bottom line --> current line
 	LD   (IX+8),B
@@ -1636,7 +1661,8 @@ INSLI1: JR   Z,INSLI2		;return if line count = 0
 	PUSH HL			;save it
 	LD   D,0 		;maximum column count --> reg. DE
 	LD   E,(IX+1)
-	SBC  HL,DE		;now HL contains ^(last line - 1)Š	POP  DE			;restore ^last line
+	SBC  HL,DE		;now HL contains ^(last line - 1)
+	POP  DE			;restore ^last line
 	LD   B,0		;column count --> reg. BC
 	LD   C,(IX+7)
 	LDIR			;scroll down one line
@@ -1699,7 +1725,8 @@ ERAES1: INC  (IX+8)		;increment current line
 	PUSH BC			;save counter
 	CALL ERAEOLN		;erase current line
 	POP  BC			;restore counter
-	DJNZ ERAES1		;erase to end of whole windowŠERAES2: POP  BC
+	DJNZ ERAES1		;erase to end of whole window
+ERAES2: POP  BC
         LD   (IX+8),B		;restore original line   no.
 	LD   (IX+9),C		;restore original column no.
 	RET
@@ -1762,7 +1789,8 @@ CALC:	LD   HL,$SCREEN		;address of first screen loc --> reg. HL
         JR   Z,CALC2		;jump if line no. = 0
 CALC1:	ADD  HL,DE
 	DJNZ CALC1		;handle all lines
-CALC2:	LD   E,(IX+9)		;current column --> reg. DEŠ	ADD  HL,DE		;now HL contains absolute screen address
+CALC2:	LD   E,(IX+9)		;current column --> reg. DE
+	ADD  HL,DE		;now HL contains absolute screen address
 	RET
 
 ;jump vectors:
@@ -1825,7 +1853,8 @@ VDTEMP:	DEFS 13			;temporary storage area for screen constants
 ;       0 = printer ready 
 ;    <> 0 = printer not ready
 
-;calc entry of printer status routine:Š$PRSTAT:LD   HL,PSTAB		;base of entry table --> reg. HL
+;calc entry of printer status routine:
+$PRSTAT:LD   HL,PSTAB		;base of entry table --> reg. HL
 	LD   C,B		;calc table entry
 	LD   B,0
 	SLA  C
@@ -1888,7 +1917,8 @@ PRCHR0:	LD   C,A		;save char
 	RET			;return to caller
 			  
 ;output a character to printer 1:
-$PTR1D	EQU  0D4H		;data port of PIOŠ
+$PTR1D	EQU  0D4H		;data port of PIO
+
 PRCHR1:	LD   C,A		;save char
 	CALL PRSTA1		;test status of printer 0
 	JR   NZ,PRCHR1+1	;wait for printer ready
@@ -1951,7 +1981,8 @@ RSRCSA3:LD   A,5		;speak to write register 5
 	OUT  (WR0A),A		;data terminal ready
         LD   A,C		;get input status
 	RET
-Š;get input status of SIO B:
+
+;get input status of SIO B:
 RSRCSB: IN   A,(WR0B)    	;read status
 	AND  1   		;character available ?
 	RET  NZ 		;return to caller if yes
@@ -2014,7 +2045,8 @@ RSRCVA:	IN   A,(WR0A) 		;read status
 RSRCVA1:IN   A,(WR0A)		;read status	
 	BIT  0,A		;character available ?
 	JR   Z,RSRCVA1		;loop `til character ready
-        LD   A,5		;speak to write register 5Š	OUT  (WR0A),A
+        LD   A,5		;speak to write register 5
+	OUT  (WR0A),A
 	LD   A,(WR5A)		;get write register 5
 	OUT  (WR0A),A		;data terminal ready
 RSRCVA2:IN   A,(DRA)		;read character
@@ -2077,7 +2109,8 @@ $RSTXST:LD   A,WR0A    		;control register of SIO A --> accu
 $RSTX:	LD   E,A		;save character
         CALL $RSTXST  		;test output status
 	JR   NZ,$RSTX+1		;wait for CTS
-	DEC  CŠ	DEC  C			;now reg. C points to data port
+	DEC  C
+	DEC  C			;now reg. C points to data port
 	OUT  (C),E		;output character
 	RET
 
@@ -2140,7 +2173,8 @@ $READ:  LD   C,A                ;save drive #/bank #
 ;       B  = sector number
 ;       E  = track  number
 ;       HL = buffer pointer
-Š;exit : A = error code
+
+;exit : A = error code
 ;       0 = NO ERROR
 ;       1 = ILLEGAL DRIVE #
 ;       2 = TRACK # TOO HIGH
@@ -5663,4 +5697,4 @@ REQWAIT:IN   A,(RPORT1)		;get cntlr status bits
 	ENDC
 
 	END
-
+	

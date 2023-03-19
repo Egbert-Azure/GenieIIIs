@@ -40,4 +40,3 @@ SCB$BASE EQU 0FE00H		;base of the SCB
 @MXTPA	EQU  SCB$BASE+62H	;top of user TPA (address at 6, 7) (word, R/O)
 
         END
-

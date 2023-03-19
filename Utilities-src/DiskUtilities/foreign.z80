@@ -197,7 +197,7 @@ buff        dw      0000h
 buff2       dw      0000h      ; contains the address of the XDPH of LW P
 nambuff     ds      10         ; the selected name is saved here to prevent overwriting by CP/M
 
-biospb                          ; The BIOS PARAMETER BLOCK must be specified
+biospb                         ; The BIOS PARAMETER BLOCK must be specified
 fnum        db      22         ; when a direct BIOS call is made through BDOS-Call 50
 ainh        db      00
 bcinh       dw      0000h      ; parameters to be passed are stored here

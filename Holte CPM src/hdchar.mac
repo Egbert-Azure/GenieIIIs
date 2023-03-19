@@ -9,4 +9,3 @@ hd_charact:			; drive characteristics
 	db	0		; always zero
 
 ifield:	db	0,0,0,0,0	; hard disk init-parameter field
-

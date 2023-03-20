@@ -503,7 +503,7 @@ MMD80	dw	0048h		; SPT : 128 byte records / track
 	db	  78h		; Byte 1 der drive control table
 	db	  80h
 	db	  02		; interleavingfaktor
-	db	  18		; sector count / track
+	db	  10		; sector count / track
 	db	  80		; number of usable tracks
 	db	  51		; length of the skew table
 				; skew table

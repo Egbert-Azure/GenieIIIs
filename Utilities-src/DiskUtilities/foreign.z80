@@ -325,7 +325,11 @@ prof4	dw	0050h		; SPT : 128 byte records / track
 	db	  80		; number of usable tracks
 	
 <<<<<<< HEAD
+<<<<<<< HEAD
 	db 	 20    		; length of the skew table
+=======
+	db 20    		; length of the skew table
+>>>>>>> parent of a23a1ac (Update foreign.z80)
 =======
 	db 20    		; length of the skew table
 >>>>>>> parent of a23a1ac (Update foreign.z80)

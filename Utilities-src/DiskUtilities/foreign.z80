@@ -264,7 +264,7 @@ s80dsdd	dw	0050h		; SPT : 128 byte records / track
 	db	  07h		; PHM : physical sector size mask
 	
 	db	  70h		; Byte 1 der drive control table
-	db	  80h
+	db	  80h		; Byte 2 of drive control table
 	db	  02		; interleavingfaktor
 	db	  10		; sector count / track
 	db	  80		; number of usable tracks
@@ -292,7 +292,7 @@ d80dsdd	dw	0050h		; SPT : 128 byte records / track
 	db	  07h		; PHM : physical sector size mask
 	
 	db	  70h		; Byte 1 der drive control table
-	db	  80h
+	db	  80h		; Byte 2 of drive control table
 	db	  02		; interleavingfaktor
 	db	  10		; sector count / track
 	db	  80		; number of usable tracks
@@ -319,7 +319,7 @@ prof4	dw	0050h		; SPT : 128 byte records / track
 	db	  03h		; PHM : physical sector size mask
 	
 	db	  78h		; Byte 1 der drive control table
-	db	  80h
+	db	  80h		; Byte 2 of drive control table
 	db	  02		; interleavingfaktor
 	db	  20		; sector count / track
 	db	  80		; number of usable tracks
@@ -341,7 +341,7 @@ alpha 	dw	0050h		; SPT : 128 byte records / track
 	db	  07h		; PHM : physical sector size mask
 	
 	db	  78h		; Byte 1 der drive control table
-	db	 0c0h
+	db	 0c0h		; Byte 2 of drive control table
 	db	  01		; interleavingfaktor
 	db	  10		; sector count / track
 	db	  80		; number of usable tracks
@@ -367,7 +367,7 @@ ibmpc	dw	0020h		; SPT : 128 byte records / track
 	db	  03h		; PHM : physical sector size mask
 	
 	db	  7ch		; Byte 1 of drive control table
-	db	  80h
+	db	  80h		; Byte 2 of drive control table
 	db	    1		; interleavingfaktor
 	db	   18		; sector count / track
 	db	   40		; number of usable tracks
@@ -391,9 +391,9 @@ kontron	dw	0020h		; SPT : 128 byte records / track
 	dw	  04h		; OFF : offset for system tracks
 	db	  01h		; PSH : physical sector size shift
 	db	  01h		; PHM : physical sector size mask
-	
-	db	  78h		; Byte 1 of drive control table
-	db	  40h
+;	db	  78h		; Byte 1 of drive control table	
+	db	  70h		; Byte 1 of drive control table
+	db	  40h		; Byte 2 of drive control table
 	db	    1		; interleavingfaktor
 	db	   32		; sector count / track
 	db	   77		; number of usable tracks
@@ -416,7 +416,7 @@ rair	dw	0004h		; SPT : 128 byte records / track
 	db	  03h		; PHM : physical sector size mask
 	
 	db	  78h		; Byte 1 of drive control table
-	db	  80h
+	db	  80h		; Byte 2 of drive control table
 	db	    2		; interleavingfaktor
 	db	   20		; sector count / track
 	db	   80		; number of usable tracks
@@ -443,7 +443,7 @@ vortex	dw	0048h		; SPT : 128 byte records / track
 	db	  03h		; PHM : physical sector size mask
 	
 	db	  78h		; Byte 1 of drive control table
-	db	  80h
+	db	  80h		; Byte 2 of drive control table
 	db	  01		; interleavingfaktor
 	db	  18		; sector count / track
 	db	  80		; number of usable tracks
@@ -490,16 +490,16 @@ MMD80	dw	0048h		; SPT : 128 byte records / track
 	db	  01h		; PSH : physical sector size shift
 	db	  01h		; PHM : physical sector size mask
 	
-	db	  78h		; Byte 1 der drive control table
-	db	  80h
+	db	  70h		; Byte 1 of drive control table
+	db	  40h		; Byte 2 of drive control table
 	db	  02		; interleavingfaktor
 	db	  36		; sector count / track
 	db	  80		; number of usable tracks
-	db	  51		; length of the skew table
-				; skew table
-;	db	1,3,5,7,9,11,13,15,17,2,4,6,8,10,12,14,16,18
+	db	  18		; length of the skew table
+				; skew table with skew factor 2
+	db	1,3,5,7,9,11,13,15,17,2,4,6,8,10,12,14,16,18
 ;
-	db	  0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
+;	db	  0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
 
 ;MMD80	dw	0048h		; SPT : 128 byte records / track
 ;	db	  04h		; BSH : block shift
@@ -515,7 +515,7 @@ MMD80	dw	0048h		; SPT : 128 byte records / track
 ;	db	  01h		; PHM : physical sector size mask
 ;	
 ;	db	  70h		; Byte 1 der drive control table
-;	db	  80h
+;	db	  80h		; Byte 2 der drive control table
 ;	db	  01		; interleavingfaktor
 ;	db	  10		; sector count / track
 ;	db	  80		; number of usable tracks

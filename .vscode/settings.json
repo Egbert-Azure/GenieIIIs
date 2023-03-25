@@ -32,6 +32,6 @@
     // overrides associations for another assembly language
     // parsers and extensions to prevent from mismatches
     "files.associations": {
-        "*.{a80,asm,inc}": "z80-macroasm"
+        "*.{z80,a80,asm,inc}": "z80-macroasm"
     },
 }

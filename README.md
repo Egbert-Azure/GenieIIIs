@@ -17,3 +17,7 @@ With our project, we hope to inspire other enthusiasts to join us in exploring t
 can be found in `How to article`
 
 - Grafik des Genie IIIs 1-3 describes an article series written by Volker Dose and Egbert Schröer in July 1993, which explains how to use the graphic capabilities of the Genie III computer under Holte CP/M+. The article series covers three programming languages: Turbo Pascal 3.0, ANSI C, and assembler.
+
+## Drop a Star ⭐ ##
+
+If you like this project then drop a Github star by pressing the Star button ⭐

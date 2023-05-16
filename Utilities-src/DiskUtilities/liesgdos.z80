@@ -1,15 +1,15 @@
 ;
 ;			L I E S G D O S . Z 8 0
+;		(c) 1992 by Egbert Schroeer & Volker Dose
 ;
-;
-;	Dieses Programm erm|glicht es, mit der CP/M Version von Holte
+;	Dieses Programm ermoeglicht es, mit der CP/M Version von Holte
 ;	Disketten im Format des GDOS 2.4, doppelseitig, doppelte Dichte
 ;	mit 80 Spuren zu lesen sowie Files dieser Diskette nach CP/M
-; 	zu }bertragen.
-;	Hierzu wird zun{chst der DPB f}r GDOS 2.4 und die DCT ins Ram
-;	}bertragen. Danach wird das Inhaltsverzeichnis der GDOS Diskette
+; 	zu uebertragen.
+;	Hierzu wird zunaechst der DPB fuer GDOS 2.4 und die DCT ins Ram
+;	uebertragen. Danach wird das Inhaltsverzeichnis der GDOS Diskette
 ;	angezeigt. Die Inhaltsverzeichnisse der GDOS-Disketten sind mit
-;	einer anderen Adressmarke, n{mlich 'Adressmarke	Inhaltsverzeichnis'
+;	einer anderen Adressmarke, naemlich 'Adressmarke Inhaltsverzeichnis'
 ;	geschrieben. Beim Lesen des Inhaltsverzeichnis ist also mit einem
 ;	Lesefehler zu rechnen. Vom CP/M wird der Fehler 'DATA Record deleted'
 ;	gemeldet.
@@ -166,6 +166,8 @@ showdir	ld	hl,1000h	;das Directory soll ab hier ins RAM
 	ld	e,40		;es liegt in Spur 40
 	ld	a,11h		;siehe	'liesboot'
 	ld	b,2		;sectornummer
+
+
 loop	ld	c,read
 	push	de
 	push	af
@@ -243,4 +245,3 @@ system	push	bc
 bootbuf 	defs	256
 
 	end	begin
-	

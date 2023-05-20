@@ -20,3 +20,5 @@ supported formats are:
 * VORTEX
 
  * ALPHA
+
+Updated version and further development of `foreign.com` successor is now here https://github.com/Egbert-Azure/Z80-CP-M-format-reader

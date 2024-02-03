@@ -1,0 +1,239 @@
+; LIBCFN.MAC
+; ~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Functions to manipulate CP/M filenames and FCBs
+;
+; Amendment History:
+;	22MAR2003 RKG 1.0 Initial release.
+
+.Z80
+
+;##############################################################################
+; Macro Libraries and External Functions
+;##############################################################################
+
+MACLIB CPM.MLB
+
+MACLIB LIBSTR.MLB
+
+;##############################################################################
+; Start
+;##############################################################################
+
+cfn_start::	defb	'LIBCFN',0
+
+;##############################################################################
+; Code
+;##############################################################################
+
+cfntofcb::
+;==============================================================================
+; Store a cpm filename into a fcb
+;	entry:	de -> fcb
+;		hl -> cpm filename (nul or space terminated)
+;	exit:	a  =  terminator of cpm filename, z flag set if nul encountered
+;		de -> fcb
+;		hl -> terminator at end of cpm filename
+;==============================================================================
+		push bc
+		push de
+
+	; drive (optional)
+		inc hl			; test 2nd character
+		ld a,(hl)
+		dec hl			; back to the start
+		cp ':'			; a ':' indicates a drive
+		jr z,cfntofcb1		; found a ':', must be a drive code
+
+	; drive not specified - use current drive
+		xor a
+		ld (de),a
+		jr cfntofcb2
+
+cfntofcb1:
+	; drive specified
+		ld a,(hl)
+		call caseuc		; ensure uppercase
+		sub 'A'-1		; 'A' becomes 1, 'B' becomes 2, etc.
+		ld (de),a		; store drive code
+		inc hl			; skip over the ':'
+		inc hl
+
+cfntofcb2:
+		inc de			; skip drive code
+
+	; name
+		ld b,8
+		call cgetname		; 8 char name
+
+	; type
+		ld b,3
+		call cgetname		; 3 char type
+
+	; zero remainder of fcb
+		xor a
+		ld b,24
+cfntofcb3:	ld (de),a
+		inc de
+		djnz cfntofcb3
+
+cfntofcb4:
+	; eat any extra characters after filename
+		ld a,(hl)
+		or a
+		jr z,cfntofcb5		; nul?
+		cp spc
+		jr z,cfntofcb5		; space?
+		inc hl
+		jr cfntofcb4		; again
+
+cfntofcb5:
+	; set flags
+		or a
+
+		pop de
+		pop bc
+		ret
+
+cgetname:
+;------------------------------------------------------------------------------
+; Transribe bytes and pad with spaces until a nul, space, or a '.' found
+;	entry:	b  =  bytes to transribe/pad
+;		de -> destination
+;		hl -> source
+;	exit:	a  =  last character examined
+;		de -> next byte in destination
+;		hl -> next byte in source (nul or space), or byte after '.'
+;------------------------------------------------------------------------------
+		ld a,(hl)		; fetch
+		or a
+		jr z,cgetshort		; nul?
+		cp spc
+		jr z,cgetshort		; space?
+		cp '.'
+		jr z,cgetshort		; '.'?
+		cp '*'
+		jr z,cgetwild		; '*'?
+		call caseuc		; uppercase
+		ld (de),a		; store
+		inc hl			; bump
+		inc de
+		djnz cgetname		; again
+		; fall thru
+
+cgetskip:
+	; eat extra chars in source
+	; stop on nul or space, stop after '.'
+		ld a,(hl)		; fetch
+		or a
+		ret z			; nul?
+		cp spc
+		ret z			; space?
+		inc hl			; bump
+		cp '.'
+		ret z			; '.'?
+		jr cgetskip		; again
+
+cgetshort:
+	; pad fcb with spaces
+		ld a,spc
+		call cgetfill
+		jr cgetskip
+
+cgetwild:
+	; '*' encountered
+		inc hl			; skip over the '*'
+
+	; fill remainder of destination with '?'
+		ld a,'?'
+		call cgetfill
+		jr cgetskip
+
+cgetfill:
+	; fill remainder of destination with character in a reg
+		ld (de),a
+		inc de
+		djnz cgetfill
+		ret
+
+cfntotext::
+;==============================================================================
+; Convert a fcb into a cpm filename
+;	entry:	de -> fcb
+;		hl -> buffer to store filename
+;	exit:	a  =  nul (last character transferred)
+;		de -> fcb
+;		hl -> buffer containing filename
+;==============================================================================
+		push bc
+		push de
+		push hl
+
+	; possible drive code
+		ld a,(de)
+		or a
+		jr z,cpmcname
+
+	; drive code
+		add a,'A'-1		; 1=>A, 2=>B
+		ld (hl),a
+		inc hl
+		ld (hl),':'
+		inc hl
+
+cpmcname:
+		inc de			; skip over drive code
+
+	; name
+		ld b,8
+		call ncopy
+
+	; possible type
+		ld a,(de)
+		and 7Fh			; strip high bit
+		cp spc
+		jr z,cpmterm		; no type?
+		ld (hl),'.'
+		inc hl
+
+	; type
+		ld b,3
+		call ncopy
+
+cpmterm:
+	; terminate
+		ld a,0
+		ld (hl),a
+
+		pop hl
+		pop de
+		pop bc
+		ret
+
+ncopy:
+	; transcribe characters until a space or b becomes 0
+		ld a,(de)		; fetch
+		and 7Fh			; strip high bit
+		cp spc
+		jr z,ncopyskip		; space?
+		ld (hl),a		; store
+		inc de			; bump
+		inc hl
+		djnz ncopy		; again
+		ret
+
+ncopyskip:
+	; skip remainder of fcb until b becomes 0
+		inc de
+		djnz ncopyskip
+		ret
+
+;##############################################################################
+; End
+;##############################################################################
+
+cfn_end::	end

@@ -44,12 +44,6 @@
 #include <ctype.h>
 #include <SDL_types.h>
 
-#ifndef TRUE
-#define TRUE	(1)
-#define FALSE	(0)
-#endif
-
-
 typedef Uint64 tstate_t;
 #define TSTATE_T_MID (((Uint64) -1LL)/2ULL)
 
@@ -245,6 +239,7 @@ struct z80_state_struct
 #define CARRY_FLAG		(Z80_F & CARRY_MASK)
 
 extern struct		z80_state_struct z80_state;
+extern unsigned int	z80_halt;
 extern unsigned int	cycles_per_timer;
 
 extern void	 z80_reset(void);
@@ -260,7 +255,7 @@ extern Uint8	*mem_pointer(int address, int writing);
 
 #ifdef ZBX
 extern int	 disassemble(Uint16 pc);
-extern void	 debug_init(void);
 extern void	 debug_shell(void);
 #endif /* ZBX */
-#endif
+
+#endif /* _Z80_H */

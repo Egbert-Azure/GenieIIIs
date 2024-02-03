@@ -38,16 +38,19 @@ will be executed upon startup of the emulator.</p>
 
 <table align="center" border="1" cellpadding="10" cellspacing="0">
   <tr>
-    <td><code>-background <u>0xRRGGBB</u><br>
-        -bg <u>0xRRGGBB</u></code></td>
+    <td><code>-aspectratio</code></td>
+    <td>Keep aspect ratio of TRS-80 screen when resizing the SDL2 window.
+        This is the default.</td>
+  </tr>
+  <tr>
+    <td><code>-background | -bg <u>0xRRGGBB</u></code></td>
     <td>Specifies background color of the emulator window.
         <code>RR</code>, <code>GG</code> and <code>BB</code> are the hex
         values of the Red, Green, and Blue components.
         Default is black (<code>0x000000</code>).</td>
   </tr>
   <tr>
-    <td><code>-borderwidth <u>width</u><br>
-        -bw <u>width</u></code></td>
+    <td><code>-borderwidth | -bw <u>width</u></code></td>
     <td>Put a border of <u>width</u> pixels (0 to 50) around the TRS-80
         display. The default is 2.</td>
   </tr>
@@ -57,19 +60,20 @@ will be executed upon startup of the emulator.</p>
         Default is the current directory.</td>
   </tr>
   <tr>
-    <td><code>-cass[ette] <u>filename</u></code></td>
+    <td><code>-c[assette] <u>filename</u></code></td>
     <td>Specifies the name of the cassette image file to be inserted into the
-        emulated cassette drive.</td>
+        emulated cassette drive. Use <code>""</code> as <u>filename</u> to
+        remove an image from the cassette drive.</td>
   </tr>
   <tr>
-    <td><code>-charset <u>name</u></code></td>
+    <td><code>-charset | -cs <u>name</u></code></td>
     <td>Use the charset specified by <code>name</code> for the selected
         TRS-80 Model with the <code>-model</code> option below.</td>
   </tr>
   <tr>
-    <td><code>-charset1 <u>name</u><br>
-              -charset3 <u>name</u><br>
-              -charset4 <u>name</u></code></td>
+    <td><code>-charset1 | -cs1 <u>name</u><br>
+              -charset3 | -cs3 <u>name</u><br>
+              -charset4 | -cs4 <u>name</u></code></td>
     <td>Select among several sets of built-in character bitmaps.
         The three different options allow you to specify the character
         set used for each model, should you change models during SDLTRS
@@ -114,9 +118,9 @@ will be executed upon startup of the emulator.</p>
         The name of the character set may be abbreviated to one character.</td>
   </tr>
   <tr>
-    <td><code>-clock1 <u>MHz</u><br>
-              -clock3 <u>MHz</u><br>
-              -clock4 <u>MHz</u></code></td>
+    <td><code>-cl[ock]1 <u>MHz</u><br>
+              -cl[ock]3 <u>MHz</u><br>
+              -cl[ock]4 <u>MHz</u></code></td>
     <td>Set CPU clock speed in <u>MHz</u> for the specified TRS-80 Model.<br>
         Defaults are: <code>1.77408</code> MHz for Model I, <code>2.02752</code>
         MHz for Model III and <code>4.05504</code> MHz for Model 4/4P.<br>
@@ -128,9 +132,23 @@ will be executed upon startup of the emulator.</p>
         (SDLTRS must be compiled with this feature enabled).</td>
   </tr>
   <tr>
-    <td><code>-disk<b>N</b> <u>filename</u></code></td>
+    <td><code>-diskdebug <u>hexval</u></code></td>
+    <td>Set floppy disk controller debug flags to hex value:
+        <code><b>01</b></code> = FDC register I/O,
+        <code><b>02</b></code> = FDC commands,
+        <code><b>04</b></code> = VTOS 3.0 JV3 kludges,
+        <code><b>08</b></code> = Gaps,
+        <code><b>10</b></code> = Phys sector sizes,
+        <code><b>20</b></code> = Readadr timing,
+        <code><b>40</b></code> = DMK,
+        <code><b>80</b></code> = ioctl errors.
+     </td>
+  </tr>
+  <tr>
+    <td><code>-d[isk]<b>N</b> <u>filename</u></code></td>
     <td>Specifies the name of the floppy disk image file to be inserted into
-        Disk<b>N</b>, where <code><b>N</b></code>=0 through 7.</td>
+        Disk<b>N</b>, where <code><b>N</b></code>=0 through 7. Use <code>""
+        </code> as <u>filename</u> to remove an image from the drive.</td>
   </tr>
   <tr>
     <td><code>-diskdir <u>dir</u></code></td>
@@ -169,38 +187,39 @@ will be executed upon startup of the emulator.</p>
         places in the host filesystem. This now the default.</td>
   </tr>
   <tr>
-    <td><code>-fdc<br>
-              -floppy</code></td>
+    <td><code>-floppy | -fdc</code></td>
     <td>Enable the Floppy Disk Controller (Expansion Interface).
         This is the default.</td>
   </tr>
   <tr>
-    <td><code>-foreground <u>0xRRGGBB</u><br>
-              -fg <u>0xRRGGBB</u></code></td>
+    <td><code>-foreground | -fg <u>0xRRGGBB</u></code></td>
     <td>Specifies foreground color of the emulator window.
         Default is white (<code>0xE0E0FF</code>).</td>
   </tr>
   <tr>
-    <td><code>-fullscreen<br>
-              -fs</code></td>
+    <td><code>-fullscreen | -fs</code></td>
     <td>Run in fullscreen mode.</td>
   </tr>
   <tr>
-    <td><code>-guibackground <u>0xRRGGBB</u><br>
-              -guibg <u>0xRRGGBB</u></code></td>
+    <td><code>-guibackground | -guibg <u>0xRRGGBB</u></code></td>
     <td>Specifies background color of the text based GUI window.
         Default is dark green (<code>0x344843</code>).</td>
   </tr>
   <tr>
-    <td><code>-guiforeground <u>0xRRGGBB</u><br>
-              -guifg <u>0xRRGGBB</u></code></td>
+    <td><code>-guiforeground | -guifg <u>0xRRGGBB</u></code></td>
     <td>Specifies foreground color of the text based GUI window.
         Default is white (<code>0xE0E0FF</code>).</td>
   </tr>
   <tr>
-    <td><code>-hard<b>N</b> <u>filename</u></code></td>
+    <td><code>-halt <u>action</u></code></td>
+    <td>Set <u>action</u> for Z80 HALT instruction: <u>debugger</u>, <u>halt</u>
+        or <u>reset</u>. Default depends on the selected TRS-80 Model.</td>
+  </tr>
+  <tr>
+    <td><code>-h[ard]<b>N</b> <u>filename</u></code></td>
     <td>Specifies the name of the hard disk image file to be inserted into
-        Hard<b>N</b>, where <code><b>N</b></code>=0 through 3.</td>
+        Hard<b>N</b>, where <code><b>N</b></code>=0 through 3. Use <code>""
+        </code> as <u>filename</u> to remove an image from the drive.</td>
   </tr>
   <tr>
     <td><code>-harddir <u>dir</u></code></td>
@@ -212,7 +231,7 @@ will be executed upon startup of the emulator.</p>
     <td>Patch TRS-80 Model I Level II ROM to auto-boot from hard disk.</td>
   </tr>
   <tr>
-    <td><code>-hideled</code></td>
+    <td><code>-hideled | -noled</code></td>
     <td>Hide disk activity and Turbo LED at bottom of the emulator screen.</td>
   </tr>
   <tr>
@@ -226,17 +245,24 @@ will be executed upon startup of the emulator.</p>
         <b>Disables "Dave Huffman (and other)"</b>.</td>
   </tr>
   <tr>
-    <td><code>-joysticknum <u>num</u></code></td>
+    <td><code>-iodebug <u>hexval</u></code></td>
+    <td>Set I/O port debug flags:
+        <code><b>01</b></code> = port input,
+        <code><b>02</b></code> = port output.
+     </td>
+  </tr>
+  <tr>
+    <td><code>-joystick[num] | -js <u>num</u></code></td>
     <td>Use USB joystick number <code><u>num</u></code> as the joystick in the
         emulator. Options for <code><u>num</u></code> are 0 through number of
         USB joysticks - 1.</td>
   </tr>
   <tr>
-    <td><code>-keypadjoy</code></td>
-    <td>Use numeric keypad as joystick.</td>
+    <td><code>-keypadjoy | -kp</code></td>
+    <td>Use numeric keypad as joystick. This is the default.</td>
   </tr>
   <tr>
-    <td><code>-keystretch <u>cycles</u></code></td>
+    <td><code>-keystretch | -ks <u>cycles</u></code></td>
     <td>Fine-tune the keyboard behavior. To prevent keystrokes from being lost,
         SDLTRS "stretches" the intervals between key transitions, so that the
         Z80 program has time to see each transition before the next one occurs.
@@ -254,7 +280,7 @@ will be executed upon startup of the emulator.</p>
         TRS-80 Model I.</td>
   </tr>
   <tr>
-    <td><code>-lower[case]</code></td>
+    <td><code>-lower[case] | -lc</code></td>
     <td>Emulate a "Lower Case Modification Kit" in the TRS-80 Model I mode.
         This is the default.</td>
   </tr>
@@ -282,16 +308,20 @@ will be executed upon startup of the emulator.</p>
     <td>Select the TRS-80 model to emulate: I, III, 4 or 4P.</td>
   </tr>
   <tr>
-    <td><code>-model <u>m</u></code></td>
+    <td><code>-m[odel] <u>m</u></code></td>
     <td>Specifies which TRS-80 model to emulate. Values accepted are <code>1
         </code> or <code>I</code> (Model I), <code>3</code> or <code>III</code>
         (Model III), <code>4</code> or <code>IV</code> (Model 4), and <code>4P
         </code> or <code>IVP</code> (Model 4P). Model I is the default.</td>
   </tr>
   <tr>
-    <td><code>-mousepointer</code></td>
+    <td><code>-mouse[pointer]</code></td>
     <td>Show mouse pointer for selection in emulator window.
         This is the default, but can be toggled with <b>Alt-'.'</b>.</td>
+  </tr>
+  <tr>
+    <td><code>-noaspectratio</code></td>
+    <td>Disable aspect ratio of TRS-80 screen when resizing SDL2 window.</td>
   </tr>
   <tr>
     <td><code>-nodebug</code></td>
@@ -308,14 +338,12 @@ will be executed upon startup of the emulator.</p>
         places in the host filesystem.</td>
   </tr>
   <tr>
-    <td><code>-nofdc<br>
-              -nofloppy</code></td>
+    <td><code>-nofloppy | -nofdc</code></td>
     <td>Disable the Floppy Disk Controller (Expansion Interface) and boot
         into ROM BASIC.</td>
   </tr>
   <tr>
-    <td><code>-nofullscreen<br>
-              -nofs</code></td>
+    <td><code>-nofullscreen | -nofs</code></td>
     <td>Run in windowed mode (Default).</td>
   </tr>
   <tr>
@@ -334,7 +362,7 @@ will be executed upon startup of the emulator.</p>
         This is the default.</td>
   </tr>
   <tr>
-    <td><code>-nokeypadjoy</code></td>
+    <td><code>-nokeypadjoy | -nokp</code></td>
     <td>Do not use numeric keypad as joystick.</td>
   </tr>
   <tr>
@@ -342,7 +370,7 @@ will be executed upon startup of the emulator.</p>
     <td>No emulation of the LE18 graphic adapter. This is the default.</td>
   </tr>
   <tr>
-    <td><code>-nolower[case]</code></td>
+    <td><code>-nolower[case] | -nolc</code></td>
     <td>No lower case characters in TRS-80 Model I mode.</td>
   </tr>
   <tr>
@@ -361,7 +389,7 @@ will be executed upon startup of the emulator.</p>
         card. This is the default.</td>
   </tr>
   <tr>
-    <td><code>-nomousepointer</code></td>
+    <td><code>-nomouse[pointer]</code></td>
     <td>Hide mouse pointer and emulate joystick with mouse.</td>
   </tr>
   <tr>
@@ -374,7 +402,7 @@ will be executed upon startup of the emulator.</p>
         Default is <code>-resize3 -noresize4</code>.</td>
   </tr>
   <tr>
-    <td><code>-noscanlines</code></td>
+    <td><code>-noscan[lines]</code></td>
     <td>No scanlines in the emulator screen.
         This is the default, but can be toggled with <b>Alt-Y</b>.</td>
   </tr>
@@ -384,14 +412,14 @@ will be executed upon startup of the emulator.</p>
         This is the default.</td>
   </tr>
   <tr>
-    <td><code>-noshiftbracket</code></td>
+    <td><code>-noshiftbracket | -nosb</code></td>
     <td>Emulate [, \, ], ^, and _ as unshifted keys, and {, |, }, and ~ as
         shifted. This is the default in Model I and III modes, and it works
         well with many TRS-80 keyboard drivers. With some keyboard drivers
         these keys do not work at all, however.</td>
   </tr>
   <tr>
-    <td><code>-nosound</code></td>
+    <td><code>-nosound | -mute</code></td>
     <td>Disable the Sound Output at startup of the emulator.</td>
   </tr>
   <tr>
@@ -420,6 +448,10 @@ will be executed upon startup of the emulator.</p>
         This is the default.</td>
   </tr>
   <tr>
+    <td><code>-pause</code></td>
+    <td>Pause the emulator at startup.</td>
+  </tr>
+  <tr>
     <td><code>-printer <u>type</u></code></td>
     <td>Specifies the printer type. Values accepted are <code>0</code> or
         <code>none</code>, <code>1</code> or <code>text</code>.
@@ -444,10 +476,10 @@ will be executed upon startup of the emulator.</p>
         TRS-80 Model with the <code>-model</code> option above.</td>
   </tr>
   <tr>
-    <td><code>-romfile1 <u>filename</u><br>
-              -romfile3 <u>filename3</u><br>
-              -romfile4p <u>filename4p</u></code></td>
-    <td>Use the romfile specified by <code>filename</code> in Model I mode,
+    <td><code>-rom[file]1 <u>filename1</u><br>
+              -rom[file]3 <u>filename3</u><br>
+              -rom[file]4p <u>filename4p</u></code></td>
+    <td>Use the romfile specified by <code>filename1</code> in Model I mode,
         the romfile specified by <code>filename3</code> in Model III and
         Model 4 mode, or the romfile specified by <code>filename4p</code> in
         Model 4P mode, A romfile can be either a raw binary dump, Intel hex
@@ -458,14 +490,14 @@ will be executed upon startup of the emulator.</p>
         for the TRS-80 Model 4P.</td>
   </tr>
   <tr>
-    <td><code>-samplerate <u>rate</u></code></td>
+    <td><code>-samplerate | -sr <u>rate</u></code></td>
     <td>Set the sample rate for new cassette wav files, direct cassette I/O
         to the sound card, and game sound output to the sound card.
         Existing wav files will be read or modified using their original
         sample rate regardless of this flag. The default is 44,100 Hz.</td>
   </tr>
   <tr>
-    <td><code>-scale <u>factor</u></code></td>
+    <td><code>-sc[ale] <u>factor</u></code></td>
     <td>Scale the emulator window by <code>factor</code> times.
         Valid values for factor are 1,2,3 and 4. Default is 1.</td>
   </tr>
@@ -476,7 +508,7 @@ will be executed upon startup of the emulator.</p>
         Default is <code>1</code>.</td>
   </tr>
   <tr>
-    <td><code>-scanlines</code></td>
+    <td><code>-scan[lines]</code></td>
     <td>Display scanlines to simulate an old CRT monitor resolution.</td>
   </tr>
   <tr>
@@ -497,13 +529,13 @@ will be executed upon startup of the emulator.</p>
         having no serial port.</td>
   </tr>
   <tr>
-    <td><code>-shiftbracket</code></td>
+    <td><code>-shiftbracket | -sb</code></td>
     <td>Emulate [, \, ], ^, and _ as shifted keys, and {, |, }, and ~ as
         unshifted. This is the default in Model 4 and 4P modes, and it works
         well with the keyboard driver in Model 4 TRSDOS/LS-DOS 6.</td>
   </tr>
   <tr>
-    <td><code>-showled</code></td>
+    <td><code>-[show]led</code></td>
     <td>Show disk activity and Turbo LED at bottom of the emulator screen.
         This is the default, but can be toggled with <b>Alt-B</b>.</td>
   </tr>
@@ -528,7 +560,7 @@ will be executed upon startup of the emulator.</p>
         <B>Alt-U</B> in the emulator.</td>
   </tr>
   <tr>
-    <td><code>-speedup <u>kit</u></code></td>
+    <td><code>-s[peedup] <u>kit</u></code></td>
     <td>Emulate the specified Speedup Kit or Banking for the TRS-80: this can
         be <code>none</code>, <code>archbold</code> for "Archbold Electronics
         Speed-Up Board" (only Model I), <code>holmes</code> for the "Holmes
@@ -566,7 +598,7 @@ will be executed upon startup of the emulator.</p>
         <b>Disables "TRS-80 Users Society Selector"</b>.</td>
   </tr>
   <tr>
-    <td><code>-switches <u>value</u></code></td>
+    <td><code>-sw[itches] <u>value</u></code></td>
     <td>Set the sense switches on the Model I serial port card.
         This option is meaningful only in Model I mode, and only when the
         <code>-serial</code> option is not set to "". The default value is
@@ -598,16 +630,24 @@ will be executed upon startup of the emulator.</p>
     <td>Engage "Turbo" mode temporarily while pasting from clipboard.</td>
   </tr>
   <tr>
-    <td><code>-turborate <u>factor</u></code></td>
+    <td><code>-turborate | -tr <u>factor</u></code></td>
     <td>Set the number of times normal TRS-80 speed that the emulator runs when
         in Turbo mode. The default setting is 5. Above around factor 8 you may
         experience problems with runaway keyboard repeat on the emulator, so
         use higher values with caution.</td>
   </tr>
   <tr>
-    <td><code>-wafer<b>N</b> <u>filename</u></code></td>
+    <td><code>-w[afer]<b>N</b> <u>filename</u></code></td>
     <td>Specifies the name of the stringy wafer image file to be inserted into
-        Wafer<b>N</b>, where <code><b>N</b></code>=0 through 7.</td>
+        Wafer<b>N</b>, where <code><b>N</b></code>=0 through 7. Use <code>""
+        </code> as <u>filename</u> to remove an image from the drive.</td>
+  </tr>
+  <tr>
+    <td><code>-y[ear] <u>year</u></code></td>
+    <td>Set the year for TRS-80 time-of-day clock instead of the current year.
+        This can useful for TRS-80 operating systems that behave better when
+        the year is within a limited range. Enter year including the century
+        or <code>0</code> (default setting) to use the current year.</td>
   </tr>
 </table>
 

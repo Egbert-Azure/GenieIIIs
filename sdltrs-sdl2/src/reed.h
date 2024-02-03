@@ -1,6 +1,12 @@
 /* Matthew Reed's hard drive format.  Thanks to Matthew for providing
    documentation.  The comments below are copied from his mail
-   messages, with some additions. */
+   messages, with some additions. HDV 1.0 File Format (HDV1):
+   http://www.trs-80emulators.com/hdv1-format/ */
+
+#ifndef _REED_H
+#define _REED_H
+
+#include <SDL_types.h>
 
 typedef struct {
   Uint8 id1;       /* 0: Identifier #1: 56H */
@@ -26,8 +32,8 @@ typedef struct {
   Uint8 heads;     /* 26: If non-zero, number of heads per cylinder.
 			  If zero, number of heads per cylinder is calculated as
 			  number of sectors per cylinder (byte 29) divided by 32. */
-  Uint8 dparm;     /* 27: Number of cylinders per disk (high 8 bits) */
-  Uint8 cyl;       /* 28: Number of cylinders per disk (lower 8 bits)
+  Uint8 cylhi;     /* 27: Number of cylinders per disk (high 8 bits) */
+  Uint8 cyllo;     /* 28: Number of cylinders per disk (lower 8 bits)
 			  This is the number of cylinders on the drive. which shouldn’t
 			  be higher than 1024. To preserve backwards compatibility,
 			  values of 0 in both bytes 27 and 28 means 256.*/
@@ -37,3 +43,5 @@ typedef struct {
   char label[32];  /* 32: Volume label: 31 bytes terminated by 0 */
   Uint8 res2[192]; /* 64 - 255: reserved */
 } ReedHardHeader;
+
+#endif /* _REED_H */

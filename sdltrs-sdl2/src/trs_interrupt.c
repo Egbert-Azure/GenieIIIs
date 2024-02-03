@@ -66,6 +66,9 @@ int timer_overclock_rate = 5;
 int speedup = 1;
 unsigned int cycles_per_timer;
 
+time_t trs_timeoffset;
+int    trs_year;
+
 #define CLOCK_1_MHZ 1.77408
 #define CLOCK_2_MHZ 2.02752
 #define CLOCK_4_MHZ 4.05504
@@ -101,7 +104,7 @@ float clock_mhz_4 = CLOCK_4_MHZ;
    with the system date and time.
  */
 #define NEWDOS_DATETIME_VALID_BYTE  0xa5
-/* Model 1 */
+/* Model I */
 #define NEWDOS_DATETIME_VALID_ADDR  0x43ab
 #define NEWDOS_MONTH                0x43b1
 #define NEWDOS_DAY                  0x43b0
@@ -109,7 +112,7 @@ float clock_mhz_4 = CLOCK_4_MHZ;
 #define NEWDOS_HOUR                 0x43ae
 #define NEWDOS_MIN                  0x43ad
 #define NEWDOS_SEC                  0x43ac
-/* Model 3 */
+/* Model III */
 #define NEWDOS3_DATETIME_VALID_ADDR 0x42cb
 #define NEWDOS3_MONTH               0x42d1
 #define NEWDOS3_DAY                 0x42d0
@@ -302,8 +305,7 @@ trs_interrupt_latch_read(void)
   Uint8 tmp = interrupt_latch;
 
   if (trs_model == 1) {
-    interrupt_latch &= ~M1_TIMER_BIT; /* acknowledge this one (only) */
-    z80_state.irq = (interrupt_latch != 0);
+    interrupt_latch = z80_state.irq = 0;
     return tmp;
   } else {
     /* In some clones (like CP-500/M80) reading from the
@@ -354,12 +356,49 @@ trs_timer_event(void)
   }
 }
 
+#if defined (_WIN32) && !defined(__MINGW64__)
+static struct tm *
+localtime_r(const time_t *tp, struct tm *tmp)
+{
+  struct tm *r = localtime(tp);
+  if (r) {
+    *tmp = *r;
+    r = tmp;
+  }
+
+  return r;
+}
+#endif
+
+/*
+ * Initialize time offset.  This can useful for TRS-80 operating
+ * systems that behave better when the year is within a limited range.
+ */
+static void
+trs_inityear(void)
+{
+  if (trs_year <= 0) {
+    trs_timeoffset = 0;
+  } else {
+    time_t real = time(NULL);
+    time_t fake;
+    struct tm tm = { 0 };
+
+#if defined (_WIN32) && defined(__MINGW64__)
+#   define localtime_r(T,Tm) (localtime_s(Tm,T) ? NULL : Tm)
+#endif
+
+    localtime_r(&real, &tm);
+    tm.tm_year = trs_year - 1900;
+    fake = mktime(&tm);
+    trs_timeoffset = fake - real;
+  }
+}
+
 void trs_timer_sync_with_host(void)
 {
-  Uint32 curtime;
   static Uint32 lasttime;
-
-  curtime = SDL_GetTicks();
+  Uint32 curtime = SDL_GetTicks();
 
   if (lasttime + deltatime > curtime)
     SDL_Delay(lasttime + deltatime - curtime);
@@ -371,8 +410,8 @@ void trs_timer_sync_with_host(void)
     lasttime = curtime;
 
   if (trs_show_led) {
-    trs_disk_led(0,0);
-    trs_hard_led(0,0);
+    trs_disk_led(0, 0);
+    trs_hard_led(0, 0);
   }
 
   trs_timer_event();
@@ -390,10 +429,10 @@ trs_timer_init(void)
         z80_state.clockMHz = TCS_G3S_MHZ;
       } else {
         switch (speedup) {
-          case 5: /* LNW80 */
+          case 6: /* LNW80 */
             z80_state.clockMHz = CLOCK_4_MHZ;
             break;
-          case 6: /* TCS SpeedMaster 5.3 */
+          case 7: /* TCS SpeedMaster 5.3 */
             z80_state.clockMHz = TCS_SPM_MHZ;
             break;
           default:
@@ -411,63 +450,60 @@ trs_timer_init(void)
       z80_state.clockMHz = clock_mhz_4;
   }
 
+  trs_inityear();
   trs_timer_event();
   trs_timer_mode(timer_overclock);
 
   if ((trs_clones.model & (EG3200 | GENIE3S)) == 0) {
     /* Also initialize the clock in memory - hack */
-    time_t tt = time(NULL);
-    struct tm *lt = localtime(&tt);
-    extern Uint8 memory[];
+    const time_t tt = time(NULL) + trs_timeoffset;
+    const struct tm *lt = localtime(&tt);
 
     if (trs_model == 1) {
-        memory[LDOS_MONTH]    = (lt->tm_mon + 1) ^ 0x50;
-        memory[LDOS_DAY]      = lt->tm_mday;
-        memory[LDOS_YEAR]     = lt->tm_year - 80;
+        mem_write(LDOS_MONTH,  (lt->tm_mon + 1) ^ 0x50);
+        mem_write(LDOS_DAY,     lt->tm_mday);
+        mem_write(LDOS_YEAR,    lt->tm_year - 80);
 
-        memory[NEWDOS_DATETIME_VALID_ADDR] = NEWDOS_DATETIME_VALID_BYTE;
-        memory[NEWDOS_MONTH]  = lt->tm_mon + 1;
-        memory[NEWDOS_DAY]    = lt->tm_mday;
-        memory[NEWDOS_YEAR]   = lt->tm_year % 100;
-        memory[NEWDOS_HOUR]   = lt->tm_hour;
-        memory[NEWDOS_MIN]    = lt->tm_min;
-        memory[NEWDOS_SEC]    = lt->tm_sec;
+        mem_write(NEWDOS_DATETIME_VALID_ADDR, NEWDOS_DATETIME_VALID_BYTE);
+        mem_write(NEWDOS_MONTH, lt->tm_mon + 1);
+        mem_write(NEWDOS_DAY,   lt->tm_mday);
+        mem_write(NEWDOS_YEAR,  lt->tm_year % 100);
+        mem_write(NEWDOS_HOUR,  lt->tm_hour);
+        mem_write(NEWDOS_MIN,   lt->tm_min);
+        mem_write(NEWDOS_SEC,   lt->tm_sec);
     } else {
-        memory[LDOS3_MONTH]   = (lt->tm_mon + 1) ^ 0x50;
-        memory[LDOS3_DAY]     = lt->tm_mday;
-        memory[LDOS3_YEAR]    = lt->tm_year - 80;
+        mem_write(LDOS3_MONTH, (lt->tm_mon + 1) ^ 0x50);
+        mem_write(LDOS3_DAY,    lt->tm_mday);
+        mem_write(LDOS3_YEAR,   lt->tm_year - 80);
 
-        memory[NEWDOS3_DATETIME_VALID_ADDR] = NEWDOS_DATETIME_VALID_BYTE;
-        memory[NEWDOS3_MONTH] = lt->tm_mon + 1;
-        memory[NEWDOS3_DAY]   = lt->tm_mday;
-        memory[NEWDOS3_YEAR]  = lt->tm_year % 100;
-        memory[NEWDOS3_HOUR]  = lt->tm_hour;
-        memory[NEWDOS3_MIN]   = lt->tm_min;
-        memory[NEWDOS3_SEC]   = lt->tm_sec;
+        mem_write(NEWDOS3_DATETIME_VALID_ADDR, NEWDOS_DATETIME_VALID_BYTE);
+        mem_write(NEWDOS3_MONTH,lt->tm_mon + 1);
+        mem_write(NEWDOS3_DAY,  lt->tm_mday);
+        mem_write(NEWDOS3_YEAR, lt->tm_year % 100);
+        mem_write(NEWDOS3_HOUR, lt->tm_hour);
+        mem_write(NEWDOS3_MIN,  lt->tm_min);
+        mem_write(NEWDOS3_SEC,  lt->tm_sec);
 
         if (trs_model >= 4) {
-          memory[LDOS4_MONTH] = lt->tm_mon + 1;
-          memory[LDOS4_DAY]   = lt->tm_mday;
-          memory[LDOS4_YEAR]  = lt->tm_year;
+          mem_write(LDOS4_MONTH,lt->tm_mon + 1);
+          mem_write(LDOS4_DAY,  lt->tm_mday);
+          mem_write(LDOS4_YEAR, lt->tm_year);
         }
     }
   }
 }
 
+#ifdef ZBX
 void
-trs_timer_off(void)
+trs_timer(int on_off)
 {
-  timer_on = 0;
-}
+  if (timer_on == on_off) return;
 
-void
-trs_timer_on(void)
-{
-  if (!timer_on) {
-    timer_on = 1;
+  timer_on = on_off;
+  if (timer_on)
     trs_timer_event();
-  }
 }
+#endif
 
 void
 trs_timer_speed(int fast)
@@ -482,13 +518,13 @@ trs_timer_speed(int fast)
      *   0       1     = 4 MHz
      *   0       0     = 2 MHz
      */
-    if ((fast & 0x80) >> 7) {
-      if ((fast & 0x40) >> 6)
+    if (fast & 0x80) {
+      if (fast & 0x40)
         z80_state.clockMHz = CLOCK_8_MHZ;
       else
         z80_state.clockMHz = CLOCK_5_MHZ;
     } else {
-      if ((fast & 0x40) >> 6)
+      if (fast & 0x40)
         z80_state.clockMHz = CLOCK_4_MHZ;
       else
         z80_state.clockMHz = CLOCK_2_MHZ;
@@ -503,17 +539,17 @@ trs_timer_speed(int fast)
           z80_state.clockMHz = (fast & 1) ? TCS_G3S_MHZ : CLOCK_1_MHZ;
         else
         switch (speedup) {
-        case 1: /*Archbold*/
-        case 7: /*CT-80*/
+        case 1: /* Archbold */
+        case 5: /* CT-80 */
           z80_state.clockMHz = clock_mhz_1 * ((fast & 1) + 1);
           break;
-        case 2: /*Holmes Sprinter II*/
+        case 2: /* Holmes Sprinter II */
           z80_state.clockMHz = 10.6445 / (((fast + 4) & 7) + 2);
           break;
-        case 5: /*LNW80*/
+        case 6: /* LNW80 */
           z80_state.clockMHz = (fast & 1) ? CLOCK_4_MHZ : CLOCK_1_MHZ;
           break;
-        case 6: /*TCS SpeedMaster*/
+        case 7: /* TCS SpeedMaster */
           z80_state.clockMHz = (fast & 1) ? TCS_SPM_MHZ : CLOCK_1_MHZ;
           break;
         default:
@@ -534,7 +570,7 @@ trs_timer_speed(int fast)
     }
   }
   if (trs_model >= 4) {
-    if (((fast & 0x80) >> 7) || ((fast & 0x40) >> 6))
+    if ((fast & 0x80) || (fast & 0x40))
       timer_hz = TIMER_HZ_4;
     else
       timer_hz = TIMER_HZ_3;

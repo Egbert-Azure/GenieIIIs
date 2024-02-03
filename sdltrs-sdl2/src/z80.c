@@ -63,6 +63,8 @@
 #include "trs_imp_exp.h"
 #include "trs_state_save.h"
 
+unsigned int z80_halt;
+
 /*
  * The state of our Z80 registers is kept in this structure:
  */
@@ -691,7 +693,7 @@ static int rrc_byte(int value)
 
 /*
  * Perform the RLA, RLCA, RRA, RRCA instructions.  These set the flags
- * differently than the other rotate instrucitons.
+ * differently than the other rotate instructions.
  */
 static void do_rla(void)
 {
@@ -1247,31 +1249,6 @@ static void do_outir(void)
 /*
  * Interrupt handling routines:
  */
-
-static void do_di(void)
-{
-    z80_state.iff1 = z80_state.iff2 = 0;
-}
-
-static void do_ei(void)
-{
-    z80_state.iff1 = z80_state.iff2 = 1;
-}
-
-static void do_im0(void)
-{
-    z80_state.interrupt_mode = 0;
-}
-
-static void do_im1(void)
-{
-    z80_state.interrupt_mode = 1;
-}
-
-static void do_im2(void)
-{
-    z80_state.interrupt_mode = 2;
-}
 
 static void do_int(void)
 {
@@ -2620,15 +2597,18 @@ static int do_ED_instruction(void)
 
       case 0x46:	/* im 0 */
       case 0x66:	/* im 0 [undocumented]*/
-	do_im0();  T_COUNT(8);
+	z80_state.interrupt_mode = 0;
+	T_COUNT(8);
 	break;
       case 0x56:	/* im 1 */
       case 0x76:	/* im 1 [undocumented] */
-	do_im1();  T_COUNT(8);
+	z80_state.interrupt_mode = 1;
+	T_COUNT(8);
 	break;
       case 0x5E:	/* im 2 */
       case 0x7E:	/* im 2 [undocumented] */
-	do_im2();  T_COUNT(8);
+	z80_state.interrupt_mode = 2;
+	T_COUNT(8);
 	break;
 
       case 0x78:	/* in a, (c) */
@@ -2948,12 +2928,13 @@ int z80_run(int continuous)
     Uint8 instruction;
     Uint16 address; /* generic temps */
     int ret = 0;
-    tstate_t t_delta;
     trs_continuous = continuous;
 
     /* loop to do a z80 instruction */
     do {
-    /* Speed control */
+	/* Speed control */
+	tstate_t t_delta;
+
 	if (z80_state.t_count > last_t_count)
 	  t_delta = z80_state.t_count - last_t_count;
 	else
@@ -3316,7 +3297,7 @@ int z80_run(int continuous)
 	    break;
 
 	  case 0xF3:	/* di */
-	    do_di();
+	    z80_state.iff1 = z80_state.iff2 = 0;
 	    T_COUNT(4);
 	    break;
 
@@ -3335,7 +3316,7 @@ int z80_run(int continuous)
 	    break;
 
 	  case 0xFB:	/* ei */
-	    do_ei();
+	    z80_state.iff1 = z80_state.iff2 = 1;
 	    T_COUNT(4);
 	    break;
 
@@ -3382,10 +3363,18 @@ int z80_run(int continuous)
 	    break;
 
 	  case 0x76:	/* halt */
-	    if (trs_model == 1) {
-		/* Z80 HALT output is tied to reset button circuit */
+#ifdef ZBX
+	    if (z80_halt == 'd') {
+		trs_debug();
+	    }
+#endif
+	    if (z80_halt == 'r') {
 		trs_reset(0);
 	    } else {
+	      if (trs_model == 1 && z80_halt != 'h') {
+		/* Z80 HALT output is tied to reset button circuit */
+		trs_reset(0);
+	      } else {
 		/* Really halt (i.e., wait for interrupt) */
 	        /* Slight kludge: we back up the PC and keep going
 		   around the main loop reexecuting the halt.  A real
@@ -3403,6 +3392,7 @@ int z80_run(int continuous)
 		    pause();
 		}
 #endif
+	      }
 	    }
 	    T_COUNT(4);
 	    break;
@@ -4255,7 +4245,7 @@ int z80_run(int continuous)
 		    Z80_PC++;
 		}
 	        do_nmi();
-	        z80_state.nmi_seen = TRUE;
+	        z80_state.nmi_seen = 1;
                 if (trs_model == 1) {
 		  /* Simulate releasing the pushbutton here; ugh. */
 		  trs_reset_button_interrupt(0);
@@ -4288,8 +4278,8 @@ void z80_reset(void)
     z80_state.r7 = 0;
     z80_state.iff1 = 0;
     z80_state.iff2 = 0;
-    z80_state.interrupt_mode = 0;
-    z80_state.irq = z80_state.nmi = FALSE;
+    z80_state.interrupt_mode = 1;
+    z80_state.irq = z80_state.nmi = 0;
     z80_state.sched = 0;
 }
 

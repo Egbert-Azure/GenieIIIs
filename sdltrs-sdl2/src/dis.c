@@ -54,7 +54,7 @@
 #define A_8R  0x101  /* 8-bit relative address */
 #define A_8X2 0x102  /* Two 8-bit numbers */
 
-#define arglen(a) ((signed char)((a)&0xff))
+#define arglen(a) ((signed char) ((a) & 0xff))
 
 static const char undefined[] = "UNDEFINED";
 
@@ -2101,10 +2101,12 @@ int disassemble(Uint16 pc)
     int	const addr = pc;
 
     i = mem_read(pc++);
+
     if (!major[i].name)
     {
 	j = major[i].args;
 	i = mem_read(pc++);
+
 	if (!minor[j][i].name)
 	{
 	    /* dd cb or fd cb; offset comes *before* instruction */
@@ -2122,8 +2124,10 @@ int disassemble(Uint16 pc)
 
     for (i = 0; i < ((pc + arglen(code->args) - addr) & 0xffff); i++)
 	printf("%02x ", mem_read(addr + i));
+
     for (; i < 4; i++)
 	printf("   ");
+
     putchar (' ');
 
     switch (code->args) {
@@ -2148,6 +2152,7 @@ int disassemble(Uint16 pc)
 	break;
     }
     putchar ('\n');
+
     pc += arglen(code->args);
     return pc;  /* return the location of the next instruction */
 }

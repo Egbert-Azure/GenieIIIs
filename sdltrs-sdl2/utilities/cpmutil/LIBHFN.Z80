@@ -1,0 +1,216 @@
+; LIBHFN.MAC
+; ~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Function to manipulate host filenames
+;
+; Amendment History:
+;	22MAR2003 RKG 1.0 Initial Release.
+
+.Z80
+
+;##############################################################################
+; Macro Libraries and External Functions
+;##############################################################################
+
+MACLIB CPM.MLB
+
+MACLIB LIBSTR.MLB
+
+;##############################################################################
+; Start
+;##############################################################################
+
+hfn_start::	defb	'LIBHFN',0
+
+;##############################################################################
+; Storage
+;##############################################################################
+
+hfn_lcf:	defb 0			; lowercase flag
+
+;##############################################################################
+; Code
+;##############################################################################
+
+hfnlower::
+;==============================================================================
+; Set the host filename lowercase conversion flag
+;	entry:	a  =  0 keep case, else convert to lowercase
+;==============================================================================
+		ld (hfn_lcf),a
+		ret
+
+hfnconvert::
+;==============================================================================
+; Store host filename, perform case conversion if required
+;	entry:	de -> buffer to store hfn
+;		hl -> source string, nul or space terminated (in uppercase)
+;	exit:	a  =  last character examined (nul or space), Z flag affected
+;		bc =  preserved
+;		de -> nul in buffer at end of host filename
+;		hl -> nul or space in original buffer at end of host filename
+;==============================================================================
+		push bc
+
+	; save start of host filename buffer
+		push de			; ld bc,de
+		pop bc
+
+hfn_s1:
+	; copy host filename to buffer (hl->src, de->dst)
+		ld a,(hl)		; fetch
+		or a
+		jr z,hfn_s2		; nul?
+		cp spc
+		jr z,hfn_s2		; space?
+		ld (de),a		; store
+		inc hl			; bump
+		inc de
+		jr hfn_s1		; again
+
+hfn_s2:
+	; save last character examined
+		or a
+		push af
+
+	; terminate host filename in buffer
+		ld a,0
+		ld (de),a
+
+	; save current location in source
+		push hl
+
+	; get start of host filename buffer
+		push bc			; ld hl,bc
+		pop hl
+
+	; convert case as required (currently uppercase)
+		ld a,(hfn_lcf)
+		or a			; check lowercase flag
+		call nz,casels		; convert to lowercase?
+
+	; process escaped characters
+		call hfn_esc
+
+	; restore
+		pop hl
+		pop af
+		pop bc
+		ret
+
+hfn_esc:
+;------------------------------------------------------------------------------
+; Process escape characters in host filename
+; A '[' in the host filename causes next character to be converted to uppercase
+; Note: conversion takes place in the same buffer - luckily the converted
+; host filename becomes shorter (or the same size) as the original.
+;	entry:	hl -> buffer
+;	exit:	a  =  trashed
+;		de -> new nul at end of buffer
+;		hl -> original nul at end of buffer
+;------------------------------------------------------------------------------
+		push hl			; ld de,hl
+		pop de
+
+hfn_e1:
+	; transcribe buffer (hl->src,de->dst)
+		ld a,(hl)		; fetch
+		or a
+		jr z,hfn_e3		; nul?
+
+	; check for escape character
+		cp '['
+		jr nz,hfn_e2		; normal character?
+
+	; process escape character
+		inc hl			; fetch next character
+		ld a,(hl)
+		or a
+		jr z,hfn_e3		; nul? (can't escape a nul)
+		call casecc		; change case
+
+hfn_e2:
+	; store character in dest and bump pointers
+		ld (de),a		; store
+		inc de			; bump
+		inc hl
+		jr hfn_e1		; again
+
+hfn_e3: ; terminate
+		ld a,0
+		ld (de),a		; terminate dest
+		ret
+
+hfnfromfcb::
+;==============================================================================
+; Obtain host filename from cpm fcb (ignores drive code)
+;	entry:	de -> fcb
+;		hl -> buffer for host filename
+;	exit:	a  =  trashed
+;		de -> fcb
+;		hl -> buffer containing host filename
+;==============================================================================
+		push bc
+		push de
+		push hl
+
+		inc de			; skip over drive code
+	; name
+		ld b,8
+		call ncopy
+
+	; possible type
+		ld a,(de)
+		and 7Fh			; strip high bit
+		cp spc
+		jr z,hfnterm		; no type?
+
+	; type
+		ld (hl),'.'
+		inc hl
+		ld b,3
+		call ncopy
+
+hfnterm:
+	; terminate
+		ld a,0
+		ld (hl),a
+
+		pop hl
+		pop de
+		pop bc
+
+	; convert case as required (currently uppercase)
+		ld a,(hfn_lcf)
+		or a			; check lowercase flag
+		call nz,casels		; convert to lowercase?
+		ret
+
+ncopy:
+	; transcribe characters until a space or b becomes 0
+		ld a,(de)		; fetch
+		and 7Fh			; strip high bit
+		cp spc
+		jr z,ncopyskip		; space?
+		ld (hl),a		; store
+		inc de			; bump
+		inc hl
+		djnz ncopy		; again
+		ret
+
+ncopyskip:
+	; skip remainder of fcb until b becomes 0
+		inc de
+		djnz ncopyskip
+		ret
+
+
+;##############################################################################
+; End
+;##############################################################################
+
+hfn_end::	end

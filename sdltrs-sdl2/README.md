@@ -6,7 +6,7 @@ Updated version of Mark Grebe's [SDLTRS]:
   * Ctrl-A, Ctrl-C & Ctrl-V can now be used in the Emulator (CP/M & WordStar)
   * Display scanlines to simulate an old CRT monitor resolution
   * Access to real floppy disks works now on Linux
-  * Tried to fix reported bugs to the original version
+  * Fixed reported bugs to the original version
   * Port to SDL2 (see [BUILDING.md])
   * Support Exatron Stringy Floppy for TRS-80 Model I
   * Select and execute CMD files directly in the Emulator
@@ -39,16 +39,19 @@ Updated version of Mark Grebe's [SDLTRS]:
   * Support VideoExtension HRG for EACA EG 3200 Genie III
   * Support Genieplus Memory Card for EACA EG 3200 Genie III
   * Support Prologica CP-500/M80 by Leonardo Brondani Schenkel
-  * Partial emulation of Aster CT-80
+  * Partial emulation of [Aster CT-80]
   * Support 128/256/512/1024 bytes Sector Size for WD1000/1010
   * Support up to 8192 Hard Disk Cylinders
   * Modify addresses in ROM with debugger
+  * Character sets of Aster CT-80, HT-1080Z and Meritum I
+  * Support 5" / 8" disk size switch commands of Percom doubler
+  * Select action for Z80 HALT instruction
 
 SDL(2)TRS is based on Tim Mann's excellent TRS-80 emulator [xtrs] and also
 has very low system requirements: it works on all platforms supported by the
 [SDL] library, even on machines with only a few hundred MHz of CPU speed.
 
-Browse the [Documentation] online ...
+  * [Documentation] online.
 
 ## License
 
@@ -64,7 +67,9 @@ This branch contains the SDL2 version with hardware rendering support.
 This version is available in [RetroPie] since version 4.6.6 and Valerio
 Lupi's fork of [RetroPie-Setup] ...
 
-Thanks to Tércio Martins a package for Arch Linux is available in the [AUR].
+  * Thanks to Tércio Martins a package for Arch Linux is available in the [AUR].
+  * Thanks to B. Watson SDL2TRS is available in the [SlackBuilds] Repository
+    (Slackware 15).
 
 ## Screenshots
 
@@ -74,6 +79,7 @@ Thanks to Tércio Martins a package for Arch Linux is available in the [AUR].
 ![screenshot](screenshots/sdltrs04.png)
 ![screenshot](screenshots/sdltrs05.png)
 
+[Aster CT-80]: https://electrickery.nl/comp/trs80/aster/
 [AUR]: https://aur.archlinux.org/packages/sdl2trs/
 [BUILDING.md]: BUILDING.md
 [Documentation]: https://jengun.gitlab.io/sdltrs
@@ -82,4 +88,5 @@ Thanks to Tércio Martins a package for Arch Linux is available in the [AUR].
 [RetroPie-Setup]: https://github.com/valerino/RetroPie-Setup
 [SDL]: https://www.libsdl.org
 [SDLTRS]: http://sdltrs.sourceforge.net
+[SlackBuilds]: http://slackbuilds.org/repository/15.0/system/sdltrs/
 [xtrs]: https://www.tim-mann.org/xtrs.html

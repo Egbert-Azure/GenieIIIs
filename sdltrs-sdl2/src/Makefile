@@ -1,13 +1,12 @@
 PROG	 = sdl2trs
 
-SRCS	+= blit.c
 SRCS	+= debug.c
 SRCS	+= dis.c
 SRCS	+= error.c
-SRCS	+= load_cmd.c
 SRCS	+= main.c
 SRCS	+= trs_cassette.c
 SRCS	+= trs_clones.c
+SRCS	+= trs_cmd_rom.c
 SRCS	+= trs_cp500.c
 SRCS	+= trs_disk.c
 SRCS	+= trs_hard.c
@@ -16,6 +15,7 @@ SRCS	+= trs_interrupt.c
 SRCS	+= trs_io.c
 SRCS	+= trs_memory.c
 SRCS	+= trs_mkdisk.c
+SRCS	+= trs_options.c
 SRCS	+= trs_printer.c
 SRCS	+= trs_sdl_gui.c
 SRCS	+= trs_sdl_interface.c
@@ -66,7 +66,7 @@ win64:	SDL_INC	?= -I${MINGW64}\include\SDL2
 win64:	SDL_LIB	?= -L${MINGW64}\lib -lmingw32 -lSDL2main -lSDL2
 win64:	${PROG}
 
-MSYS		:=$(if $(findstring Msys, $(shell uname -o)), Msys)
+MSYS		:=$(if $(findstring Msys, $(shell uname -a)), Msys)
 SSPLIB		:=$(if ${MSYS},-lssp,)
 READLINELIBS	 =$(if ${READLINE},-lreadline,)
 ZBX		?= -DZBX
@@ -74,4 +74,4 @@ CFLAGS		?= -g -O2 -Wall
 CFLAGS		+= ${SDL_INC} ${ENDIAN} ${MACROS} ${READLINE} ${ZBX}
 
 ${PROG}: ${OBJS}
-	${CC} -o ${PROG} ${OBJS} ${SDL_LIB} ${LDFLAGS} ${READLINELIBS} -lssp
+	${CC} -o ${PROG} ${OBJS} ${SDL_LIB} ${LDFLAGS} ${READLINELIBS} ${SSPLIB}

@@ -1,0 +1,46 @@
+; LIBHEX.MLB auto generated from LIBHEX.MAC
+; ~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Hex conversion functions
+;
+; Amendment History:
+;	22MAR2003 RKG 1.0 Initial Release.
+
+EXTRN hexaac
+;==============================================================================
+; Convert a byte into two hex digits
+;	entry:	a  =  byte to convert
+;	exit:	a  =  msn in hex
+;		c  =  lsn in hex
+;==============================================================================
+
+EXTRN hexa
+;==============================================================================
+; Display a byte in hex
+;	entry:	a  =  byte to convert
+;	exit:	a  =  trashed
+;==============================================================================
+
+EXTRN hexhl
+;==============================================================================
+; Display a word in hex
+;	entry:	hl =  word to print
+;	exit:	a  =  trashed
+;==============================================================================
+
+EXTRN hexmemory
+;==============================================================================
+; Dump memory in hex and ascii
+;	entry:	hl =  memory to print
+;		c  =  bytes to dump
+;	exit:	all registers preserved
+;==============================================================================
+
+EXTRN hexregs
+;==============================================================================
+; Display registers
+;==============================================================================

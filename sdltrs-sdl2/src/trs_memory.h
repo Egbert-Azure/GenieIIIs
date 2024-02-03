@@ -14,18 +14,18 @@
 #define RAM192B         (4) /* TCS Genie IIs/SpeedMaster 768 KB */
 #define SELECTOR        (5) /* Selector Card for TRS-80 Model I */
 #define SUPERMEM        (6) /* AlphaTech SuperMem 512 KB (I/III) */
+#define TCS_GENIE3S     (7) /* TCS Genie IIIs 1024 KB */
 
 int    trs80_model3_mem_read(int address);
 void   trs80_model3_mem_write(int address, int value);
 Uint8 *trs80_model3_mem_addr(int address, int writing);
 
 void   mem_video_page(int offset);
-Uint8  mem_video_read(int vaddr);
 Uint8  mem_video_page_read(int vaddr);
-int    mem_video_write(int vaddr, Uint8 value);
 int    mem_video_page_write(int vaddr, Uint8 value);
 Uint8 *mem_video_page_addr(int vaddr);
 
+extern int  get_mem_map(void);
 extern void mem_bank(int which);
 extern void mem_map(int which);
 extern void mem_bank_base(int card, int bits);
@@ -40,4 +40,4 @@ extern void s80z_out(int value);
 extern void sys_byte_out(int value);
 extern int  sys_byte_in(void);
 
-#endif
+#endif /* _TRS_MEMORY_H */

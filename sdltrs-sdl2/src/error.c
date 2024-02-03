@@ -38,9 +38,11 @@
  */
 
 #include "error.h"
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 extern const char *program_name;
 
@@ -80,3 +82,14 @@ void fatal(const char *fmt, ...)
   exit(EXIT_FAILURE);
 }
 
+void file_error(const char *fmt, ...)
+{
+  va_list args;
+
+  fprintf(stderr, "%s ERROR: ", program_name);
+  va_start(args, fmt);
+  vfprintf(stderr, fmt, args);
+  va_end(args);
+  fprintf(stderr, " : %s\n", strerror(errno));
+  fflush(stderr);
+}

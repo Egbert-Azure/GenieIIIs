@@ -1,0 +1,5 @@
+"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E rm -f CMakeFiles\sdl2trs.dir/objects.a
+C:\msys64\mingw64\bin\ar.exe qc CMakeFiles\sdl2trs.dir/objects.a @CMakeFiles\sdl2trs.dir\objects1.rsp
+C:\msys64\mingw64\bin\gcc.exe -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified
+
+for command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -Wl,--whole-archive CMakeFiles\sdl2trs.dir/objects.a -Wl,--no-whole-archive -o sdl2trs.exe -Wl,--out-implib,libsdl2trs.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\sdl2trs.dir\linkLibs.rsp

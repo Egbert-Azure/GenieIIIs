@@ -1,0 +1,7 @@
+C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build/CMakeFiles/sdl2trs.dir
+C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build/CMakeFiles/edit_cache.dir
+C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build/CMakeFiles/rebuild_cache.dir
+C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build/CMakeFiles/list_install_components.dir
+C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build/CMakeFiles/install.dir
+C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build/CMakeFiles/install/local.dir
+C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build/CMakeFiles/install/strip.dir

@@ -99,7 +99,7 @@ static int cassette_sample_rate;
 int cassette_default_sample_rate = MAX_SAMPLE_RATE;
 static int cassette_stereo;
 static Uint32 cassette_silence;
-static int soundDeviceOpen = FALSE;
+static int soundDeviceOpen = 0;
 
 int trs_sound = 1;
 
@@ -125,7 +125,7 @@ static tstate_t cassette_firstoutread;
 static int cassette_value, cassette_next, cassette_flipflop;
 static int cassette_lastnonzero;
 static int cassette_transitionsout;
-static unsigned long cassette_delta;
+static Uint64 cassette_delta;
 static float cassette_roundoff_error;
 
 /* For bit/byte conversion (.cas file i/o) */
@@ -212,18 +212,16 @@ static const struct {
    changed; we ignore the difference.  Actually, we ignore more than
    that; we convert the values as if 0 were really halfway between
    high and low.  */
-Uint8 const value_to_sample[] = { 127, /* 0.46 V */
-			          254, /* 0.85 V */
-			          0,   /* 0.00 V */
-			          127, /* unused, but close to 0.46 V */
+static Uint8 const value_to_sample[] = { 127, /* 0.46 V */
+			                 254, /* 0.85 V */
+			                 0,   /* 0.00 V */
+			                 127, /* unused, but close to 0.46 V */
 };
 
 /* .wav file definitions */
 #define WAVE_FORMAT_PCM (0x0001)
 #define WAVE_FORMAT_MONO 1
-#define WAVE_FORMAT_STEREO 2
 #define WAVE_FORMAT_8BIT 8
-#define WAVE_FORMAT_16BIT 16
 #define WAVE_RIFFSIZE_OFFSET 0x04
 #define WAVE_RIFF_OFFSET 0x08
 #define WAVE_DATAID_OFFSET 0x24
@@ -344,7 +342,7 @@ put_sample(Uint8 sample, int convert, FILE* f)
 #endif
         if (sound_ring_write_ptr >= sound_ring_end)
           sound_ring_write_ptr = sound_ring;
-        sound_ring_count+=2;
+        sound_ring_count += 2;
         break;
       default:
         error("sample format 0x%x not supported", cassette_afmt);
@@ -396,9 +394,8 @@ create_wav_header(FILE *f)
 static int
 check_chunk_id(char *expected, FILE* f)
 {
-  char c4[5];
+  char c4[5] = { 0 };
 
-  c4[4] = '\0';
   if (fread(c4, 4, 1, f) != 1) return -1;
   if (strcmp(c4, expected) != 0) {
     error("unusable wav file: expected chunk id '%s', got '%s'", expected, c4);
@@ -439,13 +436,13 @@ parse_wav_header(FILE *f)
   expect2 = WAVE_FORMAT_MONO * WAVE_FORMAT_8BIT / 8;
   if (get_twobyte(&n2, f) < 0) return -1;
   if (n2 != expect2) {
-    error("unusable wav file: must be %d bytes/sample", expect2);
+    error("unusable wav file: must be %d bytes/sample, got %d", expect2, n2);
     return -1;
   }
   expect2 = WAVE_FORMAT_8BIT;
   if (get_twobyte(&n2, f) < 0) return -1;
   if (n2 != expect2) {
-    error("unusable wav file: must be %d bits/sample", expect2);
+    error("unusable wav file: must be %d bits/sample, got %d", expect2, n2);
     return -1;
   }
   fmt_size -= 16;  /* size read so far */
@@ -496,7 +493,7 @@ set_audio_format(int state)
   SDL_AudioSpec desired, obtained;
 
   SDL_CloseAudio();
-  soundDeviceOpen = FALSE;
+  soundDeviceOpen = 0;
 
   desired.freq = cassette_sample_rate;
 #ifdef big_endian
@@ -514,7 +511,7 @@ set_audio_format(int state)
     cassette_state = FAILED;
     return -1;
   }
-  soundDeviceOpen = TRUE;
+  soundDeviceOpen = 1;
   if (obtained.format != AUDIO_U8 &&
 #ifdef big_endian
       obtained.format != AUDIO_S16MSB) {
@@ -554,6 +551,12 @@ trs_cassette_insert(const char *filename)
 {
    int const len = strlen(filename);
    const char *extension;
+   struct stat st = { 0 };
+
+   if (stat(filename, &st) == -1) {
+     file_error("open cassette '%s'", filename);
+     return;
+   }
 
    snprintf(cassette_filename, FILENAME_MAX, "%s", filename);
    cassette_position = 0;
@@ -644,7 +647,7 @@ static int assert_state(int state)
   if (cassette_state != CLOSE && cassette_state != FAILED) {
     if (cassette_format == DIRECT_FORMAT) {
       SDL_CloseAudio();
-      soundDeviceOpen = FALSE;
+      soundDeviceOpen = 0;
       cassette_position = 0;
     } else {
       cassette_position = ftell(cassette_file);
@@ -670,7 +673,7 @@ static int assert_state(int state)
     }
     cassette_file = fopen(cassette_filename, "rb");
     if (cassette_file == NULL) {
-      error("couldn't read '%s': %s", cassette_filename, strerror(errno));
+      file_error("read cassette '%s'", cassette_filename);
       cassette_state = FAILED;
       return -1;
     }
@@ -725,7 +728,7 @@ static int assert_state(int state)
         fseek(cassette_file, cassette_position, 0);
       }
       if (cassette_file == NULL) {
-        error("couldn't write '%s': %s", cassette_filename, strerror(errno));
+        file_error("write cassette '%s'", cassette_filename);
         cassette_state = FAILED;
         return -1;
         }
@@ -1012,12 +1015,12 @@ transition_in(void)
 	       cassette_noisefloor, cabs, next);
 #endif
 	if (cabs > 1) {
-	  cassette_avg = (99*cassette_avg + cabs) / 100;
+	  cassette_avg = (99 * cassette_avg + cabs) / 100;
 	}
 	if (cabs > cassette_env) {
-	  cassette_env = (cassette_env + 9*cabs) / 10;
+	  cassette_env = (cassette_env + 9 * cabs) / 10;
 	} else if (cabs > 10) {
-	  cassette_env = (99*cassette_env + cabs) / 100;
+	  cassette_env = (99 * cassette_env + cabs) / 100;
 	}
 	cassette_noisefloor = (cassette_avg + cassette_env) / 2;
       }
@@ -1203,10 +1206,9 @@ trs_orch90_out(int channels, int value)
   long nsamples;
   float ddelta_us;
   int new_left, new_right;
-  int v;
 
   /* Convert 8-bit signed to 8-bit unsigned */
-  v = (value & 0xff) ^ 0x80;
+  int const v = (value & 0xff) ^ 0x80;
 
   if (cassette_motor != 0) return;
   if (assert_state(ORCH90) < 0) return;
@@ -1235,8 +1237,8 @@ trs_orch90_out(int channels, int value)
     nsamples * (1000000.0 / cassette_sample_rate) - ddelta_us;
 
   while (nsamples-- > 0) {
-    put_sample(orch90_left, TRUE, cassette_file);
-    put_sample(orch90_right, TRUE, cassette_file);
+    put_sample(orch90_left, 1, cassette_file);
+    put_sample(orch90_right, 1, cassette_file);
   }
 
   if (trs_event_scheduled() == orch90_flush ||
@@ -1353,23 +1355,23 @@ trs_cassette_save(FILE *file)
   trs_save_uint32(file, &cassette_format, 1);
   trs_save_int(file, &cassette_state, 1);
   trs_save_int(file, &cassette_motor, 1);
-  trs_save_float(file,&cassette_avg, 1);
-  trs_save_float(file,&cassette_env, 1);
+  trs_save_float(file, &cassette_avg, 1);
+  trs_save_float(file, &cassette_env, 1);
   trs_save_int(file, &cassette_noisefloor, 1);
   trs_save_int(file, &cassette_sample_rate, 1);
   trs_save_int(file, &cassette_default_sample_rate, 1);
   trs_save_int(file, &cassette_stereo, 1);
   trs_save_uint32(file, &cassette_silence, 1);
   trs_save_int(file, &cassette_afmt, 1);
-  trs_save_uint64(file,&last_sound, 1);
-  trs_save_uint64(file,&cassette_transition, 1);
-  trs_save_uint64(file,&cassette_firstoutread, 1);
+  trs_save_uint64(file, &last_sound, 1);
+  trs_save_uint64(file, &cassette_transition, 1);
+  trs_save_uint64(file, &cassette_firstoutread, 1);
   trs_save_int(file, &cassette_value, 1);
   trs_save_int(file, &cassette_next, 1);
   trs_save_int(file, &cassette_flipflop, 1);
   trs_save_int(file, &cassette_lastnonzero, 1);
   trs_save_int(file, &cassette_transitionsout, 1);
-  trs_save_uint32(file, (unsigned int *) &cassette_delta, 1);
+  trs_save_uint64(file, &cassette_delta, 1);
   trs_save_float(file, &cassette_roundoff_error, 1);
   trs_save_int(file, &cassette_byte, 1);
   trs_save_int(file, &cassette_bitnumber, 1);
@@ -1390,23 +1392,23 @@ trs_cassette_load(FILE *file)
   trs_load_uint32(file, &cassette_format, 1);
   trs_load_int(file, &cassette_state, 1);
   trs_load_int(file, &cassette_motor, 1);
-  trs_load_float(file,&cassette_avg, 1);
-  trs_load_float(file,&cassette_env, 1);
+  trs_load_float(file, &cassette_avg, 1);
+  trs_load_float(file, &cassette_env, 1);
   trs_load_int(file, &cassette_noisefloor, 1);
   trs_load_int(file, &cassette_sample_rate, 1);
   trs_load_int(file, &cassette_default_sample_rate, 1);
   trs_load_int(file, &cassette_stereo, 1);
   trs_load_uint32(file, &cassette_silence, 1);
   trs_load_int(file, &cassette_afmt, 1);
-  trs_load_uint64(file,&last_sound, 1);
-  trs_load_uint64(file,&cassette_transition, 1);
-  trs_load_uint64(file,&cassette_firstoutread, 1);
+  trs_load_uint64(file, &last_sound, 1);
+  trs_load_uint64(file, &cassette_transition, 1);
+  trs_load_uint64(file, &cassette_firstoutread, 1);
   trs_load_int(file, &cassette_value, 1);
   trs_load_int(file, &cassette_next, 1);
   trs_load_int(file, &cassette_flipflop, 1);
   trs_load_int(file, &cassette_lastnonzero, 1);
   trs_load_int(file, &cassette_transitionsout, 1);
-  trs_load_uint32(file, (unsigned int *) &cassette_delta, 1);
+  trs_load_uint64(file, &cassette_delta, 1);
   trs_load_float(file, &cassette_roundoff_error, 1);
   trs_load_int(file, &cassette_byte, 1);
   trs_load_int(file, &cassette_bitnumber, 1);

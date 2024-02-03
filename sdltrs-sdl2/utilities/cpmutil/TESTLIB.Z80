@@ -1,0 +1,263 @@
+; TESTLIB.MAC
+; ~~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Test library functions
+;
+; Usage:
+;	LIBTEST
+;
+; Amendment History:
+;	14MAR2003 RKG 1.0 Initial release.
+
+.Z80
+
+;##############################################################################
+; Macro Libraries and External Functions
+;##############################################################################
+
+MACLIB CPM.MLB
+
+MACLIB LIBCFN.MLB
+
+MACLIB LIBHEX.MLB
+
+MACLIB LIBHFN.MLB
+
+MACLIB LIBSTR.MLB
+
+MACLIB LIBXTRS.MLB
+
+;##############################################################################
+; Messages
+;##############################################################################
+
+m_crlf:		defb	cr,lf,'$'
+
+;##############################################################################
+; Code
+;##############################################################################
+
+main::
+		call hex_test
+		call cfn_test
+		call hfn_test
+		call ch_fn_test
+		call xtrs_test
+
+done::
+;==============================================================================
+; Single exit point of program
+;==============================================================================
+		jp c_boot
+
+hex_test::
+;==============================================================================
+; Test hex functions
+;==============================================================================
+		dbgmsg '** hex_test **'
+
+		xor a
+		call hexa
+		bdos b_couts,m_crlf
+
+		ld hl,1234h
+		call hexhl
+		bdos b_couts,m_crlf
+
+		ld a,091h
+		ld b,0A2h
+		ld c,0B3h
+		ld d,0C4h
+		ld e,0D5h
+		ld h,0E6h
+		ld l,0F7h
+		call hexregs
+
+		ld hl,100h
+		ld c,30
+		call hexmemory
+		ret
+
+cfn_test::
+;==============================================================================
+; Test cpm filename functions
+;==============================================================================
+		dbgmsg '** cfn_test **'
+
+	; test1
+		ld hl,cfn_t1
+		call cfn_dotest
+
+	; test2
+		ld hl,cfn_t2
+		call cfn_dotest
+
+	; test3
+		ld hl,cfn_t3
+		call cfn_dotest
+
+	; test4
+		ld hl,cfn_t4
+		call cfn_dotest
+
+	; test5
+		ld hl,cfn_t5
+		call cfn_dotest
+
+		ret
+
+cfn_dotest:
+	; display source
+		call printnul
+
+	; becomes
+		push hl
+		bdos b_couts,cfn_becomes
+		pop hl
+
+	; store cfn into fcb
+		ld de,c_fcb1
+		call cfntofcb		; from (hl) into (de)
+
+	; dump fcb
+		ld e,'"'
+		bdos b_coutb
+		ld hl,c_fcb1
+		ld a,(hl)		; 1=A:, 2=B:, ...
+		add a,'A'-1
+		ld e,a
+		bdos b_coutb		; print drive
+		ld e,':'
+		bdos b_coutb
+		ld hl,c_fcb1_fname
+		call printnul		; print name and type
+		ld e,'"'
+		bdos b_coutb
+
+	; becomes
+		bdos b_couts,cfn_becomes
+
+	; convert fcb into filename
+		ld hl,c_iobuf
+		ld de,c_fcb1
+		call cfntotext		; convert fcb to filename
+		call printnul		; print filename
+
+		bdos b_couts,m_crlf
+		ret
+
+cfn_becomes:	defb	' -> $'
+
+cfn_t1:		defb	'A',0
+cfn_t2:		defb	'A:',0
+cfn_t3:		defb	'A:ABCDEFGHIJ.ABCDE',0
+cfn_t4:		defb	'A:AB?D*FGHI.?B*D',0
+cfn_t5:		defb	'A:A.B.C.D',0
+
+hfn_test::
+;==============================================================================
+; Test host filename functions
+;==============================================================================
+		dbgmsg '** hfn_test **'
+
+	; test1a
+		ld hl,hfn_t1
+		xor a
+		call hfnlower
+		call hfn_dotest
+
+	; test1b
+		ld hl,hfn_t1
+		ld a,1
+		call hfnlower
+		call hfn_dotest
+
+	; test2a
+		ld hl,hfn_t2
+		xor a
+		call hfnlower
+		call hfn_dotest
+
+	; test2b
+		ld hl,hfn_t2
+		ld a,1
+		call hfnlower
+		call hfn_dotest
+
+		ret
+
+hfn_dotest:	ld de,c_iobuf
+		call hfnconvert		; from (hl) into (de)
+		ld hl,c_iobuf
+		call printnul
+		bdos b_couts,m_crlf
+		ret
+
+hfn_t1:		defb	'TESTHOSTFILENAME',0
+hfn_t2:		defb	'[ANOTHER[TEST[HOST[FILENAME',0
+
+ch_fn_test::
+;==============================================================================
+; Test cpm and host filename functions
+;==============================================================================
+		dbgmsg '** ch_fn_test **'
+
+	; test1
+		xor a
+		call hfnlower
+		ld hl,chfn_t1
+		ld de,c_fcb1
+		call cfntofcb		; from (hl) into (de)
+
+		ld hl,c_iobuf
+		call hfnfromfcb
+		call printnul
+		bdos b_couts,m_crlf
+
+	; test2
+		ld a,1
+		call hfnlower
+		ld hl,chfn_t1
+		ld de,c_fcb1
+		call cfntofcb		; from (hl) into (de)
+
+		ld hl,c_iobuf
+		call hfnfromfcb
+		call printnul
+		bdos b_couts,m_crlf
+
+		ret
+
+chfn_t1:	defb	'A:ABCD.EF',0
+
+xtrs_test::
+;==============================================================================
+; Test xtrs functions
+;==============================================================================
+		dbgmsg '** xtrs_test **'
+
+		ld de,c_iobuf
+		ld a,'1'
+		call xtrsdiskname
+		ld hl,c_iobuf
+		call printnul
+		bdos b_couts,m_crlf
+
+		ld de,c_iobuf
+		ld a,'D'
+		call xtrsdiskname
+		ld hl,c_iobuf
+		call printnul
+		bdos b_couts,m_crlf
+
+		ret
+
+;##############################################################################
+; End
+;##############################################################################
+
+		end	main

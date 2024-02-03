@@ -1,0 +1,163 @@
+; LIBXTRS.MLB auto generated from LIBXTRS.MAC
+; ~~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	XTRS emulator functions
+;
+; Amendment History:
+;	22MAR2003 RKG 1.0 Initial Release.
+
+EXTRN xtrssystem
+;==============================================================================
+;	entry:	hl -> nul terminated command
+;	exit:	a = status: 0 if OK, error number if not (Z flag affected)
+;		bc = command exit status
+;==============================================================================
+
+EXTRN xtrsopen
+;==============================================================================
+;	entry:	hl -> path, nul terminated
+;		bc = oflag (use eo_ values defined below)
+;		de = mode
+;	exit:	a = status: 0 if OK, error number if not (Z flag affected)
+;		de = fd, 0xFFFF if error
+;------------------------------------------------------------------------------
+;
+eo_accmode	equ	03q
+eo_rdonly	equ	00q
+eo_wronly	equ	01q
+eo_rdwr		equ	02q
+;
+eo_creat	equ	0100q
+;
+eo_excl		equ	0200q
+;
+eo_trunc	equ	01000q
+;
+eo_append	equ	02000q
+;
+;==============================================================================
+
+EXTRN xtrsclose
+;==============================================================================
+;	entry:	de = fd
+;	exit:	a = status: 0 if OK, error number if not (Z flag affected)
+;==============================================================================
+
+EXTRN xtrsread
+;==============================================================================
+;	entry:	bc = nbytes
+;		de = fd
+;		hl -> buffer
+;	exit:	a = status: 0 if OK, error number if not (Z flag affected)
+;		bc = nbytes read, 0xFFFF if error
+;==============================================================================
+
+EXTRN xtrswrite
+;==============================================================================
+;	entry:	bc = nbytes
+;		de = fd
+;		hl -> buffer
+;	exit:	a = status: 0 if OK, error number if not (Z flag affected)
+;		bc = nbytes read, 0xFFFF if error
+;==============================================================================
+
+EXTRN xtrslseek
+;==============================================================================
+;	entry:	bc = whence
+;		de = fd
+;		hL -> offset (8-byte little-endian integer)
+;	exit:	a = status: 0 if OK, error number if not (Z flag affected)
+;		hl -> location in file, 0xFFFFFFFF if error
+;==============================================================================
+
+EXTRN xtrsstrerror
+;==============================================================================
+;	entry:	a = error number
+;		bc = buffer size
+;		hl -> buffer for error string
+;	exit:	a = status: 0 if OK, new error number if not (Z flag affected)
+;		bc = strlen(buffer), 0xFFFF if error
+;		hl -> same buffer, containing \r\0 terminated string
+;==============================================================================
+
+EXTRN xtrsmisc
+;==============================================================================
+;	entry:	a = function code (see em_ codes defined below)
+;		other registers as listed below
+;	exit:	other registers as listed below
+;------------------------------------------------------------------------------
+;
+em_disk_change	equ	0		; disk change
+;	exit:	hl = disk change count
+;
+em_exit		equ	1		; exit emulator
+;
+em_debug	equ	2		; enter debugger
+;
+em_reset	equ	3		; press reset button
+;
+em_modelquery	equ	5		; query model
+;	exit:	hl = model: 1, 3, 4, or 5 (4P)
+;
+em_graphicquery equ	10		; query graphics type
+;	exit:	hl = 0 (Radio Shack), 1 (Micro Labs)
+;
+em_graphicset	equ	11		; set graphics type
+;	entry:	hl = 0 (Radio Shack), 1 (Micro Labs)
+;
+em_delayquery	equ	12		; query delay
+;	exit:	bc = autodelay flag
+;		hl = delay
+;
+em_delayset	equ	13		; query set
+;	entry:	bc = autodelay flag
+;		hl = delay
+;
+;==============================================================================
+
+EXTRN xtrserrmsg
+;==============================================================================
+; Display error message
+;	entry:	a = error number
+;		de -> text to display before error message (0=>no message)
+;	exit:	a = preserved
+;		bc = trashed
+;		de = trashed
+;		hl = trashed
+;	notes:	c_iobuf is overwritten with error message
+;==============================================================================
+
+EXTRN xtrsmodel
+;==============================================================================
+; Obtain model name
+;	exit:	a = 'P' for Model 4P, 0 if single character (z flag set)
+;		e = first character of model name '1', '3', or '4'
+;==============================================================================
+
+EXTRN xtrsrstrspd
+;==============================================================================
+; Restore original speed
+;==============================================================================
+
+EXTRN xtrshighspd
+;==============================================================================
+; Switch to high speed, save current settings
+;==============================================================================
+
+EXTRN xtrsnrmlspd
+;==============================================================================
+; Switch to normal speed, save current settings
+;==============================================================================
+
+EXTRN xtrsdiskname
+;==============================================================================
+; Generate the appropriate disk filename
+;	entry:	a = disk number '0', '1', '2', or '3'
+;		de -> buffer to store disk filename "diskXX-X"
+;	exit:	a = 0 if disk number is bad (z flag set) otherwise unchanged
+;		de -> buffer containing disk filename
+;==============================================================================

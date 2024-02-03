@@ -105,7 +105,7 @@ void do_emt_mouse(void)
   int x, y;
   unsigned int buttons, sens;
 
-  trs_emu_mouse = TRUE;
+  trs_emu_mouse = 1;
 
   switch (Z80_B) {
   case 1:
@@ -113,11 +113,10 @@ void do_emt_mouse(void)
     Z80_HL = x;
     Z80_DE = y;
     Z80_A = buttons;
-    if (Z80_A) {
+    if (Z80_A)
       Z80_F &= ~ZERO_MASK;
-    } else {
+    else
       Z80_F |= ZERO_MASK;
-    }
     break;
   case 2:
     trs_set_mouse_pos(Z80_HL, Z80_DE);
@@ -129,11 +128,10 @@ void do_emt_mouse(void)
     Z80_HL = x;
     Z80_DE = y;
     Z80_A = sens;
-    if (Z80_A) {
+    if (Z80_A)
       Z80_F &= ~ZERO_MASK;
-    } else {
+    else
       Z80_F |= ZERO_MASK;
-    }
     break;
   case 4:
     trs_set_mouse_max(Z80_HL, Z80_DE, Z80_C);
@@ -142,11 +140,10 @@ void do_emt_mouse(void)
     break;
   case 5:
     Z80_A = 1;  /* !!Note: assuming 3-button mouse */
-    if (Z80_A) {
+    if (Z80_A)
       Z80_F &= ~ZERO_MASK;
-    } else {
+    else
       Z80_F |= ZERO_MASK;
-    }
     break;
   default:
     error("undefined emt_mouse function code %d", Z80_B);
@@ -163,6 +160,7 @@ void do_emt_getddir(void)
     Z80_BC = 0xFFFF;
     return;
   }
+
   strcpy((char *)mem_pointer(Z80_HL, 1), trs_disk_dir);
   Z80_A = 0;
   Z80_F |= ZERO_MASK;
@@ -177,7 +175,7 @@ void do_emt_setddir(void)
   snprintf(trs_disk_dir, FILENAME_MAX, "%s", (char *)mem_pointer(Z80_HL, 0));
   if (trs_disk_dir[0] == '~' &&
       (trs_disk_dir[1] == DIR_SLASH || trs_disk_dir[1] == '\0')) {
-    const char* home = getenv("HOME");
+    const char *home = getenv("HOME");
 
     if (home) {
       char dirname[FILENAME_MAX];
@@ -186,6 +184,7 @@ void do_emt_setddir(void)
       snprintf(trs_disk_dir, FILENAME_MAX, "%s", dirname);
     }
   }
+
   Z80_A = 0;
   Z80_F |= ZERO_MASK;
 }
@@ -216,6 +215,7 @@ void do_emt_open(void)
     if (emt_block("open"))
       return;
   }
+
   fd = open((char *)mem_pointer(Z80_HL, 0), oflag, Z80_DE);
   if (fd >= 0) {
     Z80_A = 0;
@@ -224,6 +224,7 @@ void do_emt_open(void)
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
   }
+
   Z80_DE = fd;
 }
 
@@ -249,12 +250,14 @@ void do_emt_read(void)
     Z80_BC = 0xFFFF;
     return;
   }
+
   if (trs_show_led) {
     for (i = 0; i < 3; i++) {
       if (Z80_DE == xtrshard_fd[i])
         trs_hard_led(i, 1);
     }
   }
+
   size = read(Z80_DE, mem_pointer(Z80_HL, 1), Z80_BC);
   if (size >= 0) {
     Z80_A = 0;
@@ -263,6 +266,7 @@ void do_emt_read(void)
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
   }
+
   Z80_BC = size;
 }
 
@@ -278,13 +282,16 @@ void do_emt_write(void)
     Z80_BC = 0xFFFF;
     return;
   }
+
   if (trs_show_led) {
     for (i = 0; i < 3; i++) {
       if (Z80_DE == xtrshard_fd[i])
         trs_hard_led(i, 1);
     }
   }
+
   size = write(Z80_DE, mem_pointer(Z80_HL, 0), Z80_BC);
+
   if (size >= 0) {
     Z80_A = 0;
     Z80_F |= ZERO_MASK;
@@ -292,6 +299,7 @@ void do_emt_write(void)
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
   }
+
   Z80_BC = size;
 }
 
@@ -305,11 +313,14 @@ void do_emt_lseek(void)
     Z80_F &= ~ZERO_MASK;
     return;
   }
+
   offset = 0;
   for (i = 0; i < 8; i++) {
     offset = offset + ((off_t)mem_read(Z80_HL + i) << i*8);
   }
+
   offset = lseek(Z80_DE, offset, Z80_BC);
+
   if (offset != (off_t) -1) {
     Z80_A = 0;
     Z80_F |= ZERO_MASK;
@@ -317,6 +328,7 @@ void do_emt_lseek(void)
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
   }
+
   for (i = Z80_HL; i < 8; i++) {
     mem_write(Z80_HL + i, offset & 0xff);
     offset >>= 8;
@@ -334,9 +346,11 @@ void do_emt_strerror(void)
     Z80_BC = 0xFFFF;
     return;
   }
+
   errno = 0;
   msg = strerror(Z80_A);
   size = strlen(msg);
+
   if (errno != 0) {
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
@@ -348,21 +362,22 @@ void do_emt_strerror(void)
     Z80_A = 0;
     Z80_F |= ZERO_MASK;
   }
+
   if (mem_pointer(Z80_HL, 1)) {
     memcpy(mem_pointer(Z80_HL, 1), msg, size);
     mem_write(Z80_HL + size++, '\r');
     mem_write(Z80_HL + size, '\0');
   }
-  if (errno == 0) {
+
+  if (errno == 0)
     Z80_BC = size;
-  } else {
+  else
     Z80_BC = 0xFFFF;
-  }
 }
 
 void do_emt_time(void)
 {
-  time_t now = time(0);
+  time_t now = time(0) + trs_timeoffset;
 
   if (Z80_A == 1) {
 #if __alpha
@@ -400,6 +415,7 @@ void do_emt_time(void)
   } else if (Z80_A != 0) {
     error("unsupported function code %d to emt_time", Z80_A);
   }
+
   Z80_BC = (now >> 16) & 0xffff;
   Z80_DE = now & 0xffff;
 }
@@ -412,13 +428,16 @@ void do_emt_opendir(void)
   for (i = 0; i < MAX_OPENDIR; i++) {
     if (dir[i].dir == NULL) break;
   }
+
   if (i == MAX_OPENDIR) {
     Z80_DE = 0xffff;
     Z80_A = EMFILE;
     return;
   }
+
   dirname = (char *)mem_pointer(Z80_HL, 0);
   dir[i].dir = opendir(dirname);
+
   if (dir[i].dir == NULL) {
     Z80_DE = 0xffff;
     Z80_A = errno;
@@ -441,8 +460,10 @@ void do_emt_closedir(void)
     Z80_F &= ~ZERO_MASK;
     return;
   }
+
   ok = closedir(dir[i].dir);
   dir[i].dir = NULL;
+
   if (ok >= 0) {
     Z80_A = 0;
     Z80_F |= ZERO_MASK;
@@ -464,27 +485,34 @@ void do_emt_readdir(void)
     Z80_BC = 0xFFFF;
     return;
   }
+
   if (Z80_HL + Z80_BC > 0x10000) {
     Z80_A = EFAULT;
     Z80_F &= ~ZERO_MASK;
     Z80_BC = 0xFFFF;
     return;
   }
+
   result = readdir(dir[i].dir);
+
   if (result == NULL) {
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
     Z80_BC = 0xFFFF;
     return;
   }
+
   size = strlen(result->d_name);
+
   if (size + 1 > Z80_BC) {
     Z80_A = ERANGE;
     Z80_F &= ~ZERO_MASK;
     Z80_BC = 0xFFFF;
     return;
   }
+
   strcpy((char *)mem_pointer(Z80_HL, 1), result->d_name);
+
   Z80_A = 0;
   Z80_F |= ZERO_MASK;
   Z80_BC = size;
@@ -492,12 +520,10 @@ void do_emt_readdir(void)
 
 void do_emt_chdir(void)
 {
-  int const ok = chdir((char *)mem_pointer(Z80_HL, 0));
-
   if (emt_block("chdir"))
     return;
 
-  if (ok < 0) {
+  if (chdir((char *)mem_pointer(Z80_HL, 0)) < 0) {
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
   } else {
@@ -516,13 +542,16 @@ void do_emt_getcwd(void)
     Z80_BC = 0xFFFF;
     return;
   }
+
   result = getcwd((char *)mem_pointer(Z80_HL, 1), Z80_BC);
+
   if (result == NULL) {
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
     Z80_BC = 0xFFFF;
     return;
   }
+
   Z80_A = 0;
   Z80_F |= ZERO_MASK;
   Z80_BC = strlen(result);
@@ -569,10 +598,10 @@ void do_emt_misc(void)
     break;
 #endif
   case 10:
-    Z80_HL = grafyx_get_microlabs();
+    Z80_HL = grafyx_microlabs ? 1 : 0;
     break;
   case 11:
-    grafyx_set_microlabs(Z80_HL);
+    grafyx_microlabs = Z80_HL ? 1 : 0;
     break;
   case 12:
     Z80_HL = 0;
@@ -592,24 +621,26 @@ void do_emt_misc(void)
     Z80_HL = trs_disk_doubler;
     break;
   case 17:
-    trs_disk_doubler = Z80_HL;
+    if (Z80_HL < 4)
+      trs_disk_doubler = Z80_HL;
     break;
-  /* Removed; do not reuse
   case 18:
-  case 19:
+    Z80_HL = trs_sound ? 1 : 0;
     break;
-  */
+  case 19:
+    trs_sound = Z80_HL ? 1 : 0;
+    break;
   case 20:
-    Z80_HL = trs_disk_truedam;
+    Z80_HL = trs_disk_truedam ? 1 : 0;
     break;
   case 21:
-    trs_disk_truedam = Z80_HL;
+    trs_disk_truedam = Z80_HL ? 1 : 0;
     break;
   case 24:
-    Z80_HL = lowercase;
+    Z80_HL = lowercase ? 1 : 0;
     break;
   case 25:
-    lowercase = Z80_HL;
+    lowercase = Z80_HL ? 1 : 0;
     break;
   default:
     error("unsupported function code %d to emt_misc", Z80_A);
@@ -627,6 +658,7 @@ void do_emt_ftruncate(void)
     Z80_F &= ~ZERO_MASK;
     return;
   }
+
   offset = 0;
   for (i = 0; i < 8; i++) {
     offset = offset + ((off_t)mem_read(Z80_HL + i) << i*8);
@@ -671,12 +703,14 @@ void do_emt_opendisk(void)
   for (i = 0; i < MAX_OPENDISK; i++) {
     if (!od[i].inuse) break;
   }
+
   if (i == MAX_OPENDISK) {
     Z80_DE = 0xffff;
     Z80_A = EMFILE;
     Z80_F &= ~ZERO_MASK;
     return;
   }
+
   od[i].fd = open(trs_hard_getfilename(drive), O_RDWR);
   if (od[i].fd < 0) {
     od[i].fd = open(trs_hard_getfilename(drive), O_RDONLY);
@@ -691,6 +725,7 @@ void do_emt_opendisk(void)
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
   }
+
   Z80_DE = od[i].fd;
   Z80_BC = readonly;
 }
@@ -729,13 +764,16 @@ void do_emt_closedisk(void)
   for (i = 0; i < MAX_OPENDISK; i++) {
     if (od[i].inuse && od[i].fd == Z80_DE) break;
   }
+
   if (i == MAX_OPENDISK) {
     Z80_A = EBADF;
     Z80_F &= ~ZERO_MASK;
     return;
   }
+
   od[i].inuse = 0;
   od[i].xtrshard = 0;
+
   if (do_emt_closefd(i) >= 0) {
     Z80_A = 0;
     Z80_F |= ZERO_MASK;
@@ -760,13 +798,15 @@ void do_emt_resetdisk(void)
 
 void trs_imp_exp_save(FILE *file)
 {
-  int i, file_not_null;
+  int i;
 
   for (i = 0; i < MAX_OPENDIR; i++) {
-    file_not_null = (dir[i].dir != NULL);
+    int file_not_null = (dir[i].dir != NULL);
+
     trs_save_int(file, &file_not_null, 1);
     trs_save_filename(file, dir[i].pathname);
   }
+
   for (i = 0; i < MAX_OPENDISK; i++) {
     trs_save_int(file, &od[i].fd, 1);
     trs_save_int(file, &od[i].inuse, 1);
@@ -778,26 +818,32 @@ void trs_imp_exp_save(FILE *file)
 
 void trs_imp_exp_load(FILE *file)
 {
-  int i, dir_present;
+  int i;
 
   /* Close any open dirs and files */
   for (i = 0; i < MAX_OPENDIR; i++) {
     if (dir[i].dir)
       closedir(dir[i].dir);
   }
+
   for (i = 0; i < MAX_OPENDISK; i++) {
     if (od[i].inuse)
       close(od[i].fd);
   }
+
   /* Load the state */
   for (i = 0; i < MAX_OPENDIR; i++) {
+    int dir_present;
+
     trs_load_int(file, &dir_present, 1);
     trs_load_filename(file, dir[i].pathname);
+
     if (dir_present)
       dir[i].dir = opendir(dir[i].pathname);
     else
       dir[i].dir = NULL;
   }
+
   for (i = 0; i < MAX_OPENDISK; i++) {
     trs_load_int(file, &od[i].fd, 1);
     trs_load_int(file, &od[i].inuse, 1);
@@ -805,13 +851,16 @@ void trs_imp_exp_load(FILE *file)
     trs_load_int(file, &od[i].xtrshard, 1);
     trs_load_int(file, &od[i].xtrshard_unit, 1);
   }
+
   /* Reopen the files */
   for (i = 0; i < 4; i++)
     xtrshard_fd[i] = -1;
+
   for (i = 0; i < MAX_OPENDIR; i++) {
     if (dir[i].dir)
       dir[i].dir = opendir(dir[i].pathname);
   }
+
   for (i = 0; i < MAX_OPENDISK; i++) {
     if (od[i].inuse) {
       od[i].fd = open(trs_hard_getfilename(i), od[i].oflag);

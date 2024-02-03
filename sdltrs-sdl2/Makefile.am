@@ -5,14 +5,13 @@ AM_CFLAGS=	-Wall
 bin_PROGRAMS=	sdl2trs
 dist_man_MANS=	src/sdl2trs.1
 
-sdl2trs_SOURCES=src/blit.c \
-		src/debug.c \
+sdl2trs_SOURCES=src/debug.c \
 		src/dis.c \
 		src/error.c \
-		src/load_cmd.c \
 		src/main.c \
 		src/trs_cassette.c \
 		src/trs_clones.c \
+		src/trs_cmd_rom.c \
 		src/trs_cp500.c \
 		src/trs_disk.c \
 		src/trs_hard.c \
@@ -21,6 +20,7 @@ sdl2trs_SOURCES=src/blit.c \
 		src/trs_io.c \
 		src/trs_memory.c \
 		src/trs_mkdisk.c \
+		src/trs_options.c \
 		src/trs_printer.c \
 		src/trs_sdl_gui.c \
 		src/trs_sdl_interface.c \

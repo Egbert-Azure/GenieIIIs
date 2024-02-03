@@ -1,0 +1,152 @@
+[
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\debug.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\debug.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/debug.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/debug.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\dis.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\dis.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/dis.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/dis.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\error.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\error.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/error.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/error.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\main.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\main.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/main.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/main.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_cassette.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_cassette.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_cassette.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_cassette.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_clones.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_clones.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_clones.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_clones.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_cmd_rom.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_cmd_rom.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_cmd_rom.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_cmd_rom.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_cp500.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_cp500.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_cp500.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_cp500.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_disk.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_disk.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_disk.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_disk.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_hard.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_hard.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_hard.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_hard.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_imp_exp.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_imp_exp.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_imp_exp.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_imp_exp.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_interrupt.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_interrupt.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_interrupt.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_interrupt.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_io.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_io.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_io.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_io.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_memory.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_memory.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_memory.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_memory.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_mkdisk.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_mkdisk.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_mkdisk.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_mkdisk.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_options.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_options.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_options.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_options.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_printer.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_printer.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_printer.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_printer.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_sdl_gui.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_sdl_gui.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_sdl_gui.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_sdl_gui.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_sdl_interface.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_sdl_interface.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_sdl_interface.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_sdl_interface.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_sdl_keyboard.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_sdl_keyboard.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_sdl_keyboard.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_sdl_keyboard.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_state_save.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_state_save.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_state_save.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_state_save.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_stringy.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_stringy.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_stringy.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_stringy.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\trs_uart.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\trs_uart.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/trs_uart.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/trs_uart.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\z80.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\z80.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/z80.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/z80.c.obj"
+},
+{
+  "directory": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe -DREADLINE -DZBX  -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-result -O2  Process failed because: The system cannot find the file specified\n\nfor command: sh C:/msys64/mingw64/bin/sdl2-config --cflags -g -o CMakeFiles\\sdl2trs.dir\\src\\PasteManager.c.obj -c C:\\Users\\eschr\\OneDrive\\Dokumente\\GitHub\\GenieIIIs\\sdltrs-sdl2\\src\\PasteManager.c",
+  "file": "C:/Users/eschr/OneDrive/Dokumente/GitHub/GenieIIIs/sdltrs-sdl2/src/PasteManager.c",
+  "output": "CMakeFiles/sdl2trs.dir/src/PasteManager.c.obj"
+}
+]

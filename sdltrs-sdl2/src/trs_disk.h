@@ -48,7 +48,7 @@ extern int  trs_disk_getstep(int unit);
 #endif
 extern void  trs_disk_setsize(int unit, int value);
 extern int   trs_disk_getsize(int unit);
-extern char* trs_disk_getfilename(int unit);
+extern char *trs_disk_getfilename(int unit);
 extern int   trs_disk_getwriteprotect(int unit);
 extern int   trs_disk_getdisktype(int unit);
 

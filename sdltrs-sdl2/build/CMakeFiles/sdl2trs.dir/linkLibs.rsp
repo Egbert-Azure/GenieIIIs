@@ -1,0 +1,3 @@
+ C:/msys64/mingw64/lib/libncurses.a C:/msys64/mingw64/lib/libreadline.dll.a -lProcess failed because: The system cannot find the file specified
+
+for command: sh C:/msys64/mingw64/bin/sdl2-config --libs -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

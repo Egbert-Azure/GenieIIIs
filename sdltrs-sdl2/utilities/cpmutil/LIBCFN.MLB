@@ -1,0 +1,31 @@
+; LIBCFN.MLB auto generated from LIBCFN.MAC
+; ~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Functions to manipulate CP/M filenames and FCBs
+;
+; Amendment History:
+;	22MAR2003 RKG 1.0 Initial release.
+
+EXTRN cfntofcb
+;==============================================================================
+; Store a cpm filename into a fcb
+;	entry:	de -> fcb
+;		hl -> cpm filename (nul or space terminated)
+;	exit:	a  =  terminator of cpm filename, z flag set if nul encountered
+;		de -> fcb
+;		hl -> terminator at end of cpm filename
+;==============================================================================
+
+EXTRN cfntotext
+;==============================================================================
+; Convert a fcb into a cpm filename
+;	entry:	de -> fcb
+;		hl -> buffer to store filename
+;	exit:	a  =  nul (last character transferred)
+;		de -> fcb
+;		hl -> buffer containing filename
+;==============================================================================

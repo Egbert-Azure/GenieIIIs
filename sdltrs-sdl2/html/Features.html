@@ -203,7 +203,7 @@ type <code>help</code> for more information.</p>
     <td>TRS-80 Down Arrow key</td>
   </tr>
   <tr>
-    <td><b>Home</b> or <b>Clear</b></td>
+    <td><b>Delete</b> or <b>Home</b></td>
     <td>TRS-80 Clear key</td>
   </tr>
   <tr>
@@ -223,10 +223,6 @@ type <code>help</code> for more information.</p>
   <tr>
     <td><b>Page Down</b></td>
     <td>TRS-80 Right Shift key</td>
-  </tr>
-  <tr>
-    <td><b>Delete</b></td>
-    <td>TRS-80 Left Arrow key / Genie III(s) Clear key</td>
   </tr>
   <tr>
     <td><b>Insert</b></td>
@@ -434,8 +430,37 @@ or <b>ESC</b>.</p>
 <h2><a name="Emulated_cassette"></a><u>Emulated cassette</u></h2>
 
 <p>To control the emulated cassette, a file for the loaded tape is controlled
-by the <code>-cassette</code> option or the cassette option in the menu system.
-There is also a menu option to control the cassette position in the file.</p>
+by the <code>-c[assette]</code> option or with the "Cassette/Tape Management"
+(<b>Alt-T</b>) in the GUI. SDLTRS supports different types of cassette images
+which are specified by the file extension:</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr>
+    <td><code>.CAS</code></td>
+    <td>format is fairly compact and is compatible with other TRS-80 emulators
+        that have cassette support. This format represents the bit stream that
+        (the emulator thinks) the TRS-80 cassette routines were trying to save
+        to the tape, not the actual electrical signals on the tape.</td>
+  </tr>
+  <tr>
+    <td><code>.CPT</code></td>
+    <td>format (for "cassette pulse train") encodes the exact values and timing
+        of the signals that the TRS-80 cassette routine sends to the cassette
+        port to be recorded on the tape. Timing is to the nearest microsecond.
+        This format emulates a perfect, noise-free cassette, so any cassette
+        routines that even halfway worked on real hardware should work.</td>
+  </tr>
+  <tr>
+    <td><code>.WAV</code></td>
+    <td>format refers to WAVE, a standard sound file format developed by IBM
+        and Microsoft. The <code>WAV</code> format is intermediate in emulation
+        accuracy between <code>CAS</code> and <code>CPT</code>. It does represent
+        actual signals, not decoded bits, but its timing precision is limited by
+        the sample rate used. The <code>WAV</code> parsing has some limitations:
+        Samples must be 8-bit monophonic PCM, and the file must contain only
+        one data chunk and no extra optional RIFF chunks in the header.</td>
+  </tr>
+</table>
 
 <h2><a name="Printer"></a><u>Printer</u></h2>
 
@@ -467,14 +492,14 @@ controls. If the user does not have write permission for a floppy file,
 and/or the file has an internal write protect flag set, a write-protect tab
 is emulated. The write protect flag can be changed in the Text GUI.</p>
 
-<p>If you try to boot an emulated Model I, III, or 4 with no emulated disk
-(that is, no disk in drive 0), SDLTRS emulates having no floppy disk
-controller. The behavior of a real machine with a disk controller in this
-case didn't seem useful to emulate faithfully: A real Model I hangs with a
-screen full of garbage; a real Model III or 4 goes into a retry loop printing
-"Diskette?" on the screen and rechecking if you've inserted one. A real Model
-4P always has a floppy controller, however, so SDLTRS always emulates
-one.</p>
+<p>If you try to boot an emulated Model I, III, or 4 with no disk image in
+drive 0, SDLTRS "hangs" with a black screen. A real Mode shows a screen full
+of garbage; a real Model III or 4 goes into a retry loop printing "Diskette?"
+on the screen and rechecking if you've inserted one. To boot into ROM BASIC,
+hold down ESC (for the TRS-80 BREAK key) and press F10 to reboot the machine,
+or disable the Floppy Disk Controller (Expansion Interface) in the TextGUI or
+by using the option <code>-nofdc</code> / <code>-nofloppy</code>. A real Model
+4P always has a floppy controller, however, so SDLTRS always emulates one.</p>
 
 <p>Due to a limitation of the original Model I hardware, drive <code>:3</code>
 cannot be double-sided in Model I mode. In the original Model I, you could not
@@ -900,10 +925,8 @@ than the emulator traps.</p>
 
 <h2><a name="Interrupts"></a><u>Interrupts</u></h2>
 
-<p>The emulator supports only interrupt mode 1 of the Z80. It will complain if
-your program enables interrupts after powerup without executing an IM 1
-instruction first. All Model I/III/4/4P software does this, as the built-in
-peripherals in these machines support only IM 1.</p>
+<p>The emulator uses interrupt mode 1 of the Z80 by default for all TRS-80
+models, as the built-in peripherals in these machines support only IM 1.</p>
 
 <p>The Model I has a 40 Hz heartbeat clock interrupt, while the Model III
 uses 30 Hz, and the Model 4/4P can run at either 30 Hz or 60 Hz. The emulator

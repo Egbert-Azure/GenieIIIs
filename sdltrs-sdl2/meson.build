@@ -1,5 +1,5 @@
 project('sdl2trs', 'c',
-	version: '1.2.26',
+	version: '1.2.28',
 	license: 'BSD',
 	default_options: [ 'buildtype=debugoptimized', 'c_std=gnu89', 'warning_level=2' ],
 	meson_version: '>= 0.36.0'
@@ -8,14 +8,13 @@ project('sdl2trs', 'c',
 add_project_arguments('-Wno-unused-parameter', '-Wno-unused-result', language: 'c')
 
 sources = files([
-	'src/blit.c',
 	'src/debug.c',
 	'src/dis.c',
 	'src/error.c',
-	'src/load_cmd.c',
 	'src/main.c',
 	'src/trs_cassette.c',
 	'src/trs_clones.c',
+	'src/trs_cmd_rom.c',
 	'src/trs_cp500.c',
 	'src/trs_disk.c',
 	'src/trs_hard.c',
@@ -24,6 +23,7 @@ sources = files([
 	'src/trs_io.c',
 	'src/trs_memory.c',
 	'src/trs_mkdisk.c',
+	'src/trs_options.c',
 	'src/trs_printer.c',
 	'src/trs_sdl_gui.c',
 	'src/trs_sdl_interface.c',

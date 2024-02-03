@@ -1,0 +1,149 @@
+; CPM.MLB
+; ~~~~~~~
+;
+; Contents:
+;	Macro library
+;
+; Purpose:
+;	Defines CP/M equates and bdos calls
+;
+; Usage:
+;	MACLIB CPM.MLB
+;
+; Amendment history:
+;	14AUG99 RKG 1.0 Initial release.
+;	02APR03 RKG 1.1 Added dbgmsg macro.
+
+;==============================================================================
+; ascii characters
+;==============================================================================
+
+tab		equ	09h
+lf		equ	0Ah
+cr		equ	0Dh
+sub		equ	1Ah
+spc		equ	20h
+
+;==============================================================================
+; system addresses
+;==============================================================================
+
+c_boot		equ	0000h		; warm start (jp xxxxh)
+
+c_iob		equ	0003h		; i/o byte
+
+c_du		equ	0004h		; current disk & user
+
+c_bdos		equ	0005h		; bdos entry (jp xxxxh)
+
+c_fcb1		equ	005Ch		; first file control block
+c_fcb1_drive	equ	c_fcb1		; drive
+c_fcb1_fname	equ	c_fcb1+01h	; filename
+c_fcb1_type	equ	c_fcb1+09h	; filetype
+c_fcb1_ex	equ	c_fcb1+0Ch	; extent
+c_fcb1_s1	equ	c_fcb1+0Dh	; s1
+c_fbc1_s2	equ	c_fcb1+0Eh	; s2
+
+c_fcb2		equ	006Ch		; second file control block
+c_fcb2_drive	equ	c_fcb2		; drive
+c_fcb2_fname	equ	c_fcb2+01h	; filename
+c_fcb2_type	equ	c_fcb2+09h	; filetype
+c_fcb2_ex	equ	c_fcb2+0Ch	; extent
+c_fcb2_s1	equ	c_fcb2+0Dh	; s1
+c_fbc2_s2	equ	c_fcb2+0Eh	; s2
+	; note c_fcb2 is overwritten if c_fcb1 is used
+
+c_iobuf		equ	0080h		; default i/o buffer
+
+c_iobufsize	equ	80h		; i/o buffer size
+
+c_defbuf	equ	0080h		; default buffer
+
+c_cmdlen	equ	0080h		; length of command arguments
+c_cmdstr	equ	0081h		; start of command arguments
+
+;==============================================================================
+; bdos macro and service definitions
+;==============================================================================
+
+bdos		macro svc,param
+	ifnb <param>
+		ld de,param
+	endif
+		ld c,svc
+		call c_bdos
+		endm
+
+b_term		equ	00h		; terminate program
+
+b_cinb		equ	01h		; console input byte
+;	exit:	a = character
+
+b_coutb		equ	02h		; console output bute
+;	entry:	e = character
+
+b_couts		equ	09h		; console output string
+;	entry:	de -> string (terminate with '$')
+
+b_cins		equ	0Ah		; console input line
+;	entry:	de -> buffer (max, cnt, space for string)
+;	exit:	de -> buffer (with cnt and string set)
+
+b_seld		equ	0Eh		; select drive
+;	entry:	e = drive (0=A:)
+
+b_fopen		equ	0Fh		; open existing file
+;	entry:	de -> fcb
+;	exit:	a = status (0,1,2,3 or FFh if file not found)
+
+b_fclose	equ	10h		; close output file
+;	entry:	de -> fcb
+;	exit:	a = status
+;	notes:	no need to close file used only for input
+
+b_ffirst	equ	11h		; search for first file
+;	entry:	de -> fcb
+;	exit:	a = offset (FFh=>file not found)
+;	notes:	a = 0,1,2,3 (offset into current file buffer=>0,32,64,96 bytes)
+
+b_fnext		equ	12h		; search for next file
+;	entry:	de -> fcb
+;	exit:	a = offset (FFh=>file not found)
+;	notes:	a = 0,1,2,3 (offset into current file buffer=>0,32,64,96 bytes)
+
+b_frseq		equ	14h		; sequential read
+
+b_fwseq		equ	15h		; sequential write
+
+b_fnew		equ	16h		; make new file
+
+b_getd		equ	19h		; get default drive
+;	exit	a = 0..15 (0=>A:)
+
+;==============================================================================
+; dbgmsg macro - display a message
+;==============================================================================
+
+
+dbgmsg		macro text
+		local msg
+		local jump
+
+		push af			; preserve regs
+		push bc
+		push de
+		push hl
+
+		jr jump
+
+msg:		defb	text
+		defb	cr,lf,'$'
+
+jump:		bdos b_couts,msg	; display message
+
+		pop hl			; restore regs
+		pop de
+		pop bc
+		pop af
+
+		endm

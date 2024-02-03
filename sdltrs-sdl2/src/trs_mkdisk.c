@@ -28,12 +28,9 @@
  * or write protect/unprotect an existing one.
  */
 
-#include <errno.h>
 #include <stdio.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <SDL_types.h>
 
 #include "error.h"
 #include "reed.h"
@@ -61,7 +58,7 @@ static void win_set_readonly(const char *filename, int readonly)
 }
 #endif
 
-void trs_write_protect(int type, int drive)
+int trs_write_protect(int type, int drive)
 {
   char prot_filename[FILENAME_MAX];
   const char *filename = NULL;
@@ -69,9 +66,7 @@ void trs_write_protect(int type, int drive)
   int emutype = 0;
   int writeprot = 0;
   int newmode;
-#ifndef _WIN32
   struct stat st = { 0 };
-#endif
 
   switch (type) {
     case DISK:
@@ -87,26 +82,31 @@ void trs_write_protect(int type, int drive)
       filename = trs_cassette_getfilename();
       break;
     default:
-      return;
+      return 0;
   }
   if (filename[0] == 0)
-    return;
+    return 0;
+
+  if (stat(filename, &st) < 0) {
+    file_error("'%s'", filename);
+    return -1;
+  }
 
   snprintf(prot_filename, FILENAME_MAX, "%s", filename);
 #ifdef _WIN32
   win_set_readonly(prot_filename, 0);
 #else
-  if (stat(prot_filename, &st) < 0)
-    return;
-
-  if (chmod(prot_filename, st.st_mode | (S_IWUSR|S_IWGRP|S_IWOTH)) < 0)
-    error("failed to chmod '%s': %s", prot_filename, strerror(errno));
+  if (chmod(prot_filename, st.st_mode | (S_IWUSR|S_IWGRP|S_IWOTH)) < 0) {
+    file_error("chmod '%s'", prot_filename);
+    return -1;
+  }
 #endif
   switch (type) {
     case DISK:
       emutype = trs_disk_getdisktype(drive);
       writeprot = !trs_disk_getwriteprotect(drive);
       trs_disk_remove(drive);
+
       if (emutype == JV3 || emutype == DMK) {
         f = fopen(prot_filename, "r+");
         if (f != NULL) {
@@ -124,6 +124,7 @@ void trs_write_protect(int type, int drive)
     case HARD:
       writeprot = !trs_hard_getwriteprotect(drive);
       trs_hard_remove(drive);
+
       f = fopen(prot_filename, "r+");
       if (f != NULL) {
         fseek(f, 7, 0);
@@ -139,6 +140,7 @@ void trs_write_protect(int type, int drive)
     case WAFER:
       writeprot = !stringy_get_writeprotect(drive);
       stringy_remove(drive);
+
       f = fopen(prot_filename, "r+");
       if (f != NULL) {
         fseek(f, 5, 0);
@@ -173,8 +175,10 @@ void trs_write_protect(int type, int drive)
     newmode = st.st_mode |
       (( (st.st_mode & (S_IRUSR|S_IRGRP|S_IROTH)) >> 1 ) & ~oumask);
   }
-  if (chmod(prot_filename, newmode) < 0)
-    error("failed to chmod '%s': %s", prot_filename, strerror(errno));
+  if (chmod(prot_filename, newmode) < 0) {
+    file_error("chmod '%s'", prot_filename);
+    return -1;
+  }
 #endif
   switch (type) {
     case DISK:
@@ -192,6 +196,7 @@ void trs_write_protect(int type, int drive)
     default:
       break;
   }
+  return 0;
 }
 
 int trs_create_blank_jv1(const char *fname)
@@ -200,9 +205,10 @@ int trs_create_blank_jv1(const char *fname)
 
   /* Unformatted JV1 disk - just an empty file! */
   if (f == NULL) {
-    error("failed to create JV1 disk '%s': %s", fname, strerror(errno));
+    file_error("create JV1 disk '%s'", fname);
     return -1;
   }
+
   fclose(f);
   return 0;
 }
@@ -214,9 +220,10 @@ int trs_create_blank_jv3(const char *fname)
 
   /* Unformatted JV3 disk. */
   if (f == NULL) {
-    error("failed to create JV3 disk '%s': %s", fname, strerror(errno));
+    file_error("create JV3 disk '%s'", fname);
     return -1;
   }
+
   for (i = 0; i < (256 * 34); i++)
     putc(0xff, f);
 
@@ -232,9 +239,10 @@ int trs_create_blank_dmk(const char *fname, int sides, int density,
 
   /* Unformatted DMK disk */
   if (f == NULL) {
-    error("failed to create DMK disk '%s': %s", fname, strerror(errno));
+    file_error("create DMK disk '%s'", fname);
     return -1;
   }
+
   putc(0, f);           /* 0: not write protected */
   putc(0, f);           /* 1: initially zero tracks */
   if (eight) {
@@ -248,8 +256,10 @@ int trs_create_blank_dmk(const char *fname, int sides, int density,
     else
       i = 0x1900;
   }
+
   putc(i & 0xff, f);    /* 2: LSB of track length */
   putc(i >> 8, f);      /* 3: MSB of track length */
+
   i = 0;
   if (sides == 1)   i |= 0x10;
   if (density == 1) i |= 0x40;
@@ -283,24 +293,19 @@ int trs_create_blank_hard(const char *fname, int cyls, int heads, int secs)
   FILE *f = fopen(fname, "wb");
 
   if (f == NULL) {
-    error("failed to create hard disk '%s': %s", fname, strerror(errno));
+    file_error("create hard disk '%s'", fname);
     return -1;
   }
 
   rhh.id1 = 0x56;
   rhh.id2 = 0xcb;
   rhh.ver = 0x10;
-  rhh.cksum = 0;  /* Checksum (not used) */
   rhh.blks = 1;
   rhh.mb4 = 4;
-  rhh.media = 0;
-  rhh.flag1 = 0;
-  rhh.flag2 = rhh.flag3 = 0;
   rhh.crtr = 0x42;
-  rhh.dfmt = 0;
   rhh.heads = heads;
-  rhh.dparm = cyls >> 8; /* MSB of cylinders */
-  rhh.cyl = cyls & 0xff; /* LSB of cylinders */
+  rhh.cylhi = cyls >> 8;   /* MSB of cylinders */
+  rhh.cyllo = cyls & 0xff; /* LSB of cylinders */
   rhh.sec = heads ? (heads * secs) : secs;
   rhh.gran = 8; /* deprecated */
   rhh.dcyl = 1; /* deprecated, should be 1 */

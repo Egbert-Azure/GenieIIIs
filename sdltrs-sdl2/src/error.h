@@ -20,4 +20,6 @@ void debug(const char *fmt, ...);
 void error(const char *fmt, ...);
 void fatal(const char *fmt, ...);
 
+void file_error(const char *fmt, ...);
+
 #endif /* _ERROR_H */

@@ -1,0 +1,234 @@
+; LIBSTR.MAC
+; ~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Character and string functions
+;
+; Amendment History:
+;	22MAR2003 RKG 1.0 Initial Release.
+
+.Z80
+
+;##############################################################################
+; Macro Libraries
+;##############################################################################
+
+MACLIB CPM.MLB
+
+;##############################################################################
+; Start
+;##############################################################################
+
+str_start::	defb	'LIBSTR',0
+
+;##############################################################################
+; Character functions
+;##############################################################################
+
+caselc::
+;==============================================================================
+; Convert a character to lowercase
+;	entry:	a  =  character to convert
+;	exit:	a  =  converted character
+;==============================================================================
+		cp 'A'
+		ret c			; before 'A'
+		cp 'Z'+1
+		ret nc			; after 'Z'
+		add a,'a'-'A'		; convert
+		ret
+
+caseuc::
+;==============================================================================
+; Convert a character to uppercase
+;	entry:	a  =  character to convert
+;	exit:	a  =  converted character
+;==============================================================================
+		cp 'a'
+		ret c			; before 'a'
+		cp 'z'+1
+		ret nc			; after 'z'
+		sub 'a'-'A'		; convert
+		ret
+
+casecc::
+;==============================================================================
+; Change case of a character
+;	entry:	a  =  character to convert
+;	exit:	a  =  converted character
+;==============================================================================
+		; must test for a letter first
+		xor 'a'-'A'		; convert
+		ret
+
+
+;##############################################################################
+; String functions
+;##############################################################################
+
+casels::
+;==============================================================================
+; Convert a nul terminated string to lowercase
+;	entry:	hl -> nul terminated string
+;	exit:	a  =  nul (last character examined)
+;		hl -> nul terminated string (converted to lowercase)
+;==============================================================================
+		push hl
+
+casels1:	ld a,(hl)		; fetch
+		or a
+		jr z,casels2		; nul?
+		call caselc		; convert
+		ld (hl),a		; store
+		inc hl			; bump
+		jr casels1		; again
+
+casels2:	pop hl
+		ret
+
+caseus::
+;==============================================================================
+; Convert a nul terminated string to uppercase
+;	entry:	hl -> nul terminated string
+;	exit:	a  =  nul (last character examined)
+;		hl -> nul terminated string (converted to uppercase)
+;==============================================================================
+		push hl
+
+caseus1:	ld a,(hl)		; fetch
+		or a
+		jr z,caseus2		; nul?
+		call caselc		; convert
+		ld (hl),a		; store
+		inc hl			; bump
+		jr caseus1		; again
+
+caseus2:	pop hl
+		ret
+
+copy_hl::
+;==============================================================================
+; Copy nul terminated string
+;	entry:	de -> destination buffer
+;		hl -> source nul terminated string
+;	exit:	a  =  nul (last character copied)
+;		hl -> nul at end of source
+;		de -> nul at end of destination
+;==============================================================================
+		ld a,(hl)		; fetch
+		ld (de),a		; store
+		or a
+		ret z			; nul?
+		inc hl			; bump
+		inc de
+		jr copy_hl		; again
+
+copy_de::
+;==============================================================================
+; Copy nul terminated string
+;	entry:	de -> source nul terminated string
+;		hl -> destination buffer
+;	exit:	a  =  nul (last character copied)
+;		de -> nul at end of source
+;		hl -> nul at end of destination
+;==============================================================================
+		ld a,(de)		; fetch
+		ld (hl),a		; store
+		or a
+		ret z			; nul?
+		inc de			; bump
+		inc hl
+		jr copy_de		; again
+
+nextword::
+;==============================================================================
+; Skip word and subsequent spaces
+;	entry:	hl -> buffer of characters to examine
+;	exit:	a  =  last character examined, z flag set if nul encountered
+;		hl -> buffer - first character in next word
+;==============================================================================
+		call skipword
+		ret z
+		call skipspaces
+		ret
+
+setflags:	or a			; A won't be nul, clear Z flag
+		ret
+
+skipword::
+;==============================================================================
+; Skip characters until a space or a nul are encountered.
+;	entry:	hl -> buffer of characters to skip
+;	exit:	a  =  last character examined, z flag set if nul encountered
+;		hl -> buffer - nul or space at end of current word
+;==============================================================================
+		ld a,(hl)
+		or a
+		ret z			; nul detected
+		cp spc
+		jr z,setflags		; space detected
+		inc hl
+		jr skipword
+
+skipspaces::
+;==============================================================================
+; Skip space characters
+;	entry:	hl -> buffer of spaces to examin
+;	exit:	a  =  last character examined, z set if nul encountered
+;		hl -> buffer - first non-space character
+;==============================================================================
+		ld a,(hl)
+		or a
+		ret z			; nul detected
+		cp spc
+		ret nz			; non space detected
+		inc hl
+		jr skipspaces
+
+printnul::
+;==============================================================================
+; Print a nul terminated string with bdos couts call
+; Note: nul is converted to a '$' for printing and back to a nul again
+;	entry:	hl -> buffer with nul terminated string
+;	exit:	a trashed
+;==============================================================================
+		push bc
+		push de
+		push hl
+
+		push hl			; ld de,hl
+		pop de
+
+nulp1:
+	; find nul
+		ld a,(hl)
+		or a
+		jr z,nulp2
+		inc hl
+		jr nulp1
+
+nulp2:
+	; terminate for printing
+		ld (hl),'$'
+
+	; print
+		push hl
+		bdos b_couts		; de already points to message
+		pop hl
+
+	; terminate with nul
+		ld (hl),0		; nul terminate
+
+		pop hl
+		pop de
+		pop bc
+		ret
+
+;##############################################################################
+; End
+;##############################################################################
+
+str_end::	end

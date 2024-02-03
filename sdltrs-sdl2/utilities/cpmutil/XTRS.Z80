@@ -1,0 +1,630 @@
+; XTRS.MAC
+; ~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Controls miscellaneous functions of the xtrs emulator
+;
+; Usage:
+;	XTRS action [parameters]
+;
+; Where:
+;	action is one of the following:
+;	   BOOT - reboot emulator
+;	   CHANGE - signal disk change
+;	   DEBUG - enter debugger
+;	   EXIT - end emulator
+;	   HIGHSPEED - high speed (autodelay off)
+;	   MOUNT [-L] hostfilename disknum - mount disk
+;	   NORMALSPEED - normal speed (autodelay on)
+;	   REPORT - report status
+;	   SYSTEM command - execute command on host
+;	   UMOUNT disknum - umount disk
+;	hostfilename is the name of the virtual disk file on the host
+;	   (converted to uppercase by default), use -L to convert to
+;	   lowercase and [ to toggle case of next character.
+;	command is the command (and parameters) to execute on the host
+;	   (converted to lowercase by default), use [ to toggle case.
+;	   Note output from command is NOT displayed in the XTRS window.
+;	disknum is disk drive number (between 0 and 3 inclusive).
+;	-L converts hostfilename to lowercase.
+;
+; Notes:
+;	When changing disks, remember that CP/M must also be told of the disk
+;	change.	 This is usually done by pressing ctrl-C at the prompt.
+;
+; Amendment History:
+;	22MAR2003 RKG 1.0 Initial release.
+
+.Z80
+
+;##############################################################################
+; Macro Libraries and External Functions
+;##############################################################################
+
+MACLIB CPM.MLB
+
+MACLIB LIBHEX.MLB
+
+MACLIB LIBHFN.MLB
+
+MACLIB LIBSTR.MLB
+
+MACLIB LIBXTRS.MLB
+
+;##############################################################################
+; Offset assembly so that print file matches linked output
+;##############################################################################
+
+;		.phase 103h
+
+;##############################################################################
+; Messages
+;##############################################################################
+
+m_usage::	defb	'XTRS - controls miscellaneous functions of the XTRS emulator',cr,lf
+		defb	cr,lf,'Usage:'
+		defb	tab,'XTRS action [parameters]',cr,lf
+		defb	cr,lf,'Where:'
+		defb	tab,'action is one of the following:',cr,lf
+		defb	tab,spc,spc,spc,'BOOT - reboot emulator',cr,lf
+		defb	tab,spc,spc,spc,'CHANGE - signal disk change',cr,lf
+		defb	tab,spc,spc,spc,'DEBUG - enter debugger',cr,lf
+		defb	tab,spc,spc,spc,'EXIT - end emulator',cr,lf
+		defb	tab,spc,spc,spc,'HIGHSPEED - high speed (autodelay off)',cr,lf
+		defb	tab,spc,spc,spc,'MOUNT [-L] hostfilename disknum - mount disk',cr,lf
+		defb	tab,spc,spc,spc,'NORMALSPEED - normal speed (autodelay on)',cr,lf
+		defb	tab,spc,spc,spc,'REPORT - report status',cr,lf
+		defb	tab,spc,spc,spc,'SYSTEM command - execute command on host',cr,lf
+		defb	tab,spc,spc,spc,'UMOUNT disknum - umount disk',cr,lf
+		defb	tab,'hostfilename is the name of the virtual disk file on the host',cr,lf
+		defb	tab,spc,spc,spc,'(converted to uppercase by default), use -L to convert to',cr,lf
+		defb	tab,spc,spc,spc,'lowercase and [ to toggle case of next character.',cr,lf
+		defb	tab,'command is the command (and parameters) to execute on the host',cr,lf
+		defb	tab,spc,spc,spc,'(converted to lowercase by default), use [ to toggle case.',cr,lf
+		defb	tab,spc,spc,spc,'Note output from command is NOT displayed in the XTRS window.',cr,lf
+		defb	tab,'disknum is disk drive number (between 0 and 3 inclusive).',cr,lf
+		defb	tab,'-L converts hostfilename to lowercase.$'
+
+m_crlf::	defb	cr,lf,'$'
+
+m_ehfn::	defb	'ERROR: Expecting hostfilename',cr,lf,'$'
+m_edisk::	defb	'ERROR: Expecting disknum',cr,lf,'$'
+m_ecmd::	defb	'ERROR: Expecting command',cr,lf,'$'
+m_extraparams:: defb	'ERROR: Extra parameter: $'
+
+m_baction::	defb	'ERROR: Bad action',cr,lf,'$'
+m_bdisknum::	defb	'ERROR: Bad disknum',cr,lf,'$'
+m_boption::	defb	'ERROR: Bad option "'
+option:		defb	'x"',cr,lf,'$'
+
+m_hcmd::	defb	'HOST COMMAND: $'
+m_hfail::	defb	'HOST COMMAND failed: $'
+
+m_mntfail::	defb	'MOUNT failed - does hostfilename exist?',cr,lf,'$'
+m_umtfail::	defb	'UMOUNT failed',cr,lf,'$'
+m_sysfail::	defb	'SYSTEM command returned non-zero status',cr,lf,'$'
+
+m_diskchange:: defb	'** disk change **',cr,lf,'$'
+
+m_graphics::	defb	'Graphics ..: $'
+m_grars::	defb	'Radio Shack',cr,lf,'$'
+m_graml::	defb	'Micro Labs',cr,lf,'$'
+
+m_speed::	defb	'Speed .....: $'
+m_normal::	defb	'Normal',cr,lf,'$'
+m_fast::	defb	'High',cr,lf,'$'
+
+m_model::	defb	'Model .....: $'
+
+m_bvar::	defb	'Internal Error: bad variable in command skeleton',cr,lf,'$'
+
+;##############################################################################
+; Storage
+;##############################################################################
+
+hfnbuffer::	defs	128		; host filename
+dfnbuffer::	defs	9		; disk filename "diskXX-X"
+
+; cmd skeletons: %d becomes disk filename, %h becomes host filename
+mnt_cmd::	defb	'rm -f %d;test -f %h && ln -s %h %d',0
+umt_cmd::	defb	'rm -f %d',0
+
+cmdbuffer::	defs	300		; buffer to store expanded host commands
+
+	; space for the stack
+		defs	32
+stack_top::	defw	0		; stack down from here (this word wasted)
+
+;##############################################################################
+; Code
+;##############################################################################
+
+main::
+	; set up the stack
+		ld sp,stack_top
+
+	; display usage if no parameters
+		ld a,(c_cmdlen)		; get length of parameters
+		or a
+		jr z,usage		; no parameters?
+
+		ld hl,c_cmdstr		; start of command arg buffer
+		call skipspaces
+		jr z,usage		; only spaces?
+
+	; action
+		ld a,(hl)		; first character of action
+		call caseuc		; ensure uppercase
+
+		cp 'B'
+		jp z,cmd_boot		; BOOT?
+		cp 'C'
+		jp z,cmd_change		; CHANGE?
+		cp 'D'
+		jp z,cmd_debug		; DEBUG?
+		cp 'E'
+		jp z,cmd_exit		; EXIT?
+		cp 'H'
+		jp z,cmd_highspd	; HIGHSPEED?
+		cp 'M'
+		jp z,cmd_mount		; MOUNT?
+		cp 'N'
+		jp z,cmd_normspd	; NORMALSPEED?
+		cp 'R'
+		jp z,cmd_report		; REPORT?
+		cp 'S'
+		jp z,cmd_system		; SYSTEM?
+		cp 'U'
+		jp z,cmd_umount		; UMOUNT?
+
+	; invalid action
+		bdos b_couts,m_baction
+		; fall thru
+
+usage::
+;==============================================================================
+; Display program usage
+;==============================================================================
+		bdos b_couts,m_usage
+		; fall thru
+
+done::
+;==============================================================================
+; Single exit point of program
+;==============================================================================
+		jp c_boot
+
+;##############################################################################
+; Subcommands
+;##############################################################################
+
+cmd_boot::
+;==============================================================================
+; BOOT
+;==============================================================================
+		ld a,em_reset
+		call xtrsmisc
+		jp done
+
+cmd_change::
+;==============================================================================
+; CHANGE
+;==============================================================================
+		ld a,em_disk_change
+		call xtrsmisc
+		bdos b_couts,m_diskchange
+		jp done
+
+cmd_debug::
+;==============================================================================
+; DEBUG
+;==============================================================================
+		ld a,em_debug
+		call xtrsmisc
+		jp done
+
+cmd_exit::
+;==============================================================================
+; EXIT
+;==============================================================================
+		ld a,em_exit
+		call xtrsmisc
+		jp done
+
+cmd_highspd::
+;==============================================================================
+; HIGHSPEED
+;==============================================================================
+		call xtrshighspd
+		jp done
+
+cmd_mount::
+;==============================================================================
+; MOUNT [-L] hostfilename disknum
+;	entry:	hl -> start of MOUNT
+;==============================================================================
+
+	; skip word "MOUNT"
+		call nextword
+
+	; options
+		call options
+
+	; host filename
+		jp z,expect_hfname	; no more parameters?
+		ld de,hfnbuffer		; buffer to store hfn
+		call hfnconvert		; store host filename
+		call skipspaces
+
+	; disk number
+		jp z,expect_disknum	; no more parameters?
+		ld de,dfnbuffer		; buffer for disk filename
+		call xtrsdiskname	; check and store disk number
+		jp z,bad_disknum	; bad disk number?
+
+	; end of command
+		inc hl			; skip over disk number
+		call skipspaces		; can tolerate spaces
+		jp nz,extra_params	; unexpected parameters?
+
+	; prepare host command
+		ld hl,cmdbuffer		; buffer for command
+		ld de,mnt_cmd		; skeleton for command
+		call cmd_copy
+
+	; display and execute command
+		call cmd_display
+		call xtrssystem
+		jp nz,mnt_error		; host cmd error?
+
+	; check result
+		ld a,b
+		or c
+		jp nz,mnt_fail		; bad result?
+
+	; signal disk change
+		jp cmd_change		; signal disk change
+
+cmd_normspd::
+;==============================================================================
+; NORMALSPEED
+;==============================================================================
+		call xtrsnrmlspd
+		jp done
+
+cmd_report::
+;==============================================================================
+; REPORT
+;==============================================================================
+		call rep_model		; model
+		call rep_speed		; speed
+		call rep_graphic	; graphics
+		jp done
+
+rep_model:
+;------------------------------------------------------------------------------
+; Display model details
+;------------------------------------------------------------------------------
+		bdos b_couts,m_model
+		call xtrsmodel
+		push af
+		bdos b_coutb
+		pop af
+		jr z,model1char
+		ld e,a
+		bdos b_coutb
+model1char:	bdos b_couts,m_crlf
+		ret
+
+rep_speed:
+;------------------------------------------------------------------------------
+; Display speed setting
+;------------------------------------------------------------------------------
+		bdos b_couts,m_speed
+		ld a,em_delayquery
+		call xtrsmisc
+		ld a,c			; 0=>autodelay off (i.e. fast)
+		or a
+		jr z,spd_fast
+		bdos b_couts,m_normal
+		ret
+spd_fast:	bdos b_couts,m_fast
+		ret
+
+rep_graphic:
+;------------------------------------------------------------------------------
+; Display graphics system
+;------------------------------------------------------------------------------
+		bdos b_couts,m_graphics
+		ld a,em_graphicquery
+		call xtrsmisc
+		ld a,l			; 0=>RS, 1=>ML
+		or a
+		jr z,gph_rs
+		bdos b_couts,m_graml
+		ret
+gph_rs:		bdos b_couts,m_grars
+		ret
+
+cmd_system::
+;==============================================================================
+; SYSTEM command
+;	entry:	hl -> start of SYSTEM
+;==============================================================================
+
+	; skip word "SYSTEM"
+		call nextword
+
+	; always treat as lowercase
+		ld a,1
+		call hfnlower		; convert to lowercase
+
+	; command
+		jp z,expect_command	; no command?
+		ld de,cmdbuffer		; buffer to store command
+copy_word:	call hfnconvert		; convert as per host filename
+		call copyspaces		; copy spaces too
+		jr nz,copy_word		; keep appending until nul
+
+	; display and execute command
+		ld hl,cmdbuffer
+		call cmd_display
+		call xtrssystem
+		jp nz,sys_error		; host cmd error?
+
+	; check result
+		ld a,b
+		or c
+		jp nz,sys_fail		; bad result?
+
+	; done
+		jp done
+
+cmd_umount::
+;==============================================================================
+; UMOUNT disknum
+;	entry:	hl -> start of UMOUNT
+;==============================================================================
+
+	; skip word "UMOUNT"
+		call nextword
+
+	; disk number
+		jp z,expect_disknum	; no more parameters?
+		ld de,dfnbuffer		; buffer for disk filename
+		call xtrsdiskname	; check and store disk number
+		jp z,bad_disknum	; bad disk number?
+
+	; end of command
+		inc hl			; skip over disk number
+		call skipspaces		; can tolerate spaces
+		jp nz,extra_params	; unexpected parameters?
+
+	; prepare host command
+		ld hl,cmdbuffer		; buffer for command
+		ld de,umt_cmd		; skeleton for command
+		call cmd_copy
+
+	; display and execute command
+		call cmd_display
+		call xtrssystem
+		jp nz,umt_error		; host cmd error?
+
+	; check result
+		ld a,b
+		or c
+		jp nz,umt_fail		; bad result?
+
+	; signal disk change
+		jp cmd_change		; signal disk change
+
+;##############################################################################
+; MOUNT, SYSTEM, and UMOUNT support functions
+;##############################################################################
+
+options:
+;------------------------------------------------------------------------------
+; Process mount options (currently only "-L")
+;	entry:	hl -> command line with possible options
+;	exit:	a  =  last character examined (z flag affected)
+;		hl -> next character in command line
+;------------------------------------------------------------------------------
+
+	; possible options
+		ld a,(hl)
+		or a
+		ret z			; nul? end of options
+		cp '-'
+		ret nz			; not an option?
+
+	; have options
+		inc hl			; skip past '-'
+		ld a,(hl)
+opt_next:	call opt_action
+
+	; check for more options
+		inc hl
+		ld a,(hl)
+		or a
+		ret z			; nul? end of options
+		cp spc
+		jr nz,opt_next		; more options in this group?
+		call skipspaces
+		jr options		; check for next group of options
+
+opt_action:
+	; process option
+		call caseuc		; make case-insensitive
+		cp 'L'
+		jr z,opt_l
+
+	; invalid option
+		ld (option),a
+		bdos b_couts,m_boption
+		jp usage
+
+opt_l:	; "-L" convert hostfilename to lowercase
+		ld a,1
+		call hfnlower		; set lowercase flag
+		ret
+
+cmd_copy:
+;------------------------------------------------------------------------------
+; Copy a nul terminated command string with variable substitution
+; Variables: %d (dfnbuffer) and %h (hfbuffer)
+;	entry:	de -> command skeleton
+;		hl -> buffer to store command
+;	exit:	af =  trashed
+;		de =  preserved
+;		hl =  preserved
+;------------------------------------------------------------------------------
+		push bc
+		push de
+		push hl
+
+cmd_fetch:
+	; transcribe command
+		ld a,(de)		; fetch
+		cp '%'
+		jr z,variable		; special action for variables
+		ld (hl),a		; store
+		or a
+		inc hl			; bump
+		inc de
+		jr nz,cmd_fetch		; again
+
+		pop hl
+		pop de
+		pop bc
+		ret
+
+variable:
+	; check variable name
+		inc de			; check next character
+		ld a,(de)
+		cp 'd'
+		jr z,var_d		; d?
+		cp 'h'
+		jr z,var_h		; h?
+		bdos b_couts,m_bvar
+		jp done
+
+var_d:
+	; insert disk filename
+		push de			; save de
+		ld de,dfnbuffer
+		call copy_de		; insert disk filename
+		pop de			; restore de
+		jr var_endvar
+
+var_h:
+	; insert host filename
+		push de			; save de
+		ld de,hfnbuffer
+		call copy_de		; insert host filename
+		pop de			; restore de
+		; fall thru
+
+var_endvar:
+	; move past variable
+		inc de
+		jr cmd_fetch
+
+cmd_display:
+;------------------------------------------------------------------------------
+; Display the host command
+;	entry:	hl -> buffer containing nul terminated command
+;	exit:	hl =  preserved
+;------------------------------------------------------------------------------
+		push af
+		push bc
+		push de
+		push hl
+
+		bdos b_couts,m_hcmd
+		pop hl			; refresh addr of buffer
+		push hl
+		call printnul
+		bdos b_couts,m_crlf
+
+		pop hl
+		pop de
+		pop bc
+		pop af
+		ret
+
+copyspaces:
+;------------------------------------------------------------------------------
+; Copy spaces
+;	entry:	de -> destination
+;		hl -> source
+;	exit:	a  =  last characters examined, z set if nul encounterd
+;		de -> nul at end of destination
+;		hl -> first non space in source
+;------------------------------------------------------------------------------
+		ld a,(hl)		; fetch
+		or a
+		ret z			; nul?
+		cp spc
+		ret nz			; non-space?
+		ld (de),a		; store
+		inc hl			; bump
+		inc de
+		push af
+		ld a,0
+		ld (de),a		; always terminate destination
+		pop af
+		jr copyspaces		; again
+
+;------------------------------------------------------------------------------
+; Error routines
+;------------------------------------------------------------------------------
+
+expect_hfname:	bdos b_couts,m_ehfn
+		jp usage
+
+expect_disknum: bdos b_couts,m_edisk
+		jp usage
+
+expect_command: bdos b_couts,m_ecmd
+		jp usage
+
+bad_disknum:	bdos b_couts,m_bdisknum
+		jp usage
+
+extra_params:	push hl
+		bdos b_couts,m_extraparams
+		pop hl
+		call printnul
+		bdos b_couts,m_crlf
+		jp usage
+
+mnt_error:	ld de,m_hfail
+		call nz,xtrserrmsg
+		jp cmd_change		; must signal disk change
+
+mnt_fail:	bdos b_couts,m_mntfail
+		jp cmd_change		; must signal disk change
+
+umt_error:	ld de,m_hfail
+		call nz,xtrserrmsg
+		jp cmd_change		; must signal disk change
+
+umt_fail:	bdos b_couts,m_umtfail
+		jp cmd_change		; must signal disk change
+
+sys_error:	ld de,m_hfail
+		call nz,xtrserrmsg
+		jp done
+
+sys_fail:	bdos b_couts,m_sysfail
+		jp done
+
+;##############################################################################
+; End
+;##############################################################################
+
+end::		end main

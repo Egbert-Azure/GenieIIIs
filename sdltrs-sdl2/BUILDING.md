@@ -12,14 +12,25 @@ For *Win32/64* please install [MinGW] or [MinGW-w64] and the [SDL]
 development library with the `mingw.tar.gz` file extension.
 It is recommended to use [MSYS2] to make things easier:
 
-- Get the latest version of Mingw-w64 via MSYS2, which provides up-to-date native builds of GCC, Mingw-w64, and other helpful C++ tools and libraries. You can use this [link](https://github.com/msys2/msys2-installer/releases/download/2022-06-03/msys2-x86_64-20220603.exe) to the installer.
+- Get the latest version of Mingw-w64 via [MSYS2], which provides up-to-date
+  native builds of GCC, Mingw-w64, and other helpful C++ tools and libraries.
+- Follow the Installation instructions on the [MSYS2] website to install
+  Mingw-w64 and install the Mingw-w64 toolchain by executing
+  ```sh
+  pacman -S --needed base-devel mingw-w64-x86_64-toolchain
+  ```
+  in a MSYS2 terminal.
+  Accept the default to install all the members in the `toolchain` group.
+- Add the path to your Mingw-w64 bin folder to the Windows `PATH` environment
+  variable by using the following steps: type `settings` to open your Windows
+  Settings. Edit environment variables and select new to `C:\msys64\mingw64\bin`.
+- Add SDL2 package for 64 bit system with:
+  ```sh
+  pacman -S mingw-w64-x86_64-SDL2
+  ```
 
-- Follow the Installation instructions on the MSYS2 website to install Mingw-w64 and install the Mingw-w64 toolchain (`pacman -S --needed base-devel mingw-w64-x86_64-toolchain`) a MSYS2 terminal. Accept the default to install all the members in the `toolchain` group
-- Add the path to your Mingw-w64 bin folder to the Windows PATH environment variable by using the following steps: type `settings` to open your Windows Settings. Edit environment variables and
-select new to `C:\msys64\mingw64\bin`
-- Add SDL2 package for 64 bit system with `pacman -S mingw-w64-x86_64-SDL2`
-
-Visual Studio Creator can be used for coding. Add the extensions by searching for `c++` in the Extensions view (`Ctrl+Shift+X`).
+Visual Studio Creator can be used for coding. Add the extensions by searching
+for `c++` in the Extensions view (`Ctrl+Shift+X`).
 
 ---
 

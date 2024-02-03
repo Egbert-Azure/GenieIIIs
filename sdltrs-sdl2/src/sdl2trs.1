@@ -8,7 +8,7 @@
 .  TP \\$1\" no doublequotes around argument!
 ..
 .\"
-.TH sdl2trs 1 "2023-02-18" "sdl2trs 1.2.26"
+.TH sdl2trs 1 "2023-08-19" "sdl2trs 1.2.28"
 .SH NAME
 sdl2trs \- TRS-80 Model I/III/4/4P emulator for SDL2
 .SH SYNOPSIS
@@ -20,16 +20,15 @@ is an SDL2-based emulator for Tandy/Radio Shack line of Zilog
 Z80-based microcomputers popular in late 1970s and early 1980s.
 .SH OPTIONS
 .TP
-.B \-background \fI0xRRGGBB\fP
-.TQ
-.B \-bg \fI0xRRGGBB\fP
+.B \-aspectratio
+Keep TRS-80 screen aspect ratio when resizing SDL2 window (Default).
+.TP
+\fB\-background\fP | \fB\-bg\fP \fI0xRRGGBB\fP
 Specifies background color of emulator window.
 \fIRRGGBB\fP are hex values of Red, Green, and Blue components.
 Default: black (\fI0x000000\fP)
 .TP
-.B \-borderwidth \fIwidth\fP
-.TQ
-.B \-bw \fIwidth\fP
+\fB\-borderwidth\fP | \fB\-bw\fP \fIwidth\fP
 Put border of \fIwidth\fP pixels (0 to 50) around TRS-80 window.
 Default: \fI2\fP
 .TP
@@ -37,32 +36,32 @@ Default: \fI2\fP
 Specify directory containing cassette and stringy wafer images.
 Default: current directory.
 .TP
-.B \-cass[ette] \fIfilename\fP
+.B \-c[assette] \fIfilename\fP
 Specifies name of cassette image file to be inserted into
 emulated cassette drive.
 .TP
-.B \-charset \fIcharset-name\fP
+\fB\-charset\fP | \fB\-cs\fP \fIcharset-name\fP
 Use charset of the selected TRS-80 Model with \fI-model\fP.
 .TP
-.B \-charset1 \fIcharset-name\fP
+\fB\-charset1\fP | \fB\-cs1\fP \fIcharset-name\fP
 Select Model I charset:
 \fIc(t-80)\fP | \fIe(arly)\fP | \fIg(enie)\fP | \fIh(t-1080z)\fP | \fIl(cmod)\fP |
 \fIm(eritum)\fP | \fIs(tock)\fP | \fIv(ideogenie)\fP | \fIw(ider)\fP.
 Default: \fIwider\fP
 .TP
-.B \-charset3 \fIcharset-name\fP
+\fB\-charset3\fP | \fB\-cs3\fP \fIcharset-name\fP
 .TQ
-.B \-charset4 \fIcharset-name\fP
+\fB\-charset4\fP | \fB\-cs4\fP \fIcharset-name\fP
 Select Model III/4/4P charset:
 \fIk(atakana)\fP | \fIi(nternational)\fP | \fIb(old)\fP.
 Defaults are \fIkatakana\fP for Model III and \fIinternational\fP
 for Model 4/4P.
 .TP
-.B \-clock1 \fIMHz\fP
+.B \-cl[ock]1 \fIMHz\fP
 .TQ
-.B \-clock3 \fIMHz\fP
+.B \-cl[ock]3 \fIMHz\fP
 .TQ
-.B \-clock4 \fIMHz\fP
+.B \-cl[ock]4 \fIMHz\fP
 Set clock speed rate in MHz for the specified TRS-80 Model.
 Defaults are: \fI1.77408\fP MHz for Model I, \fI2.02752\fP MHz for
 Model III and \fI4.05504\fP MHz for Model 4/4P.
@@ -70,7 +69,13 @@ Model III and \fI4.05504\fP MHz for Model 4/4P.
 .B \-debug
 Enter zbx debugger (Optional).
 .TP
-.B \-disk\fIN filename\fP
+.B \-diskdebug \fIhexval\fP
+Set floppy disk controller debug flags to hex value:
+\fI01\fP = FDC register I/O | \fI02\fP = FDC commands | \fI04\fP = VTOS 3.0 JV3
+kludges | \fI08\fP = Gaps | \fI10\fP = Phys sector sizes | \fI20\fP = Readadr
+timing | \fI\40\fP = DMK | \fI80\fP = ioctl errors.
+.TP
+.B \-d[isk]\fIN filename\fP
 Specifies name of floppy disk image file to be inserted into
 Disk\fIN\fP, where \fIN\fP=0 through 7.
 .TP
@@ -98,35 +103,29 @@ Make real floppy drives double-step (35/40-track media in 80 track drive).
 Turn off ability for Emulation traps to write to unexpected places in
 host filesystem (Default).
 .TP
-.B \-fdc
-.TQ
-.B \-floppy
+\fB\-floppy\fP | \fB\-fdc\fP
 Enable Floppy Disk Controller (Default).
 .TP
-.B \-foreground \fI0xRRGGBB\fP
-.TQ
-.B \-fg \fI0xRRGGBB\fP
+\fB\-foreground\fP | \fB\-fg\fP \fI0xRRGGBB\fP
 Specifies foreground color of emulator window.
 Default: white (\fI0xE0E0FF\fP)
 .TP
-.B \-fullscreen
-.TQ
-.B \-fs
+\fB\-fullscreen\fP | \fB\-fs\fP
 Run in fullscreen mode.
 .TP
-.B \-guibackground \fI0xRRGGBB\fP
-.TQ
-.B \-guibg \fI0xRRGGBB\fP
+\fB\-guibackground\fP | \fB\-guibg\fP \fI0xRRGGBB\fP
 Specifies background color of text based GUI window.
 Default: dark green (\fI0x344843\fP)
 .TP
-.B \-guiforeground \fI0xRRGGBB\fP
-.TQ
-.B \-guifg \fI0xRRGGBB\fP
+\fB\-guiforeground\fP | \fB\-guifg\fP \fI0xRRGGBB\fP
 Specifies foreground color of text based GUI window.
 Default: white (\fI0xE0E0FF\fP)
 .TP
-.B \-hard\fIN filename\fP
+.B \-halt \fIaction\fP
+Set action for Z80 HALT instruction: \fI(d)ebugger\fP | \fI(h)alt\fP |
+\fI(r)eset\fP. Default depends on the selected TRS-80 Model.
+.TP
+.B \-h[ard]\fIN filename\fP
 Specifies name of hard disk image file to be inserted into
 Hard\fIN\fP, where \fIN\fP=0 through 3.
 .TP
@@ -137,7 +136,7 @@ Default: current directory.
 .B \-hdboot
 Patch Level II ROM for auto-boot from hard disk (Model I only).
 .TP
-.B \-hideled
+\fB\-hideled\fP | \fB\-noled\fP
 Hide disk activity and Turbo LED.
 .TP
 .B \-huffman
@@ -148,13 +147,16 @@ Enable "Dave Huffman (and other)" memory expansion for Model 4/4P.
 Enable HyperMem (Anitek) memory expansion for Model 4/4P.
 .B Disables "Dave Huffman memory expansion"
 .TP
-.B \-joysticknum \fInum\fP
+.B \-iodebug \fIhexval\fP
+Set I/O port debug flags: \fI01\fP = port input | \fI02\fP = port output.
+.TP
+\fB\-joystick[num]\fP | \fB\-js\fP \fInum\fP
 Use USB joystick number \fInum\fP as joystick in emulator.
 .TP
-.B \-keypadjoy
-Use numeric keypad as joystick.
+\fB\-keypadjoy\fP | \fB\-kp\fP
+Use numeric keypad as joystick (Default).
 .TP
-.B \-keystretch \fIcycles\fP
+\fB\-keystretch\fP | \fB\-ks\fP \fIcycles\fP
 "Stretches" intervals between key transitions to \fIcycles\fP Z80 clock
 cycles (T-states).
 Default: \fI4000\fP
@@ -162,7 +164,7 @@ Default: \fI4000\fP
 .B \-le18
 Emulate Lowe Electronics LE18 384x192 graphics adapter for Model I.
 .TP
-.B \-lower[case]
+\fB\-lower[case]\fP | \fB\-lc\fP
 "Lower Case Modification Kit" for TRS-80 Model I (Default).
 .TP
 .B \-lubomir
@@ -184,15 +186,18 @@ graphics card.
 .B \-m4p
 Select TRS-80 model to emulate: I, III, 4 or 4P.
 .TP
-.B \-model \fIm\fP
+.B \-m[odel] \fIm\fP
 Specifies TRS-80 model to emulate: \fI1\fP (or \fII\fP) | \fI3\fP
 (or \fIIII\fP) | \fI4\fP (or \fIIV\fP) | \fI4P\fP (or \fIIVP\fP).
 .RS
 Default: Model I
 .RE
 .TP
-.B \-mousepointer
+.B \-mouse[pointer]
 Show mouse pointer for selection in emulator window (Default).
+.TP
+.B \-noaspectratio
+Disable aspect ratio of TRS-80 screen when resizing SDL2 window.
 .TP
 .B \-nodebug
 Opposite of \fB-debug\fP (Optional).
@@ -204,14 +209,10 @@ Turn off double-step mode for all real floppy drives (Default).
 .B \-noemtsafe
 Turn on ability for Emulation traps.
 .TP
-.B \-nofdc
-.TQ
-.B \-nofloppy
+\fB\-nofloppy\fP | \fB\-nofdc\fP
 Disable Floppy Disk Controller.
 .TP
-.B \-nofullscreen
-.TQ
-.B \-nofs
+\fB\-nofullscreen\fP | \fB\-nofs\fP
 Run in windowed mode (Default).
 .TP
 .B \-nohdboot
@@ -223,13 +224,13 @@ Disable "Dave Huffman (and other)" memory expansion (Default).
 .B \-nohypermem
 Disable HyperMem memory expansion (Default).
 .TP
-.B \-nokeypadjoy
+\fB\-nokeypadjoy\fP | \fB\-nokp\fP
 Do not use numeric keypad as joystick.
 .TP
 .B \-nole18
 No emulation of LE18 graphic adapter (Default).
 .TP
-.B \-nolower[case]
+\fB\-nolower[case]\fP | \fB\-nolc\fP
 No lower case characters for TRS-80 Model I.
 .TP
 .B \-nolubomir
@@ -242,7 +243,7 @@ Disable MegaMem memory expansion for Model III and 4/4P (Default).
 Model III or Model 4/4P: emulate Radio Shack Hi-Res card (Default).
 .RE
 .TP
-.B \-nomousepointer
+.B \-nomouse[pointer]
 Hide mouse pointer and emulate joystick with mouse.
 .TP
 .B \-noresize3
@@ -254,17 +255,17 @@ text (640x240) putting a blank margin around outside.
 Default: \fB\-resize3 \-noresize4\fP
 .RE
 .TP
-.B \-noscanlines
+.B \-noscan[lines]
 No scanlines in emulator screen (Default).
 .TP
 .B \-noselector
 Disable TRS-80 Users Society Selector memory expansion (Default).
 .TP
-.B \-noshiftbracket
+\fB\-noshiftbracket\fP | \fB\-nosb\fP
 Emulate [, \, ], ^, and _ as unshifted keys, and {, |, }, and ~ as shifted.
 Default for Model I and III.
 .TP
-.B \-nosound
+\fB\-nosound\fP | \fB\-mute\fP
 Disable Sound Output at startup.
 .TP
 .B \-nostringy
@@ -278,6 +279,9 @@ Opposite of \fB-truedam\fP (Default).
 .TP
 .B \-noturbo
 Switch "Turbo" mode off (Default).
+.TP
+.B \-pause
+Pause the emulator at startup.
 .TP
 .B \-printer \fItype\fP
 Select printer type: \fI0\fP or \fIn(one)\fP | \fI1\fP
@@ -300,19 +304,19 @@ Default: \fB\-resize3 \-noresize4\fP
 .B \-rom[file] \fIfilename\fP
 Use romfile \fIfilename\fP for the selected TRS-80 Model with \fI-model\fP.
 .TP
-.B \-romfile1 \fIfilename\fP
+.B \-rom[file]1 \fIfilename\fP
 .TQ
-.B \-romfile3 \fIfilename\fP
+.B \-rom[file]3 \fIfilename\fP
 .TQ
-.B \-romfile4p \fIfilename\fP
+.B \-rom[file]4p \fIfilename\fP
 Use romfile specified by \fIfilename\fP for the TRS-80 Model.
 .TP
-.B \-samplerate \fIrate\fP
+\fB\-samplerate\fP | \fB\-sr\fP \fIrate\fP
 Set sample rate for new cassette wav files, direct cassette I/O to sound
 card, and sound output.
 Default: \fI44100\fP
 .TP
-.B \-scale \fIfactor\fP
+.B \-sc[ale] \fIfactor\fP
 Scale emulator window by \fIfactor\fP times:
 \fI1\fP | \fI2\fP | \fI3\fP | \fI4\fP.
 Default: \fI1\fP
@@ -322,7 +326,7 @@ Select render scale quality:
 \fI0\fP (nearest) | \fI1\fP (linear) | \fI2\fP (best).
 Default: \fI1\fP
 .TP
-.B \-scanlines
+.B \-scan[lines]
 Display scanlines to simulate an old CRT monitor resolution.
 .TP
 .B \-scanshade \fIbrightness\fP
@@ -337,11 +341,11 @@ Enable TRS-80 Users Society Selector memory expansion for Model I.
 Set tty device to be used for I/O to TRS-80's serial port.
 Default: \fI/dev/ttyS0\fP
 .TP
-.B \-shiftbracket
+\fB\-shiftbracket\fP | \fB\-sb\fP
 Emulate [, \, ], ^, and _ as shifted keys, and {, |, }, and ~ as unshifted.
 Default for Model 4 and 4P.
 .TP
-.B \-showled
+.B \-[show]led
 Show disk activity and Turbo LED at bottom of emulator screen (Default).
 .TP
 .B \-sizemap \fIz0[,z1,z2,z3,z4,z5,z6,z7]\fP
@@ -350,7 +354,7 @@ Selectively set whether drives are emulated as 5-inch or 8-inch.
 .B \-sound
 Enable Sound Output (Default).
 .TP
-.B \-speedup \fIkit\fP
+.B \-s[peedup] \fIkit\fP
 Select Speedup Kit or Banking:
 \fIn(one)\fP | \fIa(rchbold)\fP | \fIb(anking)\fP | \fIc(t-80)\fP |
 \fIh(olmes)\fP | \fIl(nw)\fP | \fIs(eatronics)\fP | \fIt(cs)\fP.
@@ -371,7 +375,7 @@ Emulate Exatron Stringy Floppy Drive for Model I.
 Enable SuperMem (Alpha Technology) memory expansion for Model I/III.
 .B Disables "TRS-80 Users Society Selector"
 .TP
-.B \-switches \fIvalue\fP
+.B \-sw[itches] \fIvalue\fP
 Set sense switches on Model I serial port card.
 Default: \fI0x6f\fP
 .TP
@@ -384,13 +388,16 @@ Switch "Turbo" mode on.
 .B \-turbopaste
 Engage "Turbo" mode temporarily while pasting from clipboard.
 .TP
-.B \-turborate \fIfactor\fP
+\fB\-turborate\fP | \fB\-tr\fP \fIfactor\fP
 Set \fIfactor\fP of normal TRS-80 speed that the emulator runs in Turbo mode.
 Default: \fI5\fP
 .TP
-.B \-wafer\fIN filename\fP
+.B \-w[afer]\fIN filename\fP
 Specifies name of stringy wafer image file to be inserted into
 Wafer\fIN\fP, where \fIN\fP=0 through 7.
+.TP
+.B \-y[ear] \fIyear\fP
+Set \fIyear\fP for TRS-80 time-of-day clock instead of the current year.
 .SH KEYS
 .TP 28
 .B F1
@@ -468,7 +475,7 @@ TRS-80 Up Arrow key (caret for exponent)
 .B Down
 TRS-80 Down Arrow key
 .TQ
-\fBHome\fP | \fBClear\fP
+\fBDelete\fP | \fBHome\fP
 TRS-80 Clear key
 .TQ
 .B End
@@ -482,9 +489,6 @@ TRS-80 Left Shift key
 .TQ
 .B Page Down
 TRS-80 Right Shift key
-.TQ
-.B Delete
-TRS-80 Left Arrow key / Genie III(s) Clear key
 .TQ
 .B Insert
 TRS-80 Underscore key

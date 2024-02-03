@@ -1,0 +1,870 @@
+; EXPORT.MAC
+; ~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Export CP/M file(s) to the host operating system.
+;
+; Usage:
+;	EXPORT [-H][-L][-T][-V] cpmfileref [hostfilename]
+;
+; Where:
+;	cpmfileref is the local file to export
+;	   (use "?" and "*" to specify multiple files)
+;	hostfilename is the name of the file to create on the host
+;	   (converted to uppercase by default), use -L to convert
+;	   to lowercase and [ to toggle case of next character.
+;	-H switches emulator to high speed and restores speed when done.
+;	-L converts hostfilename to lowercase.
+;	-T export text file (CR LF becomes LF, stop at SUB character).
+;	-V (verbose) display "r" for block read, "w" for block written.
+;
+; Notes:
+;	The CP/M CCP converts all command line parameters to uppercase,
+;	hence the need of the -L option and the use of [ to toggle the
+;	case of the next character within the hostfilename.
+;
+;	Also, CP/M does not keep an accurate file size.	 Binary files
+;	are always multiples of 128 byte blocks; text file end at the
+;	first sub character.
+;
+;	There are bdos calls to locate matching file references - Find
+;	First and Find Next.  It would be simple to uses these calls
+;	to find each file and export each file as it is found.	Wrong!
+;	In the Find Next bdos call, my CP/M bible states "No other
+;	file operation should be done between two search requests
+;	because the BDOS may lose its position in the directory.  In
+;	some version of the system this request can use used following
+;	Close File to find the next file after the one closed.	This
+;	technique is not recommended".	I tested this and after
+;	opening the first file, Find Next returns file not found.  So
+;	I first create a list of matching files and then export each
+;	file in the list.  A "STAT DSK:" reports that my disks can
+;	hold 128 directory entries.  At 11 bytes a file this would
+;	require less than 1.5KBytes - just be careful if you have a
+;	hard disk with *HEAPS* of directory entries.
+;
+; Todo (Known Bugs):
+;	Export of text file will hang if sub character not detected.
+;
+; Amendment History:
+;	22MAR03 RKG 3.0 Initial release.
+;	02APR03 RKG 3.1 Re-wrote text export to fix bug when exporting text
+;			files that don't contain a sub character.
+
+.Z80
+
+;##############################################################################
+; Macro Libraries and External Functions
+;##############################################################################
+
+MACLIB CPM.MLB
+
+MACLIB LIBCFN.MLB
+
+MACLIB LIBHFN.MLB
+
+MACLIB LIBSTR.MLB
+
+MACLIB LIBXTRS.MLB
+
+;##############################################################################
+; Offset assembly so that print file matches linked output
+;##############################################################################
+
+;		.phase 103h
+
+;##############################################################################
+; Messages
+;##############################################################################
+
+m_usage::	defb	cr,lf,'Export CP/M file(s) to the host operating system.',cr,lf
+		defb	cr,lf,'Usage:'
+		defb	tab,'EXPORT [-H][-L][-T][-V] cpmfileref [hostfilename]',cr,lf
+		defb	cr,lf,'Where:'
+		defb	tab,'cpmfileref is the local file to export',cr,lf
+		defb	tab,spc,spc,spc,'(use "?" and "*" to specify multiple files).',cr,lf
+		defb	tab,'hostfilename is the name of the file to create on the host',cr,lf
+		defb	tab,spc,spc,spc,'(converted to uppercase by default), use -L to convert',cr,lf
+		defb	tab,spc,spc,spc,'to lowercase and [ to toggle case of next character.',cr,lf
+		defb	tab,'-H switches emulator to high speed and restores speed when done.',cr,lf
+		defb	tab,'-L converts hostfilename to lowercase.',cr,lf
+		defb	tab,'-T export text file (CR LF becomes LF, stop at SUB character).',cr,lf
+		defb	tab,'-V (verbose) display "r" for block read, "w" for block written.'
+m_crlf::	defb	cr,lf,'$'
+
+m_boption::	defb	'Invalid option "'
+invalid::	defb	'x"',cr,lf,'$'
+
+m_nocpmfn::	defb	'ERROR: Must specify cpmfileref',cr,lf,'$'
+
+m_nofiles::	defb	'Sorry, no files to export',cr,lf,'$'
+m_hfnign::	defb	'WARNING: Multiple matching files'
+		defb	' - ignoring specified hostfilename',cr,lf,'$'
+m_arrow::	defb	' -> $'
+
+m_copen::	defb	'ERROR: Unable to open CP/M file',cr,lf,'$'
+m_cread::	defb	'ERROR: Unable to read CP/M file',cr,lf,'$'
+m_cclose::	defb	'ERROR: Unable to close CP/M file',cr,lf,'$'
+
+m_uopen::	defb	'ERROR: Unable to open HOST file: $'
+m_uwrite::	defb	'ERROR: Unable to write HOST file: $'
+m_uclose::	defb	'ERROR: Unable to close HOST file: $'
+
+m_nosub::	defb	'WARNING: No sub character found in text file',cr,lf,'$'
+
+;##############################################################################
+; Storage
+;##############################################################################
+
+f_highspeed::	defb	0		; 0 means normal, other values mean high
+f_textfile::	defb	0		; 0 means binary, other values mean text
+f_verbose::	defb	0		; 0 means quiet, other values mean verbose
+
+hostfname::	defs	128		; host filename
+hostfd::	defw	0		; host file descriptor
+hostbuf::	defs	128		; space for host text buffer
+savedchar:	defb	0		; temp char for text export
+
+filelist	equ	2000h		; start of buffer for list of cpm files
+
+		defs	64		; space for the stack
+stack_top::	defw	0		; stack grows down from here
+
+;##############################################################################
+; Code
+;##############################################################################
+
+main::
+	; set up the stack
+		ld sp,stack_top
+
+	; check parameters
+		ld a,(c_cmdlen)		; get length of parameters
+		or a
+		jp z,usage		; no parameters?
+
+		ld hl,c_cmdstr		; start of command arg buffer
+		call skipspaces
+		jp z,usage		; only spaces?
+
+	; possible options
+		call options
+
+	; cpm fileref
+		jr z,no_cpmfref		; end of parameters?
+		ld de,c_fcb1		; fcb to fill
+		call cfntofcb		; put cpm fname into fcb
+		call skipspaces
+
+	; host filename (optional)
+		jr z,exp_prep		; end of parameters?
+		ld de,hostfname		; buffer for host filename
+		call hfnconvert		; save hfname
+		jr exp_prep
+
+options::
+;==============================================================================
+; Process options
+;	entry:	hl -> command line with possible options
+;	exit:	a  =  last character examined (z flag affected)
+;		hl -> next character in command line
+;==============================================================================
+
+	; optional options
+		ld a,(hl)
+		or a
+		ret z			; nul? end of options
+		cp '-'
+		ret nz			; not an options?
+
+	; have options
+		inc hl
+		ld a,(hl)
+opt_next:	call opt_action		; process option
+
+	; check for more options
+		inc hl
+		ld a,(hl)
+		or a
+		ret z			; nul? end of options
+		cp spc
+		jr nz,opt_next		; more options in this group?
+		call skipspaces
+		jr options		; check for next group of options
+
+opt_action:
+	; process option
+		call caseuc		; make case-insensitive
+		cp 'H'
+		jr z,opt_h
+		cp 'L'
+		jr z,opt_l
+		cp 'T'
+		jr z,opt_t
+		cp 'V'
+		jr z,opt_v
+
+	; invalid option
+		ld (invalid),a
+		bdos b_couts,m_boption
+		jp usage
+
+opt_h:	; "-H" switch to high speed
+		ld a,1
+		ld (f_highspeed),a	; set speed flag
+		ret
+
+opt_l:	; "-L" convert host filename to lowercase
+		ld a,1
+		call hfnlower		; set hfname lowercase flag
+		ret
+
+opt_t:	; "-T" transfer text file (cr lf -> lf, end at sub)
+		ld a,1
+		ld (f_textfile),a	; set text file flag
+		ret
+
+opt_v:	; "-V" verbose
+		ld a,1
+		ld (f_verbose),a	; set verbose flag
+		ret
+
+no_cpmfref::
+;==============================================================================
+; CP/M filename not specified
+;==============================================================================
+		bdos b_couts,m_nocpmfn
+		; fall thru
+
+usage::
+;==============================================================================
+; Display program usage
+;	exit:	does not return
+;==============================================================================
+		bdos b_couts,m_usage
+		; fall thru
+
+done::
+;==============================================================================
+; Single exit point of program
+;==============================================================================
+		jp c_boot
+
+exp_prep::
+;==============================================================================
+; Determine how many files to export and act accordingly
+;==============================================================================
+
+	; switch speed if necessary, remember current settings
+		ld a,(f_highspeed)
+		or a
+		call nz,xtrshighspd
+
+	; make list of files to export
+		call listbuild		; bc contains count of files to export
+
+	; check count of files to export
+		ld a,b
+		or c
+		jr z,exp_none		; no files to export?
+		dec bc
+		ld a,b
+		or c
+		jr z,exp_one		; only 1 file to export?
+		jr exp_many		; more than 1 file to export
+
+exp_none::
+;==============================================================================
+; No files to export
+;==============================================================================
+		bdos b_couts,m_nofiles
+		jp exp_done
+
+exp_one::
+;==============================================================================
+; Export one file
+;	entry:	(hostfname) contains possible host filename
+;		(filelist) contains cpm filename
+;==============================================================================
+
+	; check for a hfname
+		ld a,(hostfname)
+		or a
+		jr z,do_many		; no hfn, treat as multiple files
+
+	; fetch the cpm filename
+		ld hl,filelist
+		call listtofcb
+
+	; export it
+		call export
+		jr exp_done
+
+exp_many::
+;==============================================================================
+; Export multiple files
+;	entry:	(hostfname) contains possible host filename
+;		(filelist) contains cpm filename
+;==============================================================================
+
+	; was a hfname specified?
+		ld a,(hostfname)
+		or a
+		jr z,do_many		; no hfname?
+
+	; have irrelevant hfname
+		bdos b_couts,m_hfnign
+
+do_many:
+	; initialise pointer to list of files to export
+		ld hl,filelist
+
+do_many1:
+	; test for last file
+		ld a,(hl)
+		or a
+		jr z,exp_done
+
+	; load fcb with filename from list
+		call listtofcb
+
+	; save position in filelist
+		push hl			; save pos in file list
+
+	; convert fcb to host filename
+		ld de,c_fcb1
+		ld hl,hostfname
+		call hfnfromfcb		; store hfname from fcb
+
+	; perform the export
+		call export
+
+	; restore position in file list
+		pop hl
+
+	; around again
+		jr do_many1
+
+exp_done::
+;==============================================================================
+; Export complete
+;==============================================================================
+
+	; restore speed setting
+		ld a,(f_highspeed)
+		or a
+		call nz,xtrsrstrspd
+
+	; finish
+		jp done
+
+export::
+;==============================================================================
+; Export a file
+;	entry:	(c_fcb1) contains cpm file details
+;		(hostfname) contains unix filename
+;==============================================================================
+
+	; print details
+		ld hl,c_iobuf		; temporary buffer for cpm filename
+		ld de,c_fcb1
+		call cfntotext
+		call printnul		; cpm filename
+		bdos b_couts,m_arrow	; arrow
+		ld hl,hostfname
+		call printnul		; host filename
+		bdos b_couts,m_crlf
+
+	; open local file
+		call copen
+		ret nz
+
+	; open host file
+		call uopen
+		ret nz
+
+	; export
+		ld a,(f_textfile)
+		or a
+		jr z,exp_binary
+
+exp_text:	call text
+		jr exp_finish
+
+exp_binary:	call binary
+		; fall thru
+
+exp_finish:
+	; export complete
+		ld e,cr
+		call verbose
+		ld e,lf
+		call verbose
+
+	; close local file
+		; not really necessary for read-only files
+		call cclose
+
+	; close host file
+		call uclose
+
+		ret
+
+binary::
+;==============================================================================
+; Export a binary file
+;	entry:	(c_fcb1) contains an open CP/M file
+;		(hostfd) contains an open host file
+;	during: hl -> host buffer
+;		de -> cpm buffer
+;		b  =  bytes available in host buffer
+;		c  =  bytes remaining in cp/m buffer
+;	exit:	a  =  0 indicates a successful export (z flag set)
+;		all other registers trashed
+;	note:	binary files are always multiples of 128 byte blocks
+;==============================================================================
+		ld de,c_iobuf		; all i/o thru cp/m io buffer
+		ld hl,c_iobuf		; all i/o thru cp/m io buffer
+
+binary1:
+	; read block from local file
+		call cread
+		jr nz,binary2		; eof or error
+
+	; write block to host file
+		ld b,c			; bytes in buffer
+		call uwrite
+		ret nz			; error
+
+		jr binary1
+
+binary2:
+	; eof or error during read (1=>eof)
+		dec a			; 0=eof
+		ret z			; eof?
+		inc a			; restore
+		ret
+
+text::
+;==============================================================================
+; Export a text file
+;	entry:	(c_fcb1) contains an open CP/M file
+;		(hostfd) contains an open host file
+;	during: hl -> host buffer
+;		de -> cpm buffer
+;		b  =  bytes available in host buffer
+;		c  =  bytes remaining in cp/m buffer
+;	exit:	a  =  0 indicates a successful export (z flag set)
+;		all other registers trashed
+;	note:	convert cr lf to lf and stop at sub character
+;==============================================================================
+		ld hl,hostbuf		; host buffer
+		ld b,c_iobufsize	; empty
+
+		ld de,c_iobuf		; cp/m buffer
+		ld c,0			; empty
+
+textloop:
+	; fetch character
+		call cgetc		; fetch character
+		jr nz,textierr		; error or eof?
+
+	; cr?
+		cp cr
+		call z,textcr		; cr?
+
+	; sub?
+		cp sub			; sub is eof for text file
+		jr z,texteof		; eof?
+
+	; save character
+		call uputc
+		jr nz,textoerr		; error?
+
+		jr textloop
+
+texteof:
+	; sub encountered
+		call uflush
+		xor a			; clear z flag
+		ret
+
+textcr:
+	; cr in cp/m file
+
+	; fetch next character
+		call cgetc		; fetch character
+		jr nz,textcr1		; error or eof?
+
+	; cr followed by lf?
+		cp lf
+		ret z			; output just the lf
+
+	; cr followed by other character
+		ld (savedchar),a	; save character
+		ld a,cr
+		call uputc		; output cr
+		jr nz,textcr2		; error?
+		ld a,(savedchar)
+		ret			; output the other character
+
+textcr1:
+	; eof or error encountered while reading cpm file
+		pop de			; remove return address
+		jr textierr
+
+textcr2:
+	; error encountered while writing to host file
+		pop de			; remove return address
+		jr textoerr
+	
+textierr:
+	; eof or error encountered while reading cpm file
+		push af
+		call uflush
+		pop af
+		cp 1			; eof
+		jr nz,textierr1		; error? (wasn't eof)
+		bdos b_couts,m_nosub
+textierr1:	xor a
+		dec a
+		ret			; ret nz
+
+textoerr:
+	; error encountered while writing to host file
+		ret
+
+;##############################################################################
+; File list functions
+;##############################################################################
+
+listbuild::
+;==============================================================================
+; Build a list of filenames to export
+;	entry:	(c_fcb1) contains fileref
+;	exit:	bc = count of matching files
+;		all other registers trashed
+;==============================================================================
+		bdos b_ffirst,c_fcb1	; find first matching file
+		ld de,filelist		; point to area for next entry in list
+		ld bc,0
+listbuild1:
+	; check for file not found
+		or a			; not found if a=FFh
+		jp m,listbuild2
+
+	; we have a matching file
+
+					; a=0,1,2,3 file number in buffer
+		sla a			; a=0,2,4,6
+		sla a			; a=0,4,8,12
+		sla a			; a=0,8,16,24
+		sla a			; a=0,16,32,48
+		sla a			; a=0,32,64,96 offset in buffer
+
+		inc bc			; bump count
+		push bc			; save count
+
+	; copy name and type (ignore drive)
+		ld b,0
+		ld c,a			; bc=offset
+		ld hl,c_defbuf
+		add hl,bc
+		inc hl			; first char of filename
+
+		ld bc,11		; length of filename & type
+		ldir			; copy it
+
+	; find next matching file
+		push de
+		bdos b_fnext,c_fcb1
+		pop de
+
+		pop bc			; restore count
+
+		jr listbuild1
+
+listbuild2:	; append a null file to list.
+		xor a
+		ld (de),a
+		ret
+
+listtofcb::
+;==============================================================================
+;	entry:	hl -> file in list
+;	exit:	a  =  nul
+;		bc =  trashed
+;		de =  trashed
+;		hl -> next file in list
+;==============================================================================
+	; load fcb with filename from list
+		ld de,c_fcb1_fname	; destination
+		ld bc,11		; length of filename & type
+		ldir
+
+	; zero remainder of fcb
+		xor a
+		ld b,24
+do_many2:	ld (de),a
+		inc de
+		djnz do_many2
+		ret
+
+;##############################################################################
+; CP/M file routines
+;##############################################################################
+
+copen::
+;==============================================================================
+; open the cp/m filename in fcb1
+;	entry:	(c_fcb1) contains cp/m fcb
+;	exit:	a = 0 indicates a successful open (z flag set)
+;		all other registers trashed
+;==============================================================================
+		bdos b_fopen,c_fcb1	; open existing file (a=FFh is error)
+		or a
+		jp m,copenerr
+		xor a
+		ret			; open ok
+
+copenerr:	bdos b_couts,m_copen	; error message
+		xor a
+		dec a
+		ret			; ret nz
+
+cread::
+;==============================================================================
+; read a block from the cp/m file
+;	entry:	(c_fcb1) contains the cp/m fcb
+;		de -> start of cpm buffer
+;	exit:	a  =  0 indicates a successful read (z flag set)
+;		b  =  preserved
+;		c  =  bytes in cpm buffer
+;		de -> start of cpm buffer
+;		hl =  preserved
+;==============================================================================
+
+	; preserve regs
+		push bc
+		push de
+		push hl
+
+	; display actions
+		ld e,'r'
+		call verbose
+
+	; preform read
+		bdos b_frseq,c_fcb1	; a=0 is ok, a=1 is eof
+
+	; restore regs
+		pop hl
+		pop de
+		pop bc
+
+	; full buffer
+		ld c,c_iobufsize
+
+		or a			; set flags
+		ret z			; ok
+
+	; eof?
+		cp 1			; eof
+		jr nz,creaderr		; not eof?
+		or a			; set flags
+		ret			; ret nz
+
+creaderr:
+	; display error message
+		bdos b_couts,m_cread	; error message
+		xor a
+		dec a
+		ret			; ret nz
+
+cgetc::
+;==============================================================================
+; get a character from the cp/m file
+;	entry:	c  =  bytes remaining in cp/m buffer
+;		de -> position in cpm buffer
+;	exit:	a  =  character
+;		f  =  z indicates get ok, nz indicates error or eof
+;		c  =  bytes remaining in cp/m buffer
+;		de -> position in cpm buffer
+;==============================================================================
+		ld a,c
+		or a
+		jr nz,cgetc1		; still have data in buffer
+
+		ld de,c_iobuf		; cp/m buffer
+		call cread		; bytes read in c
+		ret nz
+
+cgetc1:
+		dec c			; dec characters remaining
+		xor a			; set z flag
+		ld a,(de)		; fetch
+		inc de			; bump pointer
+		ret
+
+cclose::
+;==============================================================================
+; close the cp/m filename in fcb1
+;	entry:	(c_fcb1) contains cp/m fcb
+;	exit:	z indicates a sucessful close
+;		all registers trashed
+;==============================================================================
+		bdos b_fclose,c_fcb1
+		ret z
+
+	; display error message
+		bdos b_couts,m_cclose
+		xor a
+		dec a
+		ret			; ret nz
+
+;##############################################################################
+; Host file routines
+;##############################################################################
+
+uopen::
+;==============================================================================
+; open host file
+;	entry:	(hostfname) contains host file name
+;	exit:	z indicates successful open
+;		(hostfd) contains host file descriptor
+;		all registers trashed.
+;==============================================================================
+		ld hl,hostfname
+		ld bc,eo_wronly+eo_creat+eo_trunc
+		ld de,0666q		; permissions
+		call xtrsopen
+		ld (hostfd),de		; save host fd
+		ret z			; ok
+
+	; display error message
+		ld de,m_uopen
+		jp xtrserrmsg
+
+uwrite::
+;==============================================================================
+; write a block to the host file
+;	entry:	hl -> start of buffer
+;		b  =  contains the number of bytes to write
+;		(hostfd) contains host file descriptor
+;	exit:	f  =  z indicates sucessful write
+;		af trashed (bc,de,hl saved)
+;==============================================================================
+
+	; preserve regs
+		push bc
+		push de
+		push hl
+
+	; perform write
+		ld c,b			; length in bc
+		ld b,0
+		ld de,(hostfd)		; get host fd
+		call xtrswrite
+
+	; show action
+		ld e,'w'
+		call verbose
+
+	; restore regs
+		pop hl
+		pop de
+		pop bc
+
+	; empty buffer
+		ld b,c_iobufsize	; empty
+
+		ret z			; ok
+
+	; display error message
+		ld de,m_uwrite
+		jp xtrserrmsg
+
+uputc::
+;==============================================================================
+; put a character into the host file
+;	entry:	a  =  character to put
+;		b  =  bytes free in host buffer
+;		hl -> position in host buffer
+;	exit:	f  =  z indicates ok, nz indicates error
+;==============================================================================
+		ld (hl),a		; store
+		inc hl			; bump pointer
+		dec b			; dec bytes free
+		ld a,b
+		or a
+		jr z,uputcfull		; buffer full
+		xor a
+		ret			; ret z
+
+uputcfull:	ld hl,hostbuf		; reset pointer and counter
+		ld b,c_iobufsize	; bytes to write
+		call uwrite
+		ret
+
+uflush::
+;==============================================================================
+; flush host buffer
+;	entry:	b  =  bytes free in host buffer
+;		hl -> position in host buffer
+;	exit:	f  =  z indicates ok, nz indicates error
+;==============================================================================
+	; anything in host buffer
+		ld a,c_iobufsize
+		sub b			; a has bytes used in host buffer
+		ret z			; buffer empty
+
+	; flush host buffer
+		ld hl,hostbuf		; buffer start
+		ld b,a			; bytes to write
+		call uwrite
+
+		ret
+
+uclose::
+;==============================================================================
+; close the host file
+;	entry:	(hostfd) contains host file descriptor
+;	exit:	z indicates a sucessful close
+;		all registers trashed
+;==============================================================================
+		ld de,(hostfd)		; get host fd
+		call xtrsclose
+		ret z			; ok
+
+	; display error message
+		ld de,m_uclose
+		jp xtrserrmsg
+
+;##############################################################################
+; Verbose
+;##############################################################################
+
+verbose::
+;==============================================================================
+; Display a character if verbose
+;	entry:	e  =  character to display
+;	exit:	af =  preserved
+;		bc =  trashed
+;		de =  trashed
+;		hl =  trashed
+;==============================================================================
+		push af
+		ld a,(f_verbose)
+		or a
+		jr z,verbose1
+		bdos b_coutb
+verbose1:	pop af
+		ret
+
+;##############################################################################
+; End
+;##############################################################################
+
+end::		end main

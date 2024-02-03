@@ -38,7 +38,6 @@
  */
 
 #ifdef ZBX
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,6 +49,8 @@
 
 #include "error.h"
 #include "trs.h"
+#include "trs_memory.h"
+#include "trs_state_save.h"
 
 #define MAXLINE		(256)
 #define ADDRESS_SPACE	(0x10000)
@@ -62,7 +63,7 @@
 #define BREAK_ONCE_FLAG		(0x10)
 #define WATCHPOINT_FLAG		(0x20)
 
-static Uint8 *traps;
+static Uint8 traps[ADDRESS_SPACE];
 static int num_traps;
 static int print_instructions;
 static int stop_signaled;
@@ -79,104 +80,58 @@ static struct
 static void help_message(void)
 {
     puts("(zbx) commands:\n\
-\n\
-Running:\n\
-    r(un)\n\
-        Hard reset the Z80 and devices and commence execution.\n\
-    c(ont) <addr>\n\
-    g(o)   <addr>\n\
-        Continue execution at current pc or specified hex address for pc.\n\
-    s(tep)\n\
-    s(tep)i(nt)\n\
-        Execute one instruction, or if the instruction is repeating (such as\n\
-        LDIR), execute only one iteration.  With \"step\", an interrupt is\n\
-        not allowed to occur after the instruction; with \"stepint\", an\n\
-        interrupt is allowed.\n\
-    n(ext)\n\
-    n(ext)i(nt)\n\
-        Execute one instruction.  If the instruction is a CALL, continue\n\
-        until the return.  If the instruction is repeating (such as LDIR),\n\
-        continue until it finishes.  Interrupts are always allowed during\n\
-        execution, but only \"nextint\" allows an interrupt afterwards.\n\
-    re(set)\n\
-        Hard reset the Z80 and devices.\n\
-    s(oft)r(eset)\n\
-        Press the system reset button.  On Model I/III, softreset resets the\n\
-        devices and posts a nonmaskable interrupt to the CPU; on Model 4/4P,\n\
-        softreset is the same as hard reset.\n\
-Printing:\n\
-    (dum)p\n\
-        Print the values of the Z80 registers.\n\
-    l(ist)\n\
-    l(ist) <addr>\n\
-    l(ist) <start addr> , <end addr>\n\
-        Disassemble 10 instructions at the current pc, 10 instructions at\n\
-        the specified hex address, or the instructions in the range of hex\n\
-        addresses.\n\
-    <start addr> , <end addr> /\n\
-    <start addr> / <num bytes>\n\
-    <addr> =\n\
-        Print the memory values in the specified range.  All values are hex.\n\
-    tr(ace)on\n\
-        Enable tracing of all instructions.\n\
-    tr(ace)off\n\
-        Disable tracing.\n\
-    d(isk)d(ump)\n\
-        Print the state of the floppy disk controller emulation.\n\
-Traps:\n\
-    st(atus)\n\
-        Show all traps (breakpoints, tracepoints, watchpoints).\n\
-    cl(ear)\n\
-        Delete the trap at the current address.\n\
-    d(elete) <n>\n\
-    d(elete) *\n\
-        Delete trap n, or all traps.\n\
-    stop at <address>\n\
-    b(reak) <address>\n\
-        Set a breakpoint at the specified hex address.\n\
-    t(race) <address>\n\
-        Set a trap to trace execution at the specified hex address.\n\
-    traceon at <address>\n\
-    tron <address>\n\
-        Set a trap to enable tracing at the specified hex address.\n\
-    traceoff at <address>\n\
-    troff <address>\n\
-        Set a trap to disable tracing at the specified hex address.\n\
-    w(atch) <address>\n\
-        Set a trap to watch specified hex address for changes.\n\
-Miscellaneous:\n\
-    a(ssign) $<reg> = <value>\n\
-    a(ssign) <addr> = <value>\n\
-    set $<reg> = <value>\n\
-    set <addr> = <value>\n\
-        Change the value of a register, register pair, I/O or memory byte.\n\
-    rom <addr> = <value>\n\
-        Change byte in ROM.\n\
-    in <port>\n\
-        Input from the given I/O port.\n\
-    out <port> = <value>\n\
-        Output to the given I/O port.\n\
-    load <start addr> <filename>\n\
-        Load memory from file to the specified hex address.\n\
-    save <start addr> , <end addr> <filename>\n\
-    save <start addr> / <num bytes> <filename>\n\
-        Save memory in the range of hex addresses to the specified file.\n\
-    timeroff\n\
-    timeron\n\
-        Disable/enable the emulated TRS-80 real time clock interrupt.\n\
-    diskdebug <hexval>\n\
-        Set floppy disk controller debug flags to hexval.\n\
-        1=FDC register I/O, 2=FDC commands, 4=VTOS 3.0 JV3 kludges, 8=Gaps,\n\
-        10=Phys sector sizes, 20=Readadr timing, 40=DMK, 80=ioctl errors.\n\
-    iodebug <hexval>\n\
-        Set I/O port debug flags to hexval: 1=port input, 2=port output.\n\
-    (zbx)i(nfo)\n\
-        Display information about this debugger.\n\
-    h(elp)\n\
-    ?\n\
-        Print this message.\n\
-    q(uit)\n\
-        Exit from xtrs.");
+\nRunning:\n\
+  r(un) ................. Hard reset Z80 and devices and commence execution\n\
+  c(ont) | g(o) <addr> .. Continue execution at current or hex address for PC\n\
+  s(tep) ................ Execute one instruction (one iteration/no interrupt)\n\
+  s(tep)i(nt) ........... Execute one instruction (one iteration/interrupt)\n\
+  n(ext) ................ Execute one instruction (interrupt allowed)\n\
+  n(ext)i(nt) ........... Execute one instruction (interrupt allowed afterwards)\n\
+  re(set) ............... Hard reset Z80 and devices\n\
+  s(oft)r(eset) ......... Press system reset button\n\
+\nPrinting:\n\
+  (dum)p ................ Print Z80 registers\n\
+  l(ist) ................ Disassemble 10 instructions at current PC\n\
+  l(ist) <addr> ......... Disassemble 10 instructions at specified hex address\n\
+  l(ist) <start> , <end>  Disassemble instructions in the range of hex addresses\n\
+  <start> , <end> ....... Print memory values in specified address range\n\
+  <start> / <num bytes> . Print number of memory values starting at hex address\n\
+  <addr> = .............. Print memory value at specified hex address\n\
+  tr(ace)on ............. Enable tracing of all instructions\n\
+  tr(ace)off ............ Disable tracing\n\
+  d(isk)d(ump) .......... Print state of floppy disk controller emulation\n\
+\nTraps:\n\
+  st(atus) .............. Show all traps (breakpoints, tracepoints, watchpoints)\n\
+  cl(ear) ............... Delete trap at current address\n\
+  d(elete) <n> | * ...... Delete trap <n> or all traps\n\
+  b(reak) <addr> ........ Set breakpoint at specified hex address\n\
+  t(race) <addr> ........ Set trap to trace execution at specified hex address\n\
+  tron <addr> ........... Set trap to enable tracing at specified hex address\n\
+  troff <addr> .......... Set trap to disable tracing at specified hex address\n\
+  w(atch) <addr> ........ Set trap to watch specified hex address for changes\n\
+\nMiscellaneous:\n\
+  a(ssign) | set\n\
+    $<reg> = <value> .... Change value of register\n\
+    <addr> = <value> .... Change value of memory byte\n\
+  rom <addr> = <value> .. Change byte in ROM\n\
+  in <port> ............. Input from given I/O port\n\
+  out <port> = <value> .. Output to given I/O port\n\
+  load <start> <file> ... Load memory from file to specified hex address\n\
+  save <start> , <end> <file> ........ Save memory in range of specified\n\
+  save <start> / <num bytes> <file>    hex addresses to file\n\
+  state load <file> ..... Load emulator state from file\n\
+  state save <file> ..... Save current emulator state to file\n\
+  timeroff / timeron .... Disable / enable TRS-80 real time clock interrupt\n\
+  halt <action> ......... Show / change Z80 HALT action: debugger, halt or reset\n\
+  diskdebug <hexval> .... Set floppy disk controller debug flags to hexval:\n\
+                             1=FDC register I/O       2=FDC commands\n\
+                             4=VTOS 3.0 JV3 kludges   8=Gaps\n\
+                            10=Phys sector sizes     20=Readadr timing\n\
+                            40=DMK                   80=IOCTL errors\n\
+  iodebug <hexval> ...... Set I/O port debug flags: 1=port input, 2=port output\n\
+  (zbx)i(nfo) ........... Display information about this debugger\n\
+  h(elp) | ? ............ Print this help message\n\
+  q(uit) ................ Exit from SDLTRS");
 }
 
 static char *trap_name(int flag)
@@ -341,6 +296,7 @@ static void debug_print_registers(void)
 	   Z80_H, Z80_L, Z80_SP, Z80_HL_PRIME);
     printf("I R: %.2x %.2x\n", Z80_I, Z80_R7 | (Z80_R & 0x7f));
 
+    printf("\nMemory map used: 0x%X", get_mem_map());
     printf("\nT-state counter: %" TSTATE_T_LEN "", z80_state.t_count);
     printf("\nZ80 Clock Speed: %.2f MHz\n", z80_state.clockMHz);
 }
@@ -352,29 +308,12 @@ void trs_debug(void)
     if (trs_continuous > 0) trs_continuous = 0;
 }
 
-void debug_init(void)
-{
-    int i;
-
-    traps = (Uint8 *) malloc(ADDRESS_SPACE * sizeof(Uint8));
-    if (traps == NULL)
-      fatal("debug_init: failed to allocate traps");
-
-    memset(traps, 0, ADDRESS_SPACE * sizeof(Uint8));
-
-    for(i = 0; i < MAX_TRAPS; ++i) trap_table[i].valid = 0;
-
-    puts("Type \"h(elp)\" for a list of commands.");
-}
-
 static void print_memory(Uint16 address, int num_bytes)
 {
     while(num_bytes > 0)
     {
+	int bytes_to_print = num_bytes < 16 ? num_bytes : 16;
 	int i;
-	int bytes_to_print = 16;
-
-	if(bytes_to_print > num_bytes) bytes_to_print = num_bytes;
 
 	printf("%.4x:\t", address);
 
@@ -420,7 +359,7 @@ static void load_memory(Uint16 address, const char *filename)
 	    mem_write(address++, c);
 	fclose(file);
     } else {
-	error("failed to load: '%s': %s", filename, strerror(errno));
+	file_error("load memory '%s'", filename);
     }
 }
 
@@ -436,7 +375,7 @@ static void save_memory(Uint16 address, int num_bytes, const char *filename)
 
 	fclose(file);
     } else {
-	error("failed to save: '%s': %s", filename, strerror(errno));
+	file_error("save memory '%s'", filename);
     }
 }
 
@@ -546,6 +485,8 @@ void debug_shell(void)
     snprintf(history_file, MAXLINE - 1, "%s/.zbx-history", home);
     read_history(history_file);
 #endif
+
+    puts("Type \"h(elp)\" for a list of commands.");
 
     while(!done)
     {
@@ -666,7 +607,7 @@ void debug_shell(void)
 	    }
 	    else if(!strcmp(command, "in"))
 	    {
-		int port;
+		unsigned int port;
 
 		if(sscanf(input, "in %x", &port) == 1)
 			printf("in %x = %x\n", port, z80_in(port));
@@ -675,7 +616,7 @@ void debug_shell(void)
 	    }
 	    else if(!strcmp(command, "out"))
 	    {
-		int port, value;
+		unsigned int port, value;
 
 		if(sscanf(input, "out %x = %x", &port, &value) == 2)
 			z80_out(port, value);
@@ -772,11 +713,11 @@ void debug_shell(void)
 	    }
 	    else if(!strcmp(command, "rom"))
 	    {
-		int addr, value;
+		unsigned int addr, value;
 
 		if (sscanf(input, "%*s %x = %x", &addr, &value) == 2)
 		{
-		    if (addr < trs_rom_size)
+		    if ((int)addr < trs_rom_size)
 			rom_write(addr, value);
 		}
 	    }
@@ -796,7 +737,7 @@ void debug_shell(void)
 		char regname[MAXLINE];
 		unsigned int addr, value;
 
-		if(sscanf(input, "%*s $%[a-zA-Z] = %x", regname, &value) == 2)
+		if(sscanf(input, "%*s $%[a-zA-Z'] = %x", regname, &value) == 2)
 		{
 		    if(!strcasecmp(regname, "a")) {
 			Z80_A = value;
@@ -931,13 +872,39 @@ void debug_shell(void)
 	    else if(!strcmp(command, "timeroff"))
 	    {
 	        /* Turn off emulated real time clock interrupt */
-	        trs_timer_off();
+	        trs_timer(0);
             }
 	    else if(!strcmp(command, "timeron"))
 	    {
-	        /* Turn off emulated real time clock interrupt */
-	        trs_timer_on();
+	        /* Turn on  emulated real time clock interrupt */
+	        trs_timer(1);
             }
+	    else if(!strcmp(command, "halt"))
+	    {
+	        char halt;
+
+		if(sscanf(input, "%*s %c", &halt) == 1)
+		{
+		    z80_halt = halt;
+		}
+		else
+		{
+		    switch (z80_halt) {
+			case 'd':
+			    puts("debugger");
+			    break;
+			case 'h':
+			    puts("halt");
+			    break;
+			case 'r':
+			    puts("reset");
+			    break;
+			default:
+			    puts("default");
+			    break;
+		    }
+		}
+	    }
 	    else if(!strcmp(command, "diskdump") || !strcmp(command, "dd"))
 	    {
 		trs_disk_debug();
@@ -974,6 +941,19 @@ void debug_shell(void)
 		else if(sscanf(input, "save %x / %x %s", &start_address, &num_bytes, file) == 3)
 		{
 		    save_memory(start_address, num_bytes, file);
+		}
+	    }
+	    else if(!strcmp(command, "state"))
+	    {
+		char *file = input;
+
+		if(sscanf(input, "state load %s", file) == 1)
+		{
+		    trs_state_load(file);
+		}
+		else if(sscanf(input, "state save %s", file) == 1)
+		{
+		    trs_state_save(file);
 		}
 	    }
 	    else

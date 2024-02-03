@@ -1,0 +1,314 @@
+; LIBHEX.MAC
+; ~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Hex conversion functions
+;
+; Amendment History:
+;	22MAR2003 RKG 1.0 Initial Release.
+
+.Z80
+
+;##############################################################################
+; Macro Libraries
+;##############################################################################
+
+MACLIB CPM.MLB
+
+;##############################################################################
+; Start
+;##############################################################################
+
+hex_start::	defb	'LIBHEX',0
+
+;##############################################################################
+; Code
+;##############################################################################
+
+cout:
+;------------------------------------------------------------------------------
+; Display a character
+;	extry:	a  =  character to display
+;	exit:	all registers preserved
+;------------------------------------------------------------------------------
+		push af
+		push bc
+		push de
+		push hl
+
+		ld e,a
+		bdos b_coutb
+
+		pop hl
+		pop de
+		pop bc
+		pop af
+		ret
+
+coutprn:
+;------------------------------------------------------------------------------
+; Display a character (unprintable characters displayed as '.')
+;	extry:	a  =  character to display
+;	exit:	all registers preserved
+;------------------------------------------------------------------------------
+		push af
+		and 7Fh			; strip high bit
+		cp spc
+		jr nc,coutprn1
+		ld a,'.'		; replace unprintable characters
+coutprn1:	call cout
+		pop af
+		ret
+
+hexmsn:
+;------------------------------------------------------------------------------
+; Convert most significant nibble of a byte to hex
+;	entry:	a  =  byte to convert
+;	exit:	a  =  hex character of msn of byte
+;------------------------------------------------------------------------------
+		srl a
+		srl a
+		srl a
+		srl a
+		; fall thru
+
+hexlsn:
+;------------------------------------------------------------------------------
+; Convert least significant nibble of a byte to hex
+;	entry:	a  =  byte to convert
+;	exit:	a  =  hex character of lsn of byte
+;------------------------------------------------------------------------------
+		and 0Fh			; mask
+		cp 0Ah
+		jr c,hexlsn1		; less than 10
+		add a,'A'-3Ah
+hexlsn1:		add a,'0'
+		ret
+
+hexaac::
+;==============================================================================
+; Convert a byte into two hex digits
+;	entry:	a  =  byte to convert
+;	exit:	a  =  msn in hex
+;		c  =  lsn in hex
+;==============================================================================
+		push af
+		call hexlsn
+		ld c,a			; lsn into c
+		pop af
+		call hexmsn		; msn into a
+		ret
+
+hexa::
+;==============================================================================
+; Display a byte in hex
+;	entry:	a  =  byte to convert
+;	exit:	a  =  trashed
+;==============================================================================
+		push af
+		call hexmsn
+		call cout
+		pop af
+		call hexlsn
+		call cout
+		ret
+
+hexhl::
+;==============================================================================
+; Display a word in hex
+;	entry:	hl =  word to print
+;	exit:	a  =  trashed
+;==============================================================================
+		ld a,h
+		call hexa
+		ld a,l
+		call hexa
+		ret
+
+hexmemory::
+;==============================================================================
+; Dump memory in hex and ascii
+;	entry:	hl =  memory to print
+;		c  =  bytes to dump
+;	exit:	all registers preserved
+;==============================================================================
+		push af
+		push bc
+		push de
+		push hl
+
+hexaddr:	push bc			; save count
+		push hl			; save start address for ascii dump
+
+	; address
+		call hexhl
+
+	; a colon
+		ld a,':'
+		call cout
+
+	; 16 bytes in hex
+		ld b,16
+hexhex:		ld a,spc		; space before each hex byte
+		call cout
+
+		ld a,c
+		or a
+		jr nz,hexhex1		; no more data to dump?
+
+		ld a,spc		; dump spaces not hex
+		call cout
+		call cout
+		jr hexhex2
+
+hexhex1:	ld a,(hl)		; dump hex
+		call hexa
+		dec c
+
+hexhex2:	inc hl			; bump
+		djnz hexhex		; again
+
+	; a space
+		ld a,spc
+		call cout
+
+	; back to starting values
+		pop hl			; restore start address
+		pop bc			; restore count
+
+	; 16 bytes in ascii
+		ld b,16
+hexchr:		ld a,c
+		or a
+		jr nz,hexchr1
+
+		ld a,spc		; dump space not ascii
+		call cout
+		call cout
+		jr hexchr2
+
+hexchr1:	ld a,(hl)
+		call coutprn
+		dec c
+
+hexchr2:	inc hl			; bump
+		djnz hexchr
+
+	; cr lf
+		ld a,cr
+		call cout
+		ld a,lf
+		call cout
+
+	; more to dump?
+		ld a,c
+		or a
+		jr nz,hexaddr		; more?
+
+		pop hl
+		pop de
+		pop bc
+		pop af
+		ret
+
+hexregs::
+;==============================================================================
+; Display registers
+;==============================================================================
+		push af
+		push bc
+		push de
+		push hl
+
+	; label
+		push af
+		ld a,'R'
+		call cout
+		ld a,'E'
+		call cout
+		ld a,'G'
+		call cout
+		ld a,'S'
+		call cout
+		ld a,':'
+		call cout
+		pop af
+
+	; a
+		push de
+		ld e,'A'
+		call coutlbl
+		pop de
+		push af
+		call hexa
+		ld a,' '
+		call cout
+		pop af
+		call coutprn
+
+	; bc
+		push de
+		ld e,'B'
+		call coutlbl
+		pop de
+		push hl
+		push bc			; ld hl,bc
+		pop hl
+		call hexhl
+		pop hl
+
+	; bc
+		push de
+		ld e,'D'
+		call coutlbl
+		pop de
+		push hl
+		push de			; ld hl,de
+		pop hl
+		call hexhl
+		pop hl
+
+	; hl
+		ld e,'H'
+		call coutlbl
+		call hexhl
+
+	; cr lf
+		ld a,cr
+		call cout
+		ld a,lf
+		call cout
+
+		pop hl
+		pop de
+		pop bc
+		pop af
+		ret
+
+coutlbl:	push af
+		push bc
+		push de
+		push hl
+
+		push de
+		ld e,spc
+		bdos b_coutb
+		pop de
+		bdos b_coutb
+		ld e,'='
+		bdos b_coutb
+
+		pop hl
+		pop de
+		pop bc
+		pop af
+		ret
+
+;##############################################################################
+; End
+;##############################################################################
+
+hex_end::	end

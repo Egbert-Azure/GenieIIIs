@@ -1,14 +1,14 @@
 # Template file for 'sdl2trs'
 pkgname=sdl2trs
 branch=sdl2
-version=1.2.26
+version=1.2.28
 revision=1
 create_wrksrc=yes
 build_style=gnu-configure
 configure_args="--enable-readline --enable-zbx"
-depends="desktop-file-utils hicolor-icon-theme"
 hostmakedepends="autoconf automake git"
 makedepends="SDL2-devel readline-devel"
+depends="desktop-file-utils hicolor-icon-theme"
 short_desc="TRS-80 Model I/III/4/4P Emulator for SDL2 with hardware rendering"
 maintainer="Jens Guenther <dbotw@gmx.net>"
 license="BSD-2-Clause"

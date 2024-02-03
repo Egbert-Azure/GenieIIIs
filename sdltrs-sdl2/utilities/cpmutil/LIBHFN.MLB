@@ -1,0 +1,38 @@
+; LIBHFN.MLB auto generated from LIBHFN.MAC
+; ~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Function to manipulate host filenames
+;
+; Amendment History:
+;	22MAR2003 RKG 1.0 Initial Release.
+
+EXTRN hfnlower
+;==============================================================================
+; Set the host filename lowercase conversion flag
+;	entry:	a  =  0 keep case, else convert to lowercase
+;==============================================================================
+
+EXTRN hfnconvert
+;==============================================================================
+; Store host filename, perform case conversion if required
+;	entry:	de -> buffer to store hfn
+;		hl -> source string, nul or space terminated (in uppercase)
+;	exit:	a  =  last character examined (nul or space), Z flag affected
+;		bc =  preserved
+;		de -> nul in buffer at end of host filename
+;		hl -> nul or space in original buffer at end of host filename
+;==============================================================================
+
+EXTRN hfnfromfcb
+;==============================================================================
+; Obtain host filename from cpm fcb (ignores drive code)
+;	entry:	de -> fcb
+;		hl -> buffer for host filename
+;	exit:	a  =  trashed
+;		de -> fcb
+;		hl -> buffer containing host filename
+;==============================================================================

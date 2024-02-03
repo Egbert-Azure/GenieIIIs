@@ -1,0 +1,100 @@
+; LIBSTR.MLB auto generated from LIBSTR.MAC
+; ~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Character and string functions
+;
+; Amendment History:
+;	22MAR2003 RKG 1.0 Initial Release.
+
+EXTRN caselc
+;==============================================================================
+; Convert a character to lowercase
+;	entry:	a  =  character to convert
+;	exit:	a  =  converted character
+;==============================================================================
+
+EXTRN caseuc
+;==============================================================================
+; Convert a character to uppercase
+;	entry:	a  =  character to convert
+;	exit:	a  =  converted character
+;==============================================================================
+
+EXTRN casecc
+;==============================================================================
+; Change case of a character
+;	entry:	a  =  character to convert
+;	exit:	a  =  converted character
+;==============================================================================
+
+EXTRN casels
+;==============================================================================
+; Convert a nul terminated string to lowercase
+;	entry:	hl -> nul terminated string
+;	exit:	a  =  nul (last character examined)
+;		hl -> nul terminated string (converted to lowercase)
+;==============================================================================
+
+EXTRN caseus
+;==============================================================================
+; Convert a nul terminated string to uppercase
+;	entry:	hl -> nul terminated string
+;	exit:	a  =  nul (last character examined)
+;		hl -> nul terminated string (converted to uppercase)
+;==============================================================================
+
+EXTRN copy_hl
+;==============================================================================
+; Copy nul terminated string
+;	entry:	de -> destination buffer
+;		hl -> source nul terminated string
+;	exit:	a  =  nul (last character copied)
+;		hl -> nul at end of source
+;		de -> nul at end of destination
+;==============================================================================
+
+EXTRN copy_de
+;==============================================================================
+; Copy nul terminated string
+;	entry:	de -> source nul terminated string
+;		hl -> destination buffer
+;	exit:	a  =  nul (last character copied)
+;		de -> nul at end of source
+;		hl -> nul at end of destination
+;==============================================================================
+
+EXTRN nextword
+;==============================================================================
+; Skip word and subsequent spaces
+;	entry:	hl -> buffer of characters to examine
+;	exit:	a  =  last character examined, z flag set if nul encountered
+;		hl -> buffer - first character in next word
+;==============================================================================
+
+EXTRN skipword
+;==============================================================================
+; Skip characters until a space or a nul are encountered.
+;	entry:	hl -> buffer of characters to skip
+;	exit:	a  =  last character examined, z flag set if nul encountered
+;		hl -> buffer - nul or space at end of current word
+;==============================================================================
+
+EXTRN skipspaces
+;==============================================================================
+; Skip space characters
+;	entry:	hl -> buffer of spaces to examin
+;	exit:	a  =  last character examined, z set if nul encountered
+;		hl -> buffer - first non-space character
+;==============================================================================
+
+EXTRN printnul
+;==============================================================================
+; Print a nul terminated string with bdos couts call
+; Note: nul is converted to a '$' for printing and back to a nul again
+;	entry:	hl -> buffer with nul terminated string
+;	exit:	a trashed
+;==============================================================================

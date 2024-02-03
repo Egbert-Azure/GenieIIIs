@@ -28,7 +28,6 @@
  * mapped at ports 0xc8-0xcf, plus control registers at 0xc0-0xc1.
  */
 
-#include <string.h>
 #include <errno.h>
 #include "error.h"
 #include "trs.h"
@@ -62,18 +61,18 @@ typedef struct {
   int present;
 
   /* Controller register images */
-  Uint8 control;
-  Uint8 data;
-  Uint8 error;
-  Uint8 seccnt;
-  Uint8 secnum;
+  Uint8  control;
+  Uint8  data;
+  Uint8  error;
+  Uint8  seccnt;
+  Uint8  secnum;
   Uint16 secsize;
   Uint16 cyl;
-  Uint8 drive;
-  Uint8 head;
-  Uint8 sdh;
-  Uint8 status;
-  Uint8 command;
+  Uint8  drive;
+  Uint8  head;
+  Uint8  sdh;
+  Uint8  status;
+  Uint8  command;
 
   /* Number of bytes already done in current read/write */
   int bytesdone;
@@ -168,22 +167,14 @@ trs_hard_getwriteprotect(int unit)
   return state.d[unit].writeprot;
 }
 
-int
-trs_hard_getcyls(int unit)
+void
+trs_hard_getgeometry(int unit, int *cyls, int *head, int *secs)
 {
-  return state.d[unit].cyls;
-}
-
-int
-trs_hard_getheads(int unit)
-{
-  return state.d[unit].heads;
-}
-
-int
-trs_hard_getsecs(int unit)
-{
-  return state.d[unit].secs;
+  if (state.d[unit].file) {
+    *cyls = state.d[unit].cyls;
+    *head = state.d[unit].heads;
+    *secs = state.d[unit].secs;
+  }
 }
 
 /* Read from an I/O port mapped to the controller */
@@ -251,12 +242,12 @@ void trs_hard_out(int port, int value)
   case TRS_HARD_WP:
     break;
   case TRS_HARD_CONTROL:
-    if (value & TRS_HARD_SOFTWARE_RESET) {
+    if (value & TRS_HARD_SOFTWARE_RESET)
       trs_hard_init(0);
-    }
-    if (value & TRS_HARD_DEVICE_ENABLE) {
+
+    if (value & TRS_HARD_DEVICE_ENABLE)
       trs_hard_init(1);
-    }
+
     state.control = value;
     break;
   case TRS_HARD_DATA:
@@ -442,8 +433,8 @@ static int open_drive(int drive)
       d->file = fopen(d->filename, "rb");
     }
     if (d->file == NULL) {
-      error("trs_hard: could not open hard drive %d image '%s': %s",
-	    drive, d->filename, strerror(errno));
+      file_error("open hard%d: '%s'",
+	    drive, d->filename);
       err = errno;
       goto fail;
     }
@@ -455,7 +446,7 @@ static int open_drive(int drive)
   /* Read in the Reed header and check some basic magic numbers (not all) */
   res = fread(&rhh, sizeof(rhh), 1, d->file);
   if (res != 1 || rhh.id1 != 0x56 || rhh.id2 != 0xcb || rhh.ver >= 0x20) {
-    error("trs_hard: unrecognized hard drive image '%s'", d->filename);
+    error("unrecognized hard%d drive image '%s'", drive, d->filename);
     err = -1;
     goto fail;
   }
@@ -463,8 +454,8 @@ static int open_drive(int drive)
   if (rhh.flag1 & 0x80) d->writeprot = 1;
 
   /* Use the number of cylinders specified in the header */
-  d->cyls  = rhh.dparm << 8; /* MSB */
-  d->cyls += rhh.cyl & 0xFF; /* LSB */
+  d->cyls  = rhh.cylhi << 8;   /* MSB */
+  d->cyls += rhh.cyllo & 0xFF; /* LSB */
 
   secs = rhh.sec ? rhh.sec : 256;
   if (rhh.heads == 0) {
@@ -487,8 +478,8 @@ static int open_drive(int drive)
 
   if ((rhh.sec % d->secs) != 0 ||
       d->heads <= 0 || d->heads > TRS_HARD_MAXHEADS) {
-    error("trs_hard: unusable geometry (%d heads/%d secs) in image '%s'",
-          d->heads, d->secs, d->filename);
+    error("unusable geometry (%d heads/%d secs) in hard%d image '%s'",
+          d->heads, d->secs, drive, d->filename);
     err = -1;
     goto fail;
   }
@@ -496,7 +487,7 @@ static int open_drive(int drive)
   state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE;
   return 0;
 
- fail:
+fail:
   if (d->file) fclose(d->file);
   d->file = NULL;
   d->filename[0] = 0;
@@ -520,8 +511,8 @@ static int find_sector(int newstatus)
   if (/**state.cyl >= d->cyls ||**/ /* ignore this limit */
       state.head >= d->heads ||
       state.secnum > d->secs /* allow 0-origin or 1-origin */ ) {
-    error("trs_hard: requested cyl %d hd %d sec %d; max cyl %d hd %d sec %d",
-	  state.cyl, state.head, state.secnum, d->cyls, d->heads, d->secs);
+    error("hard%d: requested cyl %d hd %d sec %d; max cyl %d hd %d sec %d",
+	  state.drive, state.cyl, state.head, state.secnum, d->cyls, d->heads, d->secs);
     state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_ERR;
     state.error = TRS_HARD_NFERR;
     return 0;
@@ -581,7 +572,7 @@ static void hard_data_out(int value)
   }
 
   if (res == EOF) {
-    error("trs_hard: errno %d while writing drive %d", errno, state.drive);
+    file_error("writing on hard%d", state.drive);
     state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_ERR;
     state.error = TRS_HARD_DATAERR; /* arbitrary choice */
   }
@@ -680,13 +671,13 @@ void trs_hard_load(FILE *file)
 
   for (i = 0; i < TRS_HARD_MAXDRIVES; i++) {
     trs_load_harddrive(file, &state.d[i]);
+
     if (state.d[i].file != NULL) {
       state.d[i].file = fopen(state.d[i].filename, "rb+");
       if (state.d[i].file == NULL) {
         state.d[i].file = fopen(state.d[i].filename, "rb");
         if (state.d[i].file == NULL) {
-          error("failed to load hard%d: '%s': %s", i, state.d[i].filename,
-              strerror(errno));
+          file_error("load hard%d: '%s'", i, state.d[i].filename);
           state.d[i].filename[0] = 0;
           state.d[i].writeprot = 0;
           continue;

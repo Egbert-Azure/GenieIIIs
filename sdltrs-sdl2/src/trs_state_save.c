@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006-2011, Mark Grebe
- * Copyright (C) 2018-2023, Jens Guenther
+ * Copyright (C) 2018-2024, Jens Guenther
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,7 +26,6 @@
  * SUCH DAMAGE.
  */
 
-#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include "error.h"
@@ -34,7 +33,7 @@
 
 static const char stateFileBanner[] = "SDLTRS State Save File";
 static int const stateFileBannerLen = sizeof(stateFileBanner) - 1;
-static unsigned stateVersionNumber = 5;
+static unsigned stateVersionNumber = 8;
 
 int trs_state_save(const char *filename)
 {
@@ -62,7 +61,7 @@ int trs_state_save(const char *filename)
     return 0;
   }
 
-  error("failed to save State '%s': %s", filename, strerror(errno));
+  file_error("save State '%s'", filename);
   return -1;
 }
 
@@ -109,7 +108,7 @@ int trs_state_load(const char *filename)
     return 0;
   }
 
-  error("failed to load State '%s': %s", filename, strerror(errno));
+  file_error("load State '%s'", filename);
   return -1;
 }
 

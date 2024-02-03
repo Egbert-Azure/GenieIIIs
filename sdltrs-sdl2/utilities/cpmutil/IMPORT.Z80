@@ -1,0 +1,573 @@
+; IMPORT.MAC
+; ~~~~~~~~~~
+;
+; Contents:
+;	Z80 assembler program for CP/M.
+;
+; Purpose:
+;	Import a file from host into the xtrs emulator.
+;
+; Usage:
+;	IMPORT [-F][-H][-L][-T][-V] hostfilename [cpmfilename]
+;
+; Where:
+;	-n converts host lf to CP/M cr lf;
+;	hostfilename - name of the host file to import; and
+;	cpmfilename - name of the file in CP/M (must not exist);
+;
+; Notes:
+;	When started with no arguments, import will prompt for all args.
+;	If only the hostfilename is specified, the cpmfilename will be
+;	assumed to have the same name.
+;
+;	Also note that the CP/M CCP converts all command line arguments to
+;	uppercase, therefore if hostfilename is specified on the command
+;	line then it will be taken as all uppercase.
+;
+; Amendment History:
+;	27MAR03 RKG 2.0 Initial release.
+
+.Z80
+
+;##############################################################################
+; Macro Libraries and External Functions
+;##############################################################################
+
+MACLIB CPM.MLB
+
+MACLIB LIBCFN.MLB
+
+MACLIB LIBHFN.MLB
+
+MACLIB LIBSTR.MLB
+
+MACLIB LIBXTRS.MLB
+
+;##############################################################################
+; Offset assembly so that print file matches linked output
+;##############################################################################
+
+;		.phase 103h
+
+;##############################################################################
+; Messages
+;##############################################################################
+
+m_usage:	defb	cr,lf,'Usage:',tab
+		defb	'IMPORT [-F][-H][-L][-T][-V] hostfilename [cpmfilename]'
+m_crlf:		defb	cr,lf,'$'
+
+m_boption::	defb	'Invalid option "'
+invalid::	defb	'x"',cr,lf,'$'
+
+m_nohfname::	defb	'ERROR: Must specify hostfilename',cr,lf,'$'
+
+m_arrow::	defb	' -> $'
+
+m_uopen:	defb	'ERROR: Unable to open HOST file: $'
+m_uread:	defb	'ERROR: Unable to read HOST file: $'
+m_uclose:	defb	'ERROR: Unable to close HOST file: $'
+
+m_cexists:	defb	'ERROR: CP/M file already exists',cr,lf,'$'
+m_copen:	defb	'ERROR: Unable to open CP/M file',cr,lf,'$'
+m_cwrite:	defb	'ERROR: Unable to write CP/M file',cr,lf,'$'
+m_cclose:	defb	'ERROR: Unable to close CP/M file',cr,lf,'$'
+
+;##############################################################################
+; Storage
+;##############################################################################
+
+f_overwrite::	defb	0		; 0 means preserve, others mean overwrite
+f_textfile::	defb	0		; 0 means binary, other values mean text
+f_highspeed::	defb	0		; 0 means normal, other values mean high
+f_verbose::	defb	0		; 0 means quiet, other values mean verbose
+
+hostfname::	defs	128		; host filename
+hostfd::	defw	0		; host file descriptor
+hostbuf::	defs	128		; space for host text buffer
+
+		defs	32		; space for the stack
+stack_top::	defw	0		; stack grows down from this (wasted)
+
+;##############################################################################
+; Code
+;##############################################################################
+
+main::
+	; set up the stack
+		ld sp,stack_top
+
+	; check parameters
+		ld a,(c_cmdlen)		; get length of parameters
+		or a
+		jp z,usage		; no parameters?
+
+		ld hl,c_cmdstr		; start of command arg buffer
+		call skipspaces
+		jp z,usage		; only spaces?
+
+	; possible options
+		call options
+
+	; host filename
+		jp z,no_hfname		; end of paramters
+		ld de,hostfname		; buffer for host filename
+		call hfnconvert		; save hfname
+		call skipspaces
+
+	; cpm filename (optional)
+		jr z,mkcpmname		; end of parameters?
+		ld de,c_fcb1		; buffer for cpm filename
+		call cfntofcb		; put cpm filename into fcb
+		jp import
+
+mkcpmname:
+	; make cpm filename from host filename
+		ld hl,hostfname		; examine host filename
+		ld de,c_fcb1		; buffer for cpm filename
+		call cfntofcb		; put filename into fcb
+		jp import
+
+options::
+;------------------------------------------------------------------------------
+; Process options
+;	entry:	hl -> command line with possible options
+;	exit:	a  =  last character examined (z flag affected)
+;		hl -> next character in command line
+;------------------------------------------------------------------------------
+
+	; optional options
+		ld a,(hl)
+		or a
+		ret z			; nul? end of options
+		cp '-'
+		ret nz			; not an options?
+
+	; have options
+		inc hl
+		ld a,(hl)
+opt_next:	call opt_action		; process option
+
+	; check for more options
+		inc hl
+		ld a,(hl)
+		or a
+		ret z			; nul? end of options
+		cp spc
+		jr nz,opt_next		; more options in this group?
+		call skipspaces
+		jr options		; check for next group of options
+
+opt_action:
+	; process option
+		call caseuc		; make case-insensitive
+		cp 'F'
+		jr z,opt_f
+		cp 'H'
+		jr z,opt_h
+		cp 'L'
+		jr z,opt_l
+		cp 'T'
+		jr z,opt_t
+		cp 'V'
+		jr z,opt_v
+
+	; invalid option
+		ld (invalid),a
+		bdos b_couts,m_boption
+		jp usage
+
+opt_f:	; "-F" overwrite exisiting file
+		ld a,1
+		ld (f_overwrite),a	; set overwrite flag
+		ret
+
+opt_h:	; "-H" switch to high speed
+		ld a,1
+		ld (f_highspeed),a	; set speed flag
+		ret
+
+opt_l:	; "-L" convert host filename to lowercase
+		ld a,1
+		call hfnlower		; set hfname lowercase flag
+		ret
+
+opt_t:	; "-T" transfer text file (cr lf -> lf, end at sub)
+		ld a,1
+		ld (f_textfile),a	; set text file flag
+		ret
+
+opt_v:	; "-V" verbose
+		ld a,1
+		ld (f_verbose),a	; set verbose flag
+		ret
+
+no_hfname::
+;------------------------------------------------------------------------------
+; Host filename not specified
+;------------------------------------------------------------------------------
+		bdos b_couts,m_nohfname
+		; fall thru
+
+usage::
+;==============================================================================
+; Display program usage
+;	exit:	does not return
+;==============================================================================
+		bdos b_couts,m_usage
+		; fall thru
+
+done::
+;==============================================================================
+; Single exit point of program
+;==============================================================================
+		jp c_boot
+
+import::
+;==============================================================================
+; Import a file
+;	entry:	(hostfname) contains unix filename
+;		(c_fcb1) contains cpm file details
+;==============================================================================
+
+	; print details
+		ld hl,hostfname
+		call printnul		; host filename
+		bdos b_couts,m_arrow
+		ld hl,c_iobuf		; temporary buffer for cpm filename
+		ld de,c_fcb1
+		call cfntotext
+		call printnul		; cpm filename
+		bdos b_couts,m_crlf
+
+	; open host file
+		call uopen
+		jp nz,done
+
+	; open local file
+		call copen
+		jp nz,done
+
+	; import
+		ld a,(f_textfile)
+		or a
+		jr z,imp_binary
+
+imp_text:	call text
+		jr imp_finish
+
+imp_binary:	call binary
+		; fall thru
+
+imp_finish:
+	; import complete
+		ld e,cr
+		call verbose
+		ld e,lf
+		call verbose
+
+	; close host file
+		call uclose
+
+	; close local file
+		call cclose
+
+		jp done
+
+binary:
+;==============================================================================
+; import a binary file
+;	exit:	z indicates a successful import
+;		all registers trashed
+;==============================================================================
+
+		ld hl,c_iobuf		; all io thru cp/m io buffer
+		call uread		; length in b
+
+				; check for zero length read
+		ld a,b
+		or a			; set flags
+		ret z			; nothing to write, must be finished
+		push bc			; save length
+		cp c_iobufsize
+		jr z,binary2		; full block
+
+				; partial block - pad with nuls
+		ld c,b
+		ld b,0
+		add hl,bc		; point to garbage
+		ld a,c_iobufsize
+		sub b			; a has number bytes to nul
+binary1:	jr z,binary2
+		ld (hl),0
+		inc hl
+		dec a
+		jr binary1
+
+				; write cpm block
+binary2:	call cwrite
+		pop bc			; restore length
+		ret nz
+
+				; check if file complete
+binary3:	ld a,b			; check length
+		cp c_iobufsize
+		jr z,binary		; full read, read more
+
+				; partial read must be last read, fall thru...
+		xor a			; set zero flag
+		ret
+
+text:
+;==============================================================================
+; import an text file (convert lf to cr lf and add sub at end)
+;	during: (hl) host buffer
+;		(de) cpm buffer
+;		b bytes remaining in host buffer
+;		c bytes remaining in cp/m buffer
+;	exit:	z indicates a successful export
+;		all registers trashed
+;==============================================================================
+
+				; setup cpm buffer
+		ld de,c_iobuf
+		ld c,c_iobufsize
+
+				; read a block from host file
+text1:		ld hl,hostbuf
+		call uread
+		ret nz
+		ld a,b
+		or a
+		jr z,text4		; nothing was read
+
+				; scan thru all bytes in host buffer
+text2:		ld a,(hl)
+		cp lf
+		jr nz,text3
+		ld a,cr
+		call textput
+		ld a,lf
+text3:		call textput
+		inc hl
+		djnz text2
+		jr text1
+
+text4:				; end of file reached
+		ld a,sub		; add a sub character
+		call textput
+		ld a,c
+		cp c_iobufsize
+		ret z			; cp/m buffer was already written
+
+				; fill cpm buffer with nul chars
+		ld b,c
+		ld a,0
+text5:		ld (de),a
+		inc de
+		djnz text5
+		call cwrite		; write last cp/m buffer
+		ret
+
+				; put a character into the cp/m buffer
+textput:	ld (de),a
+		inc de			; bump pointer
+		dec c			; dec count
+		ld a,c
+		or a
+		ret nz			; buffer not full yet
+		call cwrite
+		ld de,c_iobuf		; reset pointer and counter
+		ld c,c_iobufsize
+		ret
+
+;##############################################################################
+; CP/M file routines
+;##############################################################################
+
+copen::
+;==============================================================================
+; open the cp/m filename in fcb1
+;	entry:	(c_fcb1) contains cp/m fcb
+;	exit:	z indicates a successful open
+;		af,bd,de,hl trashed
+;==============================================================================
+
+		ld a,(f_overwrite)
+		or a
+		jr nz,copen1		; overwrite
+
+		bdos b_fopen,c_fcb1	; open existing file (a=0ffh is error)
+		inc a
+		jr z,copen1		; file doesn't exist (good)
+		bdos b_fclose,c_fcb1	; close the existing file
+		bdos b_couts,m_cexists
+		xor a
+		dec a
+		ret			; ret nz
+
+copen1:		bdos b_fnew,c_fcb1	; make new file (a=0FFh is error)
+		inc a
+		jr z,copen2
+		xor a
+		ret
+
+copen2:		bdos b_couts,m_copen
+		xor a
+		dec a
+		ret			; ret nz
+
+cwrite::
+;==============================================================================
+; write a block to the cp/m file
+;	entry:	(c_fcb1) contains the cp/m fcb
+;	exit:	z indicates a successful write
+;		af trashed (bc,de,hl saved)
+;==============================================================================
+
+	; preserve regs
+		push bc
+		push de
+		push hl
+
+	; perform write
+		bdos b_fwseq,c_fcb1
+
+	; display action
+		ld e,'w'
+		call verbose
+
+	; restore regs
+		pop hl
+		pop de
+		pop bc
+		inc a
+		jr z,cwrite2
+		xor a
+		ret
+
+	; display error message
+cwrite2:	bdos b_couts,m_cwrite
+		xor a
+		dec a
+		ret			; ret nz
+
+cclose:
+;==============================================================================
+; close the cp/m filename in fcb1
+;	entry:	(c_fcb1) contains cp/m fcb
+;	exit:	z indicates a sucessful close
+;		all registers trashed
+;==============================================================================
+		bdos b_fclose,c_fcb1
+		ret z
+
+	; display error message
+		bdos b_couts,m_cclose
+		xor a
+		dec a
+		ret			; ret nz
+
+;##############################################################################
+; Host file routines
+;##############################################################################
+
+uopen::
+;==============================================================================
+; open host file
+;	entry:	(hostfname) start of host filename
+;	exit:	z indicates successful open
+;		(hostfd) contains host file descriptor
+;		all registers trashed.
+;==============================================================================
+		ld hl,hostfname
+		ld bc,eo_rdonly
+		ld de,0			; permissions
+		call xtrsopen
+		ld (hostfd),de		; save host fd
+		ret z			; ok
+
+	; display error message
+		ld de,m_uopen
+		jp xtrserrmsg
+
+uread::
+;==============================================================================
+; read a block from the host file
+;	entry:	(hl) start of buffer (c_iobufsize length)
+;		(hostfd) contains host file descriptor
+;	exit:	z indicates sucessful read
+;		b contains number of bytes read
+;		af trashed (c,de,hl saved)
+;==============================================================================
+
+
+	; preserve regs
+		push hl
+		push de
+		push bc
+
+	; show action
+		ld e,'r'
+		call verbose
+
+	; perform read
+		ld bc,c_iobufsize	; length
+		ld de,(hostfd)		; get host fd
+		call xtrsread
+			; bytes read in bc but since iobufsize is only 0x80h
+			; bytes, the c register will contains the full count
+
+	; restore regs
+		ld d,c			; save count in d
+		pop bc			; recover contents of bc
+		ld b,d			; count now in b
+		pop de
+		pop hl
+		ret z
+
+	; display error message
+		ld de,m_uread
+		jp xtrserrmsg
+
+uclose::
+;==============================================================================
+; close the host file
+;	entry:	(hostfd) contains host file descriptor
+;	exit:	z indicates a sucessful close
+;		all registers trashed
+;==============================================================================
+		ld de,(hostfd)		; get host fd
+		call xtrsclose
+		ret z			; ok
+
+	; display error message
+		ld de,m_uclose
+		jp xtrserrmsg
+
+;##############################################################################
+; Verbose
+;##############################################################################
+
+verbose::
+;==============================================================================
+; Display an 'r' if verbose
+;	entry:	e  =  character to display
+;	exit:	af =  preserved
+;		bc =  trashed
+;		de =  trashed
+;		hl =  trashed
+;==============================================================================
+		push af
+		ld a,(f_verbose)
+		or a
+		jr z,verbose1
+		bdos b_coutb
+verbose1:	pop af
+		ret
+
+;##############################################################################
+; End
+;##############################################################################
+
+end::		end main

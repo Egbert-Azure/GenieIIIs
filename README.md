@@ -27,6 +27,14 @@ can be found in [How to article](https://github.com/Egbert-Azure/GenieIIIs/tree/
 
 WIP
 
+## Genie IIIs NewDos, GDos, CALVADos ##
+
+WIP
+
+## Genie IIIs 1 MB banker ##
+
+WIP
+
 ## Drop a Star ⭐ ##
 
 If you like this project then drop a Github star by pressing the Star button ⭐

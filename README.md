@@ -21,7 +21,7 @@ can be found in [How to article](https://github.com/Egbert-Azure/GenieIIIs/tree/
 
 ## Genie IIIs with ZCPM3 ##
 
-[DMK](../GenieIIIs/Holte-ZCPM/)
+[DMK](https://github.com/Egbert-Azure/GenieIIIs/tree/main/Holte-ZCPM)
 
 ## Drop a Star ⭐ ##
 

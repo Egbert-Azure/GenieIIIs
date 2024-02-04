@@ -35,4 +35,3 @@ static disp_config ()
   printf ("%s C:  800 KBytes %s\n", drive, type2);
   printf ("%s D:  250 KBytes %s\n", drive, type3);
 }
-

@@ -43,4 +43,3 @@
 #define XMOVE  29		/* set bank when a buffer is in a bank  */
 				/* other than 0 or 1			*/
 #define USERF  30		/* reserved for system implementor	*/ 
-

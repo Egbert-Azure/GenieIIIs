@@ -501,3 +501,71 @@ B A C K U P  *U T I L S 0 0 1*  T h o m a s   H o l t e  *8 6 0 9 1 1*
 - 27.12.92                                                                    *
 ******************************************************************************/
 ```
+
+Systemerstellung mit
+```
+M80
+<=BOOTER
+<=DRIVER
+<=LDRBIOS
+<
+
+L80 BOOTER/N,BOOTER/E
+<N
+L80 DRIVER/N,DRIVER/E
+<N
+
+LINK CPMLDR[L4400,NR]=CPMLDR,LDRBIOS
+
+ERA BOOTER.REL
+ERA DRIVER.REL
+ERA LDRBIOS.REL
+ERA $$TEMP$$
+
+T80
+<LOAD BOOTER 1000
+<LOAD DRIVER 1200
+<LOAD CPMLDR 4900
+<A 49A8
+<JR 49A8
+<
+<A 4C23
+<JR 4C23
+<
+<SAVE $$TEMP$$. 100 557F
+<BYE
+
+ERA BOOTER.COM
+ERA DRIVER.COM
+ERA CPMLDR.COM
+
+COPYSYS $$TEMP$$
+<B
+<N
+```
+```
+x80
+<=BNKBIOS
+<=SCB
+<=BOOT
+<=CHARIO
+<=MOVE
+<=DRVTBL
+<=DISKIO
+<=hd2 
+<
+
+LINK BNKBIOS3[B,NR]=BNKBIOS,SCB,BOOT,CHARIO,MOVE,hd2,DRVTBL,DISKIO
+
+GENCPM AUTO
+
+ERA BNKBIOS.REL
+ERA SCB.REL
+ERA BOOT.REL
+ERA CHARIO.REL
+ERA MOVE.REL
+era hd2.rel
+ERA DRVTBL.REL
+ERA DISKIO.REL
+ERA BNKBIOS3.SPR
+```

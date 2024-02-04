@@ -21,7 +21,7 @@ can be found in [How to article](../GenieIIIs/How%20to%20article/)
 
 ## Genie IIIs with ZCPM3 ##
 
-[DMK](../GenieIIIs/Holte-ZCPM/Holte-ZCPM)
+[DMK](../GenieIIIs/Holte-ZCPM/)
 
 ## Drop a Star ⭐ ##
 

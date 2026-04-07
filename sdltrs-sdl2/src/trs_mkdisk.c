@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
 #include "error.h"
 #include "reed.h"
 #include "trs_cassette.h"
@@ -39,11 +38,6 @@
 #include "trs_hard.h"
 #include "trs_mkdisk.h"
 #include "trs_stringy.h"
-
-#define DISK  3
-#define HARD  4
-#define WAFER 5
-#define CASS  6
 
 #ifdef _WIN32
 #include "wtypes.h"
@@ -69,16 +63,16 @@ int trs_write_protect(int type, int drive)
   struct stat st = { 0 };
 
   switch (type) {
-    case DISK:
+    case DISK_DRIVE:
       filename = trs_disk_getfilename(drive);
       break;
-    case HARD:
+    case HARD_DRIVE:
       filename = trs_hard_getfilename(drive);
       break;
     case WAFER:
       filename = stringy_get_name(drive);
       break;
-    case CASS:
+    case CASSETTE:
       filename = trs_cassette_getfilename();
       break;
     default:
@@ -97,12 +91,12 @@ int trs_write_protect(int type, int drive)
   win_set_readonly(prot_filename, 0);
 #else
   if (chmod(prot_filename, st.st_mode | (S_IWUSR|S_IWGRP|S_IWOTH)) < 0) {
-    file_error("chmod '%s'", prot_filename);
+    file_error("chmod: '%s'", prot_filename);
     return -1;
   }
 #endif
   switch (type) {
-    case DISK:
+    case DISK_DRIVE:
       emutype = trs_disk_getdisktype(drive);
       writeprot = !trs_disk_getwriteprotect(drive);
       trs_disk_remove(drive);
@@ -117,11 +111,11 @@ int trs_write_protect(int type, int drive)
           } else {
             putc(writeprot ? 0xff : 0, f);
           }
+          fclose(f);
         }
-        fclose(f);
       }
       break;
-    case HARD:
+    case HARD_DRIVE:
       writeprot = !trs_hard_getwriteprotect(drive);
       trs_hard_remove(drive);
 
@@ -156,7 +150,7 @@ int trs_write_protect(int type, int drive)
         fclose(f);
       }
       break;
-    case CASS:
+    case CASSETTE:
       writeprot = !trs_cass_getwriteprotect();
       trs_cassette_remove();
       break;
@@ -176,21 +170,21 @@ int trs_write_protect(int type, int drive)
       (( (st.st_mode & (S_IRUSR|S_IRGRP|S_IROTH)) >> 1 ) & ~oumask);
   }
   if (chmod(prot_filename, newmode) < 0) {
-    file_error("chmod '%s'", prot_filename);
+    file_error("chmod: '%s'", prot_filename);
     return -1;
   }
 #endif
   switch (type) {
-    case DISK:
+    case DISK_DRIVE:
       trs_disk_insert(drive, prot_filename);
       break;
-    case HARD:
+    case HARD_DRIVE:
       trs_hard_attach(drive, prot_filename);
       break;
     case WAFER:
       stringy_insert(drive, prot_filename);
       break;
-    case CASS:
+    case CASSETTE:
       trs_cassette_insert(prot_filename);
       break;
     default:
@@ -205,7 +199,7 @@ int trs_create_blank_jv1(const char *fname)
 
   /* Unformatted JV1 disk - just an empty file! */
   if (f == NULL) {
-    file_error("create JV1 disk '%s'", fname);
+    file_error("create JV1 disk: '%s'", fname);
     return -1;
   }
 
@@ -220,7 +214,7 @@ int trs_create_blank_jv3(const char *fname)
 
   /* Unformatted JV3 disk. */
   if (f == NULL) {
-    file_error("create JV3 disk '%s'", fname);
+    file_error("create JV3 disk: '%s'", fname);
     return -1;
   }
 
@@ -239,7 +233,7 @@ int trs_create_blank_dmk(const char *fname, int sides, int density,
 
   /* Unformatted DMK disk */
   if (f == NULL) {
-    file_error("create DMK disk '%s'", fname);
+    file_error("create DMK disk: '%s'", fname);
     return -1;
   }
 
@@ -293,7 +287,7 @@ int trs_create_blank_hard(const char *fname, int cyls, int heads, int secs)
   FILE *f = fopen(fname, "wb");
 
   if (f == NULL) {
-    file_error("create hard disk '%s'", fname);
+    file_error("create hard disk: '%s'", fname);
     return -1;
   }
 

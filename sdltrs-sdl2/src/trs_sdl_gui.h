@@ -55,22 +55,32 @@
 #define EXEC         (-28)
 #define SAVE_BMP     (-29)
 
-#define N_JOYBUTTONS 20
+#define CAS          ".cas.cpt.wav"
+#define CMD          ".cmd"
+#define DSK          ".dmk.dsk.jv1.jv3"
+#define ESF          ".esf"
+#define HDV          ".hdv"
+#define ROM          ".bin.hex.iii.rom"
+#define SET          ".set"
+#define T8C          ".t8c"
+#define T8S          ".t8s"
 
-extern int jbutton_map[N_JOYBUTTONS];
+extern int jbutton_map[];
 extern int jaxis_mapped;
 extern int mousepointer;
 extern int scanlines;
 extern int scanshade;
-extern int turbo_paste;
 
-void call_function(int function);
-void trs_gui_display_pause(void);
-int  trs_gui_exit_sdltrs(void);
-int  trs_gui_file_browse(const char *path, char *filename, const char *mask,
-                         int browse_dir, const char *type);
-void trs_gui_clear_rect(int x, int y, int w, int h, int frame);
-void trs_gui_write_char(int col, int row, Uint8 char_index, int invert);
-int  trs_sdl_savebmp(const char *name);
+#if defined(SDL2) || !defined(NOX)
+extern int turbo_paste;
+#endif
+
+extern int  gui_exit(void);
+extern int  gui_file(const char *path, char *filename, const char *mask, int dir, const char *type);
+extern void gui_function(int function);
+extern void gui_pause(void);
+extern void gui_rect(int x, int y, int w, int h, int frame);
+extern void gui_text(const char *text, int col, int row, int len, int font);
+extern int  trs_sdl_savebmp(const char *name);
 
 #endif /* _TRS_SDL_GUI_H */

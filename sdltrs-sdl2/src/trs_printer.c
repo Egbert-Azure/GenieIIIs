@@ -44,7 +44,6 @@
 int trs_printer = 0;
 
 static FILE *printer;
-static char printer_filename[FILENAME_MAX];
 static int printer_open = 0;
 
 int trs_printer_reset(void)
@@ -59,15 +58,17 @@ int trs_printer_reset(void)
 
 static void trs_printer_open(void)
 {
-  int file_num;
   struct stat st = { 0 };
+  char printer_filename[FILENAME_MAX];
+  int file_num;
 
   for (file_num = 0; file_num < 10000; file_num++) {
+
     if (snprintf(printer_filename, FILENAME_MAX, "%s%ctrsprn%04d.txt",
         trs_printer_dir, DIR_SLASH, file_num) < FILENAME_MAX) {
       if (stat(printer_filename, &st) < 0) {
         printer_open = 1;
-        printer = fopen(printer_filename,"w");
+        printer = fopen(printer_filename, "w");
         if (printer == NULL) {
           file_error("open printer output file '%s'", printer_filename);
           printer_open = 0;
@@ -86,9 +87,13 @@ void trs_printer_write(int value)
 
     if (printer_open) {
       if (value == 0x0D) {
-        fputc('\n',printer);
+        fputc('\n', printer);
       } else {
-        fputc(value,printer);
+        if (trs_printer == 2) {
+          value &= 0x7F;
+          if (value < ' ') value = '.';
+        }
+        fputc(value, printer);
       }
     }
   }

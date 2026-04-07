@@ -38,13 +38,16 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <SDL_types.h>
 #include "error.h"
 #include "trs.h"
 #include "trs_disk.h"
+#include "trs_memory.h"
+#include "trs_stringy.h"
 
 #define BUFFER_SIZE 256
+
+int trs_hd_boot;
 
 /*
  * Fake ROM for xtrs, initial hack
@@ -679,18 +682,18 @@ load_cmd(FILE* f, Uint8 memory[65536], int *xferaddr)
       }
       return LOAD_CMD_OK;
 
+    case 0: /* used by Model I TRSDOS BOOT/SYS easter egg */
     case 5: /* module header */
+    case 7: /* Patch name header */
+    case 0x1F: /* copyright block */
       while (count-- > 0) {
         if (getc(f) == EOF) return LOAD_CMD_EOF;
       }
       break;
 
     case 0x10: /* yanked load block */
-      a1 = getc(f);
-      if (a1 == EOF) return LOAD_CMD_EOF;
-      a2 = getc(f);
-      if (a2 == EOF) return LOAD_CMD_EOF;
-      addr = a1 + a2 * 256;
+      if (getc(f) == EOF) return LOAD_CMD_EOF;
+      if (getc(f) == EOF) return LOAD_CMD_EOF;
 
       count -= 2;
       if (count <= 0) count += 256;
@@ -708,15 +711,10 @@ load_cmd(FILE* f, Uint8 memory[65536], int *xferaddr)
   return LOAD_CMD_OK;
 }
 
-static int hex_byte(const char *string)
+static int hex_byte(const char *hex)
 {
-  char buf[3];
-
-  buf[0] = string[0];
-  buf[1] = string[1];
-  buf[2] = '\0';
-
-  return(strtol(buf, (char **)NULL, 16));
+  return ((hex[0] - (hex[0] <= '9' ? '0' : '7')) * 16)
+         + hex[1] - (hex[1] <= '9' ? '0' : '7');
 }
 
 static int load_hex(FILE *file)
@@ -787,7 +785,7 @@ static int trs_load_rom(const char *filename)
     return -1;
 
   if ((program = fopen(filename, "rb")) == NULL) {
-    file_error("load ROM file '%s'", filename);
+    file_error("load ROM file: '%s'", filename);
     return -1;
   }
 
@@ -818,7 +816,7 @@ static int trs_load_rom(const char *filename)
       fclose(program);
 
       if (trs_rom_size > 0x3800) {
-        error("MODELA/III file '%s' size %d exceeds 14 kB", filename, trs_rom_size);
+        error("MODELA/III file '%s' size %d exceeds 14 KB", filename, trs_rom_size);
         return -1;
       } else {
         trs_load_compiled_rom(0, trs_rom_size, loadrom);
@@ -839,31 +837,32 @@ static int trs_load_rom(const char *filename)
     c = getc(program);
   }
 
+  fclose(program);
+
   return 0;
 }
 
 int trs_load_cmd(const char *filename)
 {
-  FILE *program;
-  int entry;
+  FILE *program = fopen(filename, "rb");
 
-  if ((program = fopen(filename, "rb")) == NULL) {
-    file_error("load CMD file '%s'", filename);
-    return -1;
-  }
+  if (program) {
+    int entry;
 
-  if (load_cmd(program, NULL, &entry) == LOAD_CMD_OK) {
-    debug("entry point of '%s': 0x%x (%d) ...\n", filename, entry, entry);
-    if (entry >= 0)
-      Z80_PC = entry;
-  } else {
-    error("unknown CMD format: '%s'", filename);
-    fclose(program);
-    return -1;
-  }
+    if (load_cmd(program, NULL, &entry) == LOAD_CMD_OK) {
+      fclose(program);
+      debug("entry point of '%s': 0x%X (%d)\n", filename, entry, entry);
+      if (entry >= 0)
+        Z80_PC = entry;
+      return 0;
+    } else {
+      fclose(program);
+      error("unknown CMD format: '%s'", filename);
+    }
+  } else
+    file_error("load CMD file: '%s'", filename);
 
-  fclose(program);
-  return 0;
+  return -1;
 }
 
 void trs_rom_init(void)
@@ -894,7 +893,7 @@ void trs_rom_init(void)
       break;
   }
 
-  /* Limit ROM size to maximum of 14 kB */
+  /* Limit ROM size to maximum of 14 KB */
   if (trs_rom_size > 0x3800)
       trs_rom_size = 0x3800;
 }

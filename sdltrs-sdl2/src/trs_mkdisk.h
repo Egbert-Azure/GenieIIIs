@@ -29,11 +29,16 @@
 #ifndef _TRS_MKDISK_H
 #define _TRS_MKDISK_H
 
-int trs_write_protect(int type, int drive);
-int trs_create_blank_jv1(const char *fname);
-int trs_create_blank_jv3(const char *fname);
-int trs_create_blank_dmk(const char *fname, int sides, int density,
-                          int eight, int ignden);
-int trs_create_blank_hard(const char *fname, int cyls, int heads, int secs);
+#define DISK_DRIVE  1
+#define HARD_DRIVE  2
+#define WAFER       3
+#define CASSETTE    4
+
+extern int trs_write_protect(int type, int drive);
+extern int trs_create_blank_jv1(const char *fname);
+extern int trs_create_blank_jv3(const char *fname);
+extern int trs_create_blank_dmk(const char *fname, int sides, int density,
+                                int eight, int ignden);
+extern int trs_create_blank_hard(const char *fname, int cyls, int heads, int secs);
 
 #endif /* _TRS_MKDISK_H */

@@ -51,11 +51,11 @@ keyboard and video I/O through a SDL interface. The hardware emulation can
 operate as a TRS-80 Model I, Model III, Model 4, or Model 4P.</p>
 
 <p>SDLTRS supports 48K of RAM in Model I or Model III mode, 128K in Model 4
-or Model 4P mode. Some memory expansions like Alpha Technology's "SuperMem"
-(512 KB), "HyperMem" (1 MB) and "MegaMem" (3 MB) by Anitek, Dave Huffman's
-(and others), "Selector" (LNW80 compatible) of the Dutch TRS-80 Users Society,
-are also supported. Floppy disks and hard disks are emulated using files to
-store the data; under Linux only, real floppy drives can be used.</p>
+or Model 4P mode. Memory expansions like Alpha Technology's "SuperMem" (1 MB),
+"HyperMem" (1 MB) and "MegaMem" (3 MB) by Anitek, Dave Huffman's and others
+(2 MB), the "Selector" (512 KB) of the Dutch TRS-80 Users Society, are also
+supported. Floppy disks and hard disks are emulated using files to store the
+data; under Linux only, real floppy drives can be used.</p>
 
 <p>There is support for Model I and Model III clones: the function keys F1 -
 F4 are working for Dick Smith's "System 80 MK II" and the TCS "Genie II".
@@ -64,7 +64,7 @@ also supported: these were just (highly) extended TRS-80 Model I clones and
 are detected by the emulator based on the ROM data. This also applies to the
 EG 3200 Genie III (EACA). Only for the TCS "SpeedMaster" (or "Genie IIs") the
 option <code>-speedup tcs</code> is required. The 480*192 HRG resolution for
-these machines - and the LNW80 - is supported. The extended 16 kB ROM of the
+these machines - and the LNW80 - is supported. The extended 16 KB ROM of the
 brazilian Model III clones Prologica CP-300 and CP-500 also works.</p>
 
 <p>A printer is emulated by sending its output to a text file. A serial port
@@ -152,11 +152,11 @@ type <code>help</code> for more information.</p>
   </tr>
   <tr>
     <td><b>F10</b></td>
-    <td>Warm Reset</td>
+    <td>Soft Reset</td>
   </tr>
   <tr>
     <td><b>Shift-F10</b></td>
-    <td>Power on Reset (reboot)</td>
+    <td>Hard Reset</td>
   </tr>
   <tr>
     <td><b>F11</b></td>
@@ -177,6 +177,14 @@ type <code>help</code> for more information.</p>
   <tr>
     <td><b>NumLock</b></td>
     <td>Toggle numeric keypad as joystick emulation</td>
+  </tr>
+  <tr>
+    <td><b>Print</b></td>
+    <td>Save screenshot as BMP file</td>
+  </tr>
+  <tr>
+    <td><b>Shift-Print</b></td>
+    <td>Copy screen to printer file</td>
   </tr>
   <tr>
     <td><b>1</b> - <b>6</b> (on the numeric keypad)</td>
@@ -214,7 +222,7 @@ type <code>help</code> for more information.</p>
   </tr>
   <tr>
     <td><b>Control</b></td>
-    <td>TRS-80 Control key / TCS Genie IIs and SpeedMaster P1 key</td>
+    <td>TRS-80 Control key or TCS Genie IIs/SpeedMaster P1 key</td>
   </tr>
   <tr>
     <td><b>Page Up</b></td>
@@ -241,8 +249,16 @@ type <code>help</code> for more information.</p>
     <td>Switch to slow Z80 CPU clock speed</td>
   </tr>
   <tr>
+    <td><b>Alt-Backspace</b></td>
+    <td>Reset Z80 CPU clock rate to default</td>
+  </tr>
+  <tr>
     <td><b>Alt-Delete</b></td>
-    <td>Warm Reset</td>
+    <td>Soft Reset</td>
+  </tr>
+  <tr>
+    <td><b>Alt-Shift-Delete</b></td>
+    <td>Hard Reset</td>
   </tr>
   <tr>
     <td><b>Alt-Insert</b></td>
@@ -281,7 +297,7 @@ type <code>help</code> for more information.</p>
     <td>Insert Floppy disk into drive 0...7</td>
   </tr>
   <tr>
-    <td><b>Shift-Alt-0</b>...<b>7</b></td>
+    <td><b>Alt-Shift-0</b>...<b>7</b></td>
     <td>Remove Floppy disk from drive 0...7</td>
   </tr>
   <tr>
@@ -1043,9 +1059,6 @@ Models to select the Z80 CPU speed:</p>
   </tr>
 </table>
 
-<p><b>Note:</b> The "Lowe LE18 Graphics" also uses I/O port <code>0xEC</code>
-on Model I and so the "Seatronics Super Speed-Up" will not be activated.</p>
-
 <p>The speed (clock rate) of the Z80 CPU can be adjusted on the fly with
 <b>Alt-'-'</b> or <b>Alt-'+'</b>, but use this with CAUTION: overclocking the
 Z80 will result in all forms of "timing errors"!</p>
@@ -1112,11 +1125,13 @@ system as if you rebooted after setting the date.</p>
 
 <h2><a name="Joystick"></a><u>Joystick</u></h2>
 
-<p>Pressing a key on a PC numeric keypad with NumLock disengaged emulates the
-Alpha Products joystick. See the Keys section above for details. The emulated
-joystick is mapped only at port 0, to avoid conflicts with other devices.
-Standard USB joysticks and gamepads will work as well, and may be selected
-from the Text GUI.</p>
+<p>The numeric keypad can be used to emulate the Alpha Products joystick. The
+emulated joystick is mapped only at port 0, to avoid conflicts with other
+devices. Standard USB joysticks and gamepads will work as well, and may be
+selected from the Text GUI.</p>
+
+<p>The joystick emulation is enabled by default but can be toggled with the
+<b>NumLock</b> key or in the GUI Joystick Setting Menu.</p>
 
 <h2><a name="Copy_and_Paste"></a><u>Copy and Paste</u></h2>
 

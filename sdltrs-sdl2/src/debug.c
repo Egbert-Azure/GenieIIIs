@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #ifdef READLINE
 #include <readline/readline.h>
@@ -52,9 +53,9 @@
 #include "trs_memory.h"
 #include "trs_state_save.h"
 
-#define MAXLINE		(256)
-#define ADDRESS_SPACE	(0x10000)
-#define MAX_TRAPS	(100)
+#define MAXLINE			(256)
+#define ADDRESS_SPACE		(0x10000)
+#define MAX_TRAPS		(100)
 
 #define BREAKPOINT_FLAG		(0x1)
 #define TRACE_FLAG		(0x2)
@@ -77,7 +78,7 @@ static struct
     Uint8 byte; /* used only by watchpoints */
 } trap_table[MAX_TRAPS];
 
-static void help_message(void)
+static void help(void)
 {
     puts("(zbx) commands:\n\
 \nRunning:\n\
@@ -91,50 +92,57 @@ static void help_message(void)
   s(oft)r(eset) ......... Press system reset button\n\
 \nPrinting:\n\
   (dum)p ................ Print Z80 registers\n\
-  l(ist) ................ Disassemble 10 instructions at current PC\n\
-  l(ist) <addr> ......... Disassemble 10 instructions at specified hex address\n\
-  l(ist) <start> , <end>  Disassemble instructions in the range of hex addresses\n\
+  l(ist) | d(is) <addr> . Disassemble 10 instructions at current or hex address\n\
+  l | d <start> , <end> . Disassemble instructions in the range of hex addresses\n\
   <start> , <end> ....... Print memory values in specified address range\n\
   <start> / <num bytes> . Print number of memory values starting at hex address\n\
-  <addr> = .............. Print memory value at specified hex address\n\
+  <addr> ................ Print memory value at specified hex address\n\
   tr(ace)on ............. Enable tracing of all instructions\n\
   tr(ace)off ............ Disable tracing\n\
   d(isk)d(ump) .......... Print state of floppy disk controller emulation\n\
+  h(ard)d(ump) .......... Print state of hard disk controller emulation\n\
 \nTraps:\n\
   st(atus) .............. Show all traps (breakpoints, tracepoints, watchpoints)\n\
-  cl(ear) ............... Delete trap at current address\n\
-  d(elete) <n> | * ...... Delete trap <n> or all traps\n\
+  cl(ear) <addr> ........ Delete trap at current or specified hex address\n\
+  del(ete) <n> | * ...... Delete trap <n> or all traps\n\
   b(reak) <addr> ........ Set breakpoint at specified hex address\n\
   t(race) <addr> ........ Set trap to trace execution at specified hex address\n\
-  tron <addr> ........... Set trap to enable tracing at specified hex address\n\
-  troff <addr> .......... Set trap to disable tracing at specified hex address\n\
+  tr(ace)on <addr> ...... Set trap to enable tracing at specified hex address\n\
+  tr(ace)off <addr> ..... Set trap to disable tracing at specified hex address\n\
   w(atch) <addr> ........ Set trap to watch specified hex address for changes\n\
 \nMiscellaneous:\n\
   a(ssign) | set\n\
     $<reg> = <value> .... Change value of register\n\
-    <addr> = <value> .... Change value of memory byte\n\
+    <addr> [= <value>] .. Change value at hex memory address (enter '.' to end)\n\
   rom <addr> = <value> .. Change byte in ROM\n\
   in <port> ............. Input from given I/O port\n\
   out <port> = <value> .. Output to given I/O port\n\
-  load <start> <file> ... Load memory from file to specified hex address\n\
+  cmd <file> ............ Load specified CMD file\n\
+  peek <addr> [,<end>] .. Print memory values of specified hex address range\n\
+  poke <addr> , <value> . Write value to specified hex address\n\
+  load <addr> <file> .... Load memory from file to specified hex address\n\
+  f(ill) <start>, <end>, <value> ..... Fill memory range with hex value\n\
+  m(ove) <start>, <end>, <addr> ...... Move memory range to hex address\n\
   save <start> , <end> <file> ........ Save memory in range of specified\n\
   save <start> / <num bytes> <file>    hex addresses to file\n\
   state load <file> ..... Load emulator state from file\n\
   state save <file> ..... Save current emulator state to file\n\
   timeroff / timeron .... Disable / enable TRS-80 real time clock interrupt\n\
-  halt <action> ......... Show / change Z80 HALT action: debugger, halt or reset\n\
-  diskdebug <hexval> .... Set floppy disk controller debug flags to hexval:\n\
-                             1=FDC register I/O       2=FDC commands\n\
-                             4=VTOS 3.0 JV3 kludges   8=Gaps\n\
-                            10=Phys sector sizes     20=Readadr timing\n\
-                            40=DMK                   80=IOCTL errors\n\
-  iodebug <hexval> ...... Set I/O port debug flags: 1=port input, 2=port output\n\
-  (zbx)i(nfo) ........... Display information about this debugger\n\
+  halt <action> ......... Show / change Z80 HALT action: debug, halt or reset\n\
+  di[skdebug] <hexval> .. Set floppy disk controller debug flags to hexval:\n\
+                            1 = FDC register I/O      10 = Phys sector sizes\n\
+                            2 = FDC commands          20 = Readadr timing\n\
+                            4 = VTOS 3.0 JV3 kludges  40 = DMK\n\
+                            8 = Gaps                  80 = IOCTL errors\n\
+  io[debug] <hexval> .... Set I/O port debug flags:\n\
+                            1 = port input             4 = Hard Disk I/O\n\
+                            2 = port output            8 = Hard Disk Command\n\
+  z(bx)i(nfo) ........... Display information about this debugger\n\
   h(elp) | ? ............ Print this help message\n\
-  q(uit) ................ Exit from SDLTRS");
+  exit | quit ........... Exit from SDLTRS");
 }
 
-static char *trap_name(int flag)
+static const char *trap_name(int flag)
 {
     switch(flag)
     {
@@ -155,12 +163,11 @@ static char *trap_name(int flag)
     }
 }
 
-static void show_zbxinfo(void)
+static void info(void)
 {
-    puts("zbx: Z80 debugger by David Gingold, Alex Wolman, and Timothy"
-         " Mann\n");
+    puts("zbx: Z80 debugger by David Gingold, Alex Wolman, and Timothy Mann\n");
     printf("Traps set: %d (maximum %d)\n", num_traps, MAX_TRAPS);
-    printf("Size of address space: 0x%x\n", ADDRESS_SPACE);
+    printf("Size of address space: 0x%X\n", ADDRESS_SPACE);
     printf("Maximum length of command line: %d\n", MAXLINE);
 #ifdef READLINE
     puts("GNU Readline library support enabled.");
@@ -216,6 +223,8 @@ static void set_trap(int address, int flag)
     {
 	int i = 0;
 
+	address &= 0xFFFF; /* allow callers to be sloppy */
+
 	while(trap_table[i].valid) ++i;
 
 	trap_table[i].valid = 1;
@@ -238,7 +247,7 @@ static void set_trap(int address, int flag)
 
 static void clear_trap(int i)
 {
-    if((i < 0) || (i > MAX_TRAPS) || !trap_table[i].valid)
+    if((i < 0) || (i > MAX_TRAPS - 1) || !trap_table[i].valid)
     {
 	printf("[%d] is not a valid trap.\n", i);
     }
@@ -272,7 +281,7 @@ static void clear_trap_address(int address, int flag)
     }
 }
 
-static void debug_print_registers(void)
+static void print_registers(void)
 {
     puts("\n       S Z - H - PV N C   IFF1 IFF2 IM");
     printf("Flags: %d %d %d %d %d  %d %d %d     %d    %d   %d\n\n",
@@ -294,9 +303,10 @@ static void debug_print_registers(void)
 	   Z80_D, Z80_E, Z80_PC, Z80_DE_PRIME);
     printf("H L: %.2x %.2x    SP: %.4x    HL': %.4x\n",
 	   Z80_H, Z80_L, Z80_SP, Z80_HL_PRIME);
-    printf("I R: %.2x %.2x\n", Z80_I, Z80_R7 | (Z80_R & 0x7f));
+    printf("I R: %.2x %.2x\n", Z80_I, Z80_R7 | (Z80_R & 0x7F));
 
-    printf("\nMemory map used: 0x%X", get_mem_map());
+    printf("\nMem map/command: %02X / %02X", get_mem_map(), get_mem_cmd());
+    printf("\nSystem Byte 1/2: %02X / %02X", sys_byte_in(), sys_byte_2_in());
     printf("\nT-state counter: %" TSTATE_T_LEN "", z80_state.t_count);
     printf("\nZ80 Clock Speed: %.2f MHz\n", z80_state.clockMHz);
 }
@@ -308,18 +318,20 @@ void trs_debug(void)
     if (trs_continuous > 0) trs_continuous = 0;
 }
 
-static void print_memory(Uint16 address, int num_bytes)
+static void print_memory(int address, int num_bytes, int peek)
 {
     while(num_bytes > 0)
     {
-	int bytes_to_print = num_bytes < 16 ? num_bytes : 16;
+	int byte[16];
+	int const bytes_to_print = num_bytes < 16 ? num_bytes : 16;
 	int i;
 
-	printf("%.4x:\t", address);
+	printf("%.4x: ", address);
 
 	for(i = 0; i < bytes_to_print; ++i)
 	{
-	    printf("%.2x ", mem_read(address + i));
+	    byte[i] = peek ? mem_peek(address + i) : mem_read(address + i);
+	    printf("%.2x ", byte[i]);
 	}
 
 	for(i = bytes_to_print; i < 16; ++i)
@@ -330,16 +342,7 @@ static void print_memory(Uint16 address, int num_bytes)
 
 	for(i = 0; i < bytes_to_print; ++i)
 	{
-	    int byte = mem_read(address + i);
-
-	    if(isprint(byte))
-	    {
-		putchar(byte);
-	    }
-	    else
-	    {
-		putchar('.');
-	    }
+	    putchar(isprint(byte[i]) ? byte[i] : '.');
 	}
 
 	putchar('\n');
@@ -348,50 +351,56 @@ static void print_memory(Uint16 address, int num_bytes)
     }
 }
 
-static void load_memory(Uint16 address, const char *filename)
+static void load_memory(int address, const char *filename)
 {
     FILE *file = fopen(filename, "rb");
 
-    if(file) {
+    if(file)
+    {
 	int c;
 
 	while((c = getc(file)) != EOF)
+	{
 	    mem_write(address++, c);
+	}
 	fclose(file);
-    } else {
-	file_error("load memory '%s'", filename);
+    }
+    else
+    {
+	file_error("load memory: '%s'", filename);
     }
 }
 
-static void save_memory(Uint16 address, int num_bytes, const char *filename)
+static void save_memory(int address, int num_bytes, const char *filename)
 {
     FILE *file = fopen(filename, "wb");
 
-    if(file) {
+    if(file)
+    {
 	int i;
 
 	for(i = 0; i < num_bytes; ++i)
+	{
 	    putc(mem_read(address + i), file);
-
+	}
 	fclose(file);
-    } else {
-	file_error("save memory '%s'", filename);
+    }
+    else
+    {
+	file_error("save memory: '%s'", filename);
     }
 }
 
-static void debug_run(void)
+static void run(void)
 {
-    Uint8 t;
-    Uint8 byte;
-    int continuous;
-    int watch_triggered = 0;
+    Uint8 t = traps[Z80_PC];
 
     stop_signaled = 0;
 
-    t = traps[Z80_PC];
-
     while(!stop_signaled)
     {
+	int continuous;
+
 	if(t)
 	{
 	    if(t & TRACE_FLAG)
@@ -436,6 +445,7 @@ static void debug_run(void)
 	 */
 	if (num_watchpoints)
 	{
+	    int watch_triggered = 0;
 	    int i;
 
 	    for (i = 0; i < MAX_TRAPS; ++i)
@@ -443,7 +453,7 @@ static void debug_run(void)
 		if (trap_table[i].valid &&
 		    trap_table[i].flag == WATCHPOINT_FLAG)
 		{
-		    byte = mem_read(trap_table[i].address);
+		    Uint8 const byte = mem_read(trap_table[i].address);
 		    if (byte != trap_table[i].byte)
 		    {
 			/*
@@ -473,23 +483,23 @@ static void debug_run(void)
 
 void debug_shell(void)
 {
-    char input[MAXLINE];
-    char command[MAXLINE];
-    int done = 0;
-
 #ifdef READLINE
-    char *line;
     char history_file[MAXLINE];
     const char *home = (char *)getenv ("HOME");
+
     if (!home) home = ".";
     snprintf(history_file, MAXLINE - 1, "%s/.zbx-history", home);
+    using_history();
     read_history(history_file);
 #endif
 
     puts("Type \"h(elp)\" for a list of commands.");
 
-    while(!done)
+    while(1)
     {
+	char input[MAXLINE];
+	char command[MAXLINE];
+
 	putchar('\n');
 	disassemble(Z80_PC);
 
@@ -500,7 +510,7 @@ void debug_shell(void)
          */
         {
 
-	    line = readline("(zbx) ");
+	    char *line = readline("(zbx) ");
 	    if(line)
 	    {
 		if(strlen(line) > 0)
@@ -526,68 +536,70 @@ void debug_shell(void)
 	    if(!strcmp(command, "help") || !strcmp(command, "?") ||
 	       !strcmp(command, "h"))
 	    {
-		help_message();
+		help();
 	    }
-	    else if (!strcmp(command, "zbxinfo") || !strcmp(command, "i"))
+	    else if (!strncmp(command, "z", 1) || !strcmp(command, "i"))
 	    {
-		show_zbxinfo();
+		info();
 	    }
-	    else if(!strcmp(command, "clear") || !strcmp(command, "cl"))
+	    else if(!strncmp(command, "cl", 2))
 	    {
-		clear_trap_address(Z80_PC, 0);
+		unsigned int address = Z80_PC;
+
+		if(sscanf(input, "%*s %x", &address) == 1)
+		{
+			address &= 0xFFFF;
+		}
+		clear_trap_address(address, 0);
 	    }
 	    else if(!strcmp(command, "cont") || !strcmp(command, "c") ||
-	            !strcmp(command, "go")   || !strcmp(command, "g"))
+		    !strcmp(command, "go")   || !strcmp(command, "g"))
 	    {
 		unsigned int address;
 
 		if(sscanf(input, "%*s %x", &address) == 1) {
-			Z80_PC = address & 0xFFFF;
+		    Z80_PC = address & 0xFFFF;
 		}
-		debug_run();
+		run();
 	    }
 	    else if(!strcmp(command, "dump") || !strcmp(command, "p"))
 	    {
-		debug_print_registers();
+		print_registers();
 	    }
-	    else if(!strcmp(command, "delete") || !strcmp(command, "d"))
+	    else if(!strcmp(command, "delete") || !strcmp(command, "del"))
 	    {
 		int i;
 
-		if(!strncmp(input, "delete *", 8) || !strncmp(input, "d *", 3))
+		if(!strncmp(input, "delete *", 8) || !strncmp(input, "del *", 5))
 		{
 		    clear_all_traps();
 		}
 		else if(sscanf(input, "%*s %d", &i) != 1)
 		{
-		    puts("A trap must be specified.");
+		    puts("Trap must be specified.");
 		}
 		else
 		{
 		    clear_trap(i);
 		}
 	    }
-	    else if(!strcmp(command, "list") || !strcmp(command, "l"))
+	    else if(!strcmp(command, "list") || !strcmp(command, "l") ||
+	            !strcmp(command, "dis")  || !strcmp(command, "d"))
 	    {
 		unsigned int x, y;
-		Uint16 start, old_start;
+		int start = Z80_PC;
 		int bytes = 0;
-		int lines = 0;
+		int lines = 10;
 
-		if(sscanf(input, "%*s %x , %x", &x, &y) == 2)
+		if(sscanf(input, "%*s %x %*c %x", &x, &y) == 2)
 		{
-		    start = x;
-		    bytes = (y - x) & 0xffff;
+		    start = x & 0xFFFF;
+		    bytes = (y - x) & 0xFFFF;
+		    lines = 0;
 		}
 		else if(sscanf(input, "%*s %x", &x) == 1)
 		{
-		    start = x;
-		    lines = 10;
-		}
-		else
-		{
-		    start = Z80_PC;
-		    lines = 10;
+		    start = x & 0xFFFF;
 		}
 
 		if(lines)
@@ -600,8 +612,10 @@ void debug_shell(void)
 		else
 		{
 		    while (bytes >= 0) {
-			start = disassemble(old_start = start);
-			bytes -= (start - old_start) & 0xffff;
+			int const old_start = start;
+
+			start = disassemble(old_start);
+			bytes -= (start - old_start) & 0xFFFF;
 		    }
 		}
 	    }
@@ -610,18 +624,39 @@ void debug_shell(void)
 		unsigned int port;
 
 		if(sscanf(input, "in %x", &port) == 1)
-			printf("in %x = %x\n", port, z80_in(port));
+		{
+		    printf("in %x = %x\n", port, z80_in(port));
+		}
 		else
-			puts("A port must be specified.");
+		{
+		    puts("Port must be specified.");
+		}
 	    }
 	    else if(!strcmp(command, "out"))
 	    {
 		unsigned int port, value;
 
-		if(sscanf(input, "out %x = %x", &port, &value) == 2)
-			z80_out(port, value);
+		if(sscanf(input, "out %x %*c %x", &port, &value) == 2)
+		{
+		    z80_out(port, value);
+		}
 		else
-			puts("A port and a value must be specified.\n");
+		{
+		    puts("Port and value must be specified.");
+		}
+	    }
+	    else if(!strcmp(command, "cmd"))
+	    {
+		char *file = input;
+
+		if(sscanf(input, "%*s %s", file) == 1)
+		{
+		    trs_load_cmd(file);
+		}
+		else
+		{
+		    puts("Filename must be specified.");
+		}
 	    }
 	    else if(!strcmp(command, "next") || !strcmp(command, "nextint") ||
 		    !strcmp(command, "n") || !strcmp(command, "ni"))
@@ -685,23 +720,23 @@ void debug_shell(void)
 		    break;
 		}
 		if (is_call) {
-		    set_trap((Z80_PC + 3) % ADDRESS_SPACE, BREAK_ONCE_FLAG);
-		    debug_run();
+		    set_trap(Z80_PC + 3, BREAK_ONCE_FLAG);
+		    run();
 		} else if (is_rst) {
-		    set_trap((Z80_PC + 1) % ADDRESS_SPACE, BREAK_ONCE_FLAG);
-		    debug_run();
+		    set_trap(Z80_PC + 1, BREAK_ONCE_FLAG);
+		    run();
 		} else if (is_rep) {
-		    set_trap((Z80_PC + 2) % ADDRESS_SPACE, BREAK_ONCE_FLAG);
-		    debug_run();
+		    set_trap(Z80_PC + 2, BREAK_ONCE_FLAG);
+		    run();
 		} else {
 		    z80_run((!strcmp(command, "nextint") || !strcmp(command, "ni")) ? 0 : -1);
 		}
 	    }
-	    else if(!strcmp(command, "quit") || !strcmp(command, "q"))
+	    else if(!strcmp(command, "exit") || !strcmp(command, "quit"))
 	    {
-		done = 1;
+		break;
 	    }
-	    else if(!strcmp(command, "reset") || !strcmp(command, "re"))
+	    else if(!strncmp(command, "re", 2))
 	    {
 		puts("Performing hard reset.");
 		trs_reset(1);
@@ -711,33 +746,66 @@ void debug_shell(void)
 		puts("Pressing reset button.");
 		trs_reset(0);
 	    }
+	    else if(!strncmp(command, "pe", 2))
+	    {
+		unsigned int start, end;
+
+		if (sscanf(input, "%*s %x %*c %x", &start, &end) == 2)
+		{
+		    print_memory(start, end - start + 1, 1);
+		}
+		else if (sscanf(input, "%*s %x", &start) == 1)
+		{
+		    print_memory(start, 1, 1);
+		}
+		else
+		{
+		    puts("Address or range must be specified.");
+		}
+	    }
+	    else if(!strncmp(command, "po", 2))
+	    {
+		unsigned int address, value;
+
+		if (sscanf(input, "%*s %x %*c %x", &address, &value) == 2)
+		{
+		    mem_poke(address, value);
+		}
+		else
+		{
+		    puts("Address and value must be specified.");
+		}
+	    }
 	    else if(!strcmp(command, "rom"))
 	    {
-		unsigned int addr, value;
+		unsigned int address, value;
 
-		if (sscanf(input, "%*s %x = %x", &addr, &value) == 2)
+		if (sscanf(input, "%*s %x %*c %x", &address, &value) == 2)
 		{
-		    if ((int)addr < trs_rom_size)
-			rom_write(addr, value);
+		    rom_write(address, value);
+		}
+		else
+		{
+		    puts("ROM address and value must be specified.");
 		}
 	    }
 	    else if(!strcmp(command, "run") || !strcmp(command, "r"))
 	    {
 		puts("Performing hard reset and running.");
 		trs_reset(1);
-		debug_run();
+		run();
 	    }
 	    else if(!strcmp(command, "status") || !strcmp(command, "st"))
 	    {
 		print_traps();
 	    }
-	    else if(!strcmp(command, "set") || !strcmp(command, "assign") ||
+	    else if(!strcmp(command, "set") || !strncmp(command, "as", 2) ||
 		    !strcmp(command, "a"))
 	    {
-		char regname[MAXLINE];
-		unsigned int addr, value;
+		char regname[4];
+		unsigned int address, value;
 
-		if(sscanf(input, "%*s $%[a-zA-Z'] = %x", regname, &value) == 2)
+		if(sscanf(input, "%*s $%3[a-zA-Z'] %*c %x", regname, &value) == 2)
 		{
 		    if(!strcasecmp(regname, "a")) {
 			Z80_A = value;
@@ -788,13 +856,64 @@ void debug_shell(void)
 			printf("Unrecognized register name '%s'.\n", regname);
 		    }
 		}
-		else if(sscanf(input, "%*s %x = %x", &addr, &value) == 2)
+		else if(sscanf(input, "%*s %x %*c %x", &address, &value) == 2)
 		{
-			mem_write(addr, value);
+		    mem_write(address, value);
+		}
+		else if(sscanf(input, "%*s %x", &address) == 1)
+		{
+		    while(1)
+		    {
+		        address &= 0xFFFF;
+			printf("%.4x: %.2x ", address, mem_read(address));
+
+			if(fgets(input, MAXLINE, stdin) == NULL) continue;
+			if(!strncmp(input, ".", 1)) break;
+			if(sscanf(input, "%x", &value) == 1)
+			{
+			    mem_write(address, value);
+			}
+			address++;
+		    }
 		}
 		else
 		{
-		    puts("Syntax error.  (Type \"h(elp)\" for commands.)");
+		    puts("Register or address must be specified.");
+		}
+	    }
+	    else if(!strcmp(command, "fill") || !strcmp(command, "f"))
+	    {
+		unsigned start, end, value;
+
+		if(sscanf(input, "%*s %x %*c %x %*c %x", &start, &end, &value) == 3)
+		{
+		    start &= 0xFFFF;
+		    end   &= 0xFFFF;
+
+		    while(start <= end)
+			mem_write(start++, value);
+		}
+		else
+		{
+		    puts("Address range and value must be specified.");
+		}
+	    }
+	    else if(!strcmp(command, "move") || !strcmp(command, "m"))
+	    {
+		unsigned start, end, addr;
+
+		if(sscanf(input, "%*s %x %*c %x %*c %x", &start, &end, &addr) == 3)
+		{
+		    start &= 0xFFFF;
+		    end   &= 0xFFFF;
+		    addr  &= 0xFFFF;
+
+		    while(start <= end)
+			mem_write(addr++, mem_read(start++));
+		}
+		else
+		{
+		    puts("Address range and destination must be specified.");
 		}
 	    }
 	    else if(!strcmp(command, "step") || !strcmp(command, "s"))
@@ -805,17 +924,15 @@ void debug_shell(void)
 	    {
 		z80_run(0);
 	    }
-	    else if(!strcmp(command, "stop") || !strcmp(command, "break") ||
+	    else if(!strcmp(command, "stop") || !strncmp(command, "br", 2) ||
 		    !strcmp(command, "b"))
 	    {
 		unsigned int address;
 
-		if(sscanf(input, "stop at %x", &address) != 1 &&
-		   sscanf(input, "%*s %x", &address) != 1)
+		if(sscanf(input, "%*s %x", &address) != 1)
 		{
 		    address = Z80_PC;
 		}
-		address %= ADDRESS_SPACE;
 		set_trap(address, BREAKPOINT_FLAG);
 	    }
 	    else if(!strcmp(command, "trace") || !strcmp(command, "t"))
@@ -826,15 +943,13 @@ void debug_shell(void)
 		{
 		    address = Z80_PC;
 		}
-		address %= ADDRESS_SPACE;
 		set_trap(address, TRACE_FLAG);
 	    }
 	    else if(!strcmp(command, "traceon") || !strcmp(command, "tron"))
 	    {
 		unsigned int address;
 
-		if(sscanf(input, "traceon at %x", &address) == 1 ||
-		   sscanf(input, "tron %x", &address) == 1)
+		if(sscanf(input, "%*s %x", &address) == 1)
 		{
 		    set_trap(address, DISASSEMBLE_ON_FLAG);
 		}
@@ -848,8 +963,7 @@ void debug_shell(void)
 	    {
 		unsigned int address;
 
-		if(sscanf(input, "traceoff at %x", &address) == 1 ||
-		   sscanf(input, "troff %x", &address) == 1)
+		if(sscanf(input, "%*s %x", &address) == 1)
 		{
 		    set_trap(address, DISASSEMBLE_OFF_FLAG);
 		}
@@ -859,88 +973,100 @@ void debug_shell(void)
 		    puts("Tracing disabled.");
 		}
 	    }
-	    else if(!strcmp(command, "watch") || !strcmp(command, "w"))
+	    else if(!strncmp(command, "w", 1))
 	    {
 		unsigned int address;
 
 		if(sscanf(input, "%*s %x", &address) == 1)
 		{
-		    address %= ADDRESS_SPACE;
 		    set_trap(address, WATCHPOINT_FLAG);
+		}
+		else
+		{
+		    puts("Address must be specified.");
 		}
 	    }
 	    else if(!strcmp(command, "timeroff"))
 	    {
-	        /* Turn off emulated real time clock interrupt */
-	        trs_timer(0);
+		/* Turn off emulated real time clock interrupt */
+		trs_timer(0);
             }
 	    else if(!strcmp(command, "timeron"))
 	    {
-	        /* Turn on  emulated real time clock interrupt */
-	        trs_timer(1);
+		/* Turn on  emulated real time clock interrupt */
+		trs_timer(1);
             }
 	    else if(!strcmp(command, "halt"))
 	    {
-	        char halt;
+		char halt;
 
 		if(sscanf(input, "%*s %c", &halt) == 1)
 		{
-		    z80_halt = halt;
+		    Z80_HALT = TOLOWER((int)halt);
 		}
-		else
-		{
-		    switch (z80_halt) {
-			case 'd':
-			    puts("debugger");
-			    break;
-			case 'h':
-			    puts("halt");
-			    break;
-			case 'r':
-			    puts("reset");
-			    break;
-			default:
-			    puts("default");
-			    break;
-		    }
+		switch (Z80_HALT) {
+		    case 'd':
+			puts("debug");
+			break;
+		    case 'h':
+			puts("halt");
+			break;
+		    case 'r':
+			puts("reset");
+			break;
+		    default:
+			puts("default");
+			break;
 		}
 	    }
 	    else if(!strcmp(command, "diskdump") || !strcmp(command, "dd"))
 	    {
 		trs_disk_debug();
 	    }
-	    else if(!strcmp(command, "diskdebug"))
+	    else if(!strcmp(command, "harddump") || !strcmp(command, "hd"))
+	    {
+		trs_hard_debug();
+	    }
+	    else if(!strncmp(command, "di", 2))
 	    {
 		trs_disk_debug_flags = 0;
-		sscanf(input, "diskdebug %x", (unsigned int *)&trs_disk_debug_flags);
+		sscanf(input, "%*s %x", (unsigned int *)&trs_disk_debug_flags);
 	    }
-	    else if(!strcmp(command, "iodebug"))
+	    else if(!strncmp(command, "io", 2))
 	    {
 		trs_io_debug_flags = 0;
-		sscanf(input, "iodebug %x", (unsigned int *)&trs_io_debug_flags);
+		sscanf(input, "%*s %x", (unsigned int *)&trs_io_debug_flags);
 	    }
 	    else if(!strcmp(command, "load"))
 	    {
-		unsigned int start_address;
+		unsigned int address;
 		char *file = input;
 
-		if(sscanf(input,"load %x %s", &start_address, file) == 2)
+		if(sscanf(input,"load %x %s", &address, file) == 2)
 		{
-		    load_memory(start_address, file);
+		    load_memory(address, file);
+		}
+		else
+		{
+		    puts("Address and filename must be specified.");
 		}
 	    }
 	    else if(!strcmp(command, "save"))
 	    {
-		unsigned int start_address, end_address, num_bytes;
+		unsigned int start, end;
 		char *file = input;
 
-		if(sscanf(input, "save %x, %x %s", &start_address, &end_address, file) == 3)
+		if(sscanf(input, "save %x / %x %s", &start, &end, file) == 3)
 		{
-		    save_memory(start_address, end_address - start_address + 1, file);
+		    save_memory(start, end, file);
 		}
-		else if(sscanf(input, "save %x / %x %s", &start_address, &num_bytes, file) == 3)
+		else if(sscanf(input, "save %x %*c %x %s", &start, &end, file) == 3)
 		{
-		    save_memory(start_address, num_bytes, file);
+		    save_memory(start, end - start + 1, file);
+		}
+		else
+		{
+		    puts("Address range and filename must be specified.");
 		}
 	    }
 	    else if(!strcmp(command, "state"))
@@ -955,22 +1081,26 @@ void debug_shell(void)
 		{
 		    trs_state_save(file);
 		}
+		else
+		{
+		    puts("Filename must be specified.");
+		}
 	    }
 	    else
 	    {
-		unsigned int start_address, end_address, num_bytes;
+		unsigned int start, end;
 
-		if(sscanf(input, "%x , %x / ", &start_address, &end_address) == 2)
+		if(sscanf(input, "%x / %x ", &start, &end) == 2)
 		{
-		    print_memory(start_address, end_address - start_address + 1);
+		    print_memory(start, end, 0);
 		}
-		else if(sscanf(input, "%x / %x ", &start_address, &num_bytes) == 2)
+		else if(sscanf(input, "%x %*c %x", &start, &end) == 2)
 		{
-		    print_memory(start_address, num_bytes);
+		    print_memory(start, end - start + 1, 0);
 		}
-		else if(sscanf(input, "%x = ", &start_address) == 1)
+		else if(sscanf(input, "%x", &start) == 1)
 		{
-		    print_memory(start_address, 1);
+		    print_memory(start, 1, 0);
 		}
 		else
 		{
@@ -979,8 +1109,10 @@ void debug_shell(void)
 	    }
 	}
     }
+
 #ifdef READLINE
     write_history(history_file);
 #endif
+
 }
 #endif

@@ -25,15 +25,15 @@
 #ifndef _TRS_STRINGY_H
 #define _TRS_STRINGY_H
 
-void stringy_init(void);
-const char *stringy_get_name(int unit);
-int  stringy_get_writeprotect(int unit);
-int  stringy_insert(int unit, const char *name);
-void stringy_remove(int unit);
-int  stringy_create(const char *name);
-int  stringy_in(int unit);
-void stringy_out(int unit, int value);
-void stringy_reset(void);
-void stringy_change_all(void);
+extern int  stringy;
+
+extern void stringy_init(void);
+extern const char *stringy_get_name(int unit);
+extern int  stringy_get_writeprotect(int unit);
+extern int  stringy_insert(int unit, const char *name);
+extern void stringy_remove(int unit);
+extern int  stringy_create(const char *name);
+extern int  stringy_in(int unit);
+extern void stringy_out(int unit, int value);
 
 #endif /* _TRS_STRINGY_H */

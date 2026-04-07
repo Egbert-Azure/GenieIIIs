@@ -42,16 +42,13 @@
 
 #define MAX_SAMPLE_RATE 44100  /* samples/sec to use for .wav files */
 
-int create_wav_header(FILE *f);
-void trs_cassette_insert(const char *filename);
-void trs_cassette_remove(void);
-char *trs_cassette_getfilename(void);
-int trs_cass_getwriteprotect(void);
-int trs_get_cassette_length(void);
-int trs_get_cassette_position(void);
-void trs_set_cassette_position(int pos);
-void trs_cassette_kickoff(int dummy);
-void orch90_flush(int dummy);
-void trs_cassette_update(int dummy);
+extern int   create_wav_header(FILE *f);
+extern void  trs_cassette_insert(const char *filename);
+extern void  trs_cassette_remove(void);
+extern const char *trs_cassette_getfilename(void);
+extern int   trs_cass_getwriteprotect(void);
+extern int   trs_get_cassette_length(void);
+extern int   trs_get_cassette_position(void);
+extern void  trs_set_cassette_position(int pos);
 
 #endif /* _TRS_CASSETTE_H */

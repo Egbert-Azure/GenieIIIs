@@ -1,4 +1,4 @@
-; XTRS.MAC
+; XTRS.Z80
 ; ~~~~~~~~
 ;
 ; Contents:
@@ -561,7 +561,7 @@ copyspaces:
 ; Copy spaces
 ;	entry:	de -> destination
 ;		hl -> source
-;	exit:	a  =  last characters examined, z set if nul encounterd
+;	exit:	a  =  last characters examined, z set if nul encountered
 ;		de -> nul at end of destination
 ;		hl -> first non space in source
 ;------------------------------------------------------------------------------

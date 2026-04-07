@@ -16,10 +16,10 @@
 #ifndef _ERROR_H
 #define _ERROR_H
 
-void debug(const char *fmt, ...);
-void error(const char *fmt, ...);
-void fatal(const char *fmt, ...);
+extern void debug(const char *fmt, ...);
+extern void error(const char *fmt, ...);
+extern void fatal(const char *fmt, ...);
 
-void file_error(const char *fmt, ...);
+extern void file_error(const char *fmt, ...);
 
 #endif /* _ERROR_H */

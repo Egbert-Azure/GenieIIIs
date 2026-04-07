@@ -500,6 +500,7 @@ static KeyTable ascii_key_table[] = {
 static int keystate[9];
 static int force_shift = TK_Neutral;
 static int joystate;
+static int keys_down;
 static int key_heartbeat;
 int trs_joystick;
 int trs_keypad_joystick = 1;
@@ -692,7 +693,7 @@ void trs_joy_axis(Uint8 axis, short value, int bounce)
 int trs_joystick_in(void)
 {
 #if JOYDEBUG
-  debug("joy %02x ", joystate);
+  debug("joy %02X ", joystate);
 #endif
   return ~joystate;
 }
@@ -700,7 +701,7 @@ int trs_joystick_in(void)
 void trs_xlate_keysym(int keysym)
 {
   int key_down;
-  KeyTable* kt;
+  const KeyTable* kt;
   static int shift_action = TK_Neutral;
 
   if (keysym == 0x10000) {
@@ -738,19 +739,24 @@ void trs_xlate_keysym(int keysym)
 
 static void change_keystate(int action)
 {
-  int i;
 #ifdef KBDEBUG
-  debug("change_keystate: action 0x%x\n", action);
+  debug("change_keystate: action 0x%X\n", action);
 #endif
 
   switch (action) {
     case TK_AllKeysUp:
+    {
+      int i;
+
       /* force all keys up */
       for (i = 0; i < 8; i++) {
         keystate[i] = 0;
       }
       force_shift = TK_Neutral;
+      keys_down = 0;
+      z80_state.keypress = 0;
       break;
+    }
 
     case TK_Neutral:
     case TK_ForceShift:
@@ -760,61 +766,22 @@ static void change_keystate(int action)
       break;
 
     default:
-      if (TK_DOWN(action)) {
-        keystate[TK_ADDR(action)] |= (1 << TK_DATA(action));
-      } else {
-        keystate[TK_ADDR(action)] &= ~(1 << TK_DATA(action));
-      }
-  }
-}
+    {
+      int const key_down = TK_DOWN(action);
+      int const was_down = (keystate[TK_ADDR(action)] & (1 << TK_DATA(action))) != 0;
 
-static int kb_mem_value(int address)
-{
-  int i, bitpos, data = 0;
-
-  if ((trs_clones.model & (EG3200 | GENIE3S)) == 0 || (address & 0x00e0) < 0x00a0) {
-    for (i = 0, bitpos = 1; i < 7; i++, bitpos <<= 1) {
-      if (address & bitpos) {
-        data |= keystate[i];
-      }
-    }
-
-    if (address & 0x80) {
-      int tmp = keystate[7];
-
-      if (trs_model == 1) {
-        if (force_shift == TK_ForceNoShift) {
-          /* deactivate shift key */
-          tmp &= ~1;
-        } else if (force_shift != TK_Neutral) {
-          /* activate shift key */
-          tmp |= 1;
+      if (key_down != was_down) {
+        if (key_down) {
+          keystate[TK_ADDR(action)] |= (1 << TK_DATA(action));
+          keys_down++;
+        } else {
+          keystate[TK_ADDR(action)] &= ~(1 << TK_DATA(action));
+          keys_down--;
         }
-      } else {
-        if (force_shift == TK_ForceNoShift) {
-          /* deactivate both shift keys */
-          tmp &= ~3;
-        } else if (force_shift != TK_Neutral) {
-          /* if no shift keys are down, activate left shift key */
-          if ((tmp & 3) == 0)
-            tmp |= 1;
-          }
-      }
-
-      data |= tmp;
-    }
-  } else {
-    for (i = 0, bitpos = 1; i < 5; i++, bitpos <<= 1) {
-      if (address & bitpos) {
-        data |= keystate[i];
+        z80_state.keypress = keys_down ? turbo_mode : 0;
       }
     }
-
-    if ((address & 0x00e0) == 0x00a0)
-      data |= keystate[8];
   }
-
-  return data;
 }
 
 int trs_kb_mem_read(int address)
@@ -847,7 +814,48 @@ int trs_kb_mem_read(int address)
 
   key_heartbeat = 0;
 
-  return kb_mem_value(address);
+  if ((address & 0x00e0) >= 0x00a0 && (trs_clones.model & (EG3200 | GENIE3S))) {
+    if ((address & 0x00e0) == 0x00a0) {
+      /* EACA EG3200 Genie III / TCS Genie IIIs: F1 - F8 keys */
+      return keystate[8];
+    }
+  } else {
+    int data = 0;
+    int bit;
+
+    for (bit = 0; bit < 7; bit++) {
+      if (address & (1 << bit)) {
+        data |= keystate[bit];
+      }
+    }
+
+    if (address & 0x80) {
+      int tmp = keystate[7];
+
+      if (trs_model == 1) {
+        if (force_shift == TK_ForceNoShift) {
+          /* deactivate shift key */
+          tmp &= ~1;
+        } else if (force_shift != TK_Neutral) {
+          /* activate shift key */
+          tmp |= 1;
+        }
+      } else {
+        if (force_shift == TK_ForceNoShift) {
+          /* deactivate both shift keys */
+          tmp &= ~3;
+        } else if (force_shift != TK_Neutral) {
+          /* if no shift keys are down, activate left shift key */
+          if ((tmp & 3) == 0)
+            tmp |= 1;
+        }
+      }
+      data |= tmp;
+    }
+    return data;
+  }
+
+  return 0;
 }
 
 void clear_key_queue(void)
@@ -863,7 +871,7 @@ void queue_key(int state)
 {
   key_queue[(key_queue_head + key_queue_entries) % KEY_QUEUE_SIZE] = state;
 #if QDEBUG
-  debug("queue_key 0x%x\n", state);
+  debug("queue_key 0x%X\n", state);
 #endif
   if (key_queue_entries < KEY_QUEUE_SIZE) {
     key_queue_entries++;
@@ -883,7 +891,7 @@ int dequeue_key(void)
     key_queue_head = (key_queue_head + 1) % KEY_QUEUE_SIZE;
     key_queue_entries--;
 #if QDEBUG
-    debug("dequeue_key 0x%x\n", rval);
+    debug("dequeue_key 0x%X\n", rval);
 #endif
   }
 

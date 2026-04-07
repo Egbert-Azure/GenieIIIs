@@ -43,18 +43,25 @@
  */
 
 #ifdef ZBX
+#include "trs_memory.h"
 #include "z80.h"
 
 /* Argument printing */
 #define A_0       0  /* No arguments */
 #define A_8       1  /* 8-bit number */
 #define A_16      2  /* 16-bit number */
-#define A_0B   0xff  /* No arguments, backskip over last opcode byte */
+#define A_0B   0xFF  /* No arguments, backskip over last opcode byte */
 #define A_8P  0x100  /* 8-bit number preceding last opcode byte */
 #define A_8R  0x101  /* 8-bit relative address */
 #define A_8X2 0x102  /* Two 8-bit numbers */
 
-#define arglen(a) ((signed char) ((a) & 0xff))
+/* Argument formatting */
+#define X_8   "%02xh"
+#define X_8R  "%04xh"
+#define X_16  "%02x%02xh"
+#define UNDOC "undoc equiv"
+
+#define arglen(a) ((signed char) ((a) & 0xFF))
 
 static const char undefined[] = "UNDEFINED";
 
@@ -65,12 +72,12 @@ struct opcode {
 
 static const struct opcode major[256] = {
 	{ "nop",		A_0 },		/* 00 */
-	{ "ld	bc,%02x%02xh",	A_16 },		/* 01 */
+	{ "ld	bc,"X_16,	A_16 },		/* 01 */
 	{ "ld	(bc),a",	A_0 },		/* 02 */
 	{ "inc	bc",		A_0 },		/* 03 */
 	{ "inc	b",		A_0 },		/* 04 */
 	{ "dec	b",		A_0 },		/* 05 */
-	{ "ld	b,%02xh",	A_8 },		/* 06 */
+	{ "ld	b,"X_8,		A_8 },		/* 06 */
 	{ "rlca",		A_0 },		/* 07 */
 
 	{ "ex	af,af'",	A_0 },		/* 08 */
@@ -79,61 +86,61 @@ static const struct opcode major[256] = {
 	{ "dec	bc",		A_0 },		/* 0b */
 	{ "inc	c",		A_0 },		/* 0c */
 	{ "dec	c",		A_0 },		/* 0d */
-	{ "ld	c,%02xh",	A_8 },		/* 0e */
+	{ "ld	c,"X_8,		A_8 },		/* 0e */
 	{ "rrca",		A_0 },		/* 0f */
 
-	{ "djnz	%04xh",		A_8R },		/* 10 */
-	{ "ld	de,%02x%02xh",	A_16 },		/* 11 */
+	{ "djnz	"X_8R,		A_8R },		/* 10 */
+	{ "ld	de,"X_16,	A_16 },		/* 11 */
 	{ "ld	(de),a",	A_0 },		/* 12 */
 	{ "inc	de",		A_0 },		/* 13 */
 	{ "inc	d",		A_0 },		/* 14 */
 	{ "dec	d",		A_0 },		/* 15 */
-	{ "ld	d,%02xh",	A_8 },		/* 16 */
+	{ "ld	d,"X_8,		A_8 },		/* 16 */
 	{ "rla",		A_0 },		/* 17 */
 
-	{ "jr	%04xh",		A_8R },		/* 18 */
+	{ "jr	"X_8R,		A_8R },		/* 18 */
 	{ "add	hl,de",		A_0 },		/* 19 */
 	{ "ld	a,(de)",	A_0 },		/* 1a */
 	{ "dec	de",		A_0 },		/* 1b */
 	{ "inc	e",		A_0 },		/* 1c */
 	{ "dec	e",		A_0 },		/* 1d */
-	{ "ld	e,%02xh",	A_8 },		/* 1e */
+	{ "ld	e,"X_8,		A_8 },		/* 1e */
 	{ "rra",		A_0 },		/* 1f */
 
-	{ "jr	nz,%04xh",	A_8R },		/* 20 */
-	{ "ld	hl,%02x%02xh",	A_16 },		/* 21 */
-	{ "ld	(%02x%02xh),hl",A_16 },		/* 22 */
+	{ "jr	nz,"X_8R,	A_8R },		/* 20 */
+	{ "ld	hl,"X_16,	A_16 },		/* 21 */
+	{ "ld	("X_16"),hl",	A_16 },		/* 22 */
 	{ "inc	hl",		A_0 },		/* 23 */
 	{ "inc	h",		A_0 },		/* 24 */
 	{ "dec	h",		A_0 },		/* 25 */
-	{ "ld	h,%02xh",	A_8 },		/* 26 */
+	{ "ld	h,"X_8,		A_8 },		/* 26 */
 	{ "daa",		A_0 },		/* 27 */
 
-	{ "jr	z,%04xh",	A_8R },		/* 28 */
+	{ "jr	z,"X_8R,	A_8R },		/* 28 */
 	{ "add	hl,hl",		A_0 },		/* 29 */
-	{ "ld	hl,(%02x%02xh)",A_16 },		/* 2a */
+	{ "ld	hl,("X_16")",	A_16 },		/* 2a */
 	{ "dec	hl",		A_0 },		/* 2b */
 	{ "inc	l",		A_0 },		/* 2c */
 	{ "dec	l",		A_0 },		/* 2d */
-	{ "ld	l,%02xh",	A_8 },		/* 2e */
+	{ "ld	l,"X_8,		A_8 },		/* 2e */
 	{ "cpl",		A_0 },		/* 2f */
 
-	{ "jr	nc,%04xh",	A_8R },		/* 30 */
-	{ "ld	sp,%02x%02xh",	A_16 },		/* 31 */
-	{ "ld	(%02x%02xh),a",	A_16 },		/* 32 */
+	{ "jr	nc,"X_8R,	A_8R },		/* 30 */
+	{ "ld	sp,"X_16,	A_16 },		/* 31 */
+	{ "ld	("X_16"),a",	A_16 },		/* 32 */
 	{ "inc	sp",		A_0 },		/* 33 */
 	{ "inc	(hl)",		A_0 },		/* 34 */
 	{ "dec	(hl)",		A_0 },		/* 35 */
-	{ "ld	(hl),%02xh",	A_8 },		/* 36 */
+	{ "ld	(hl),"X_8,	A_8 },		/* 36 */
 	{ "scf",		A_0 },		/* 37 */
 
-	{ "jr	c,%04xh",	A_8R },		/* 38 */
+	{ "jr	c,"X_8R,	A_8R },		/* 38 */
 	{ "add	hl,sp",		A_0 },		/* 39 */
-	{ "ld	a,(%02x%02xh)",	A_16 },		/* 3a */
+	{ "ld	a,("X_16")",	A_16 },		/* 3a */
 	{ "dec	sp",		A_0 },		/* 3b */
 	{ "inc	a",		A_0 },		/* 3c */
 	{ "dec	a",		A_0 },		/* 3d */
-	{ "ld	a,%02xh",	A_8 },		/* 3e */
+	{ "ld	a,"X_8,		A_8 },		/* 3e */
 	{ "ccf",		A_0 },		/* 3f */
 
 	{ "ld	b,b",		A_0 },		/* 40 */
@@ -282,79 +289,79 @@ static const struct opcode major[256] = {
 
 	{ "ret	nz",		A_0 },		/* c0 */
 	{ "pop	bc",		A_0 },		/* c1 */
-	{ "jp	nz,%02x%02xh",	A_16 },		/* c2 */
-	{ "jp	%02x%02xh",	A_16 },		/* c3 */
-	{ "call	nz,%02x%02xh",	A_16 },		/* c4 */
+	{ "jp	nz,"X_16,	A_16 },		/* c2 */
+	{ "jp	"X_16,		A_16 },		/* c3 */
+	{ "call	nz,"X_16,	A_16 },		/* c4 */
 	{ "push	bc",		A_0 },		/* c5 */
-	{ "add	a,%02xh",	A_8 },		/* c6 */
+	{ "add	a,"X_8,		A_8 },		/* c6 */
 	{ "rst	0",		A_0 },		/* c7 */
 
 	{ "ret	z",		A_0 },		/* c8 */
 	{ "ret",		A_0 },		/* c9 */
-	{ "jp	z,%02x%02xh",	A_16 },		/* ca */
+	{ "jp	z,"X_16,	A_16 },		/* ca */
 	{ 0,			0 },		/* cb */
-	{ "call	z,%02x%02xh",	A_16 },		/* cc */
-	{ "call	%02x%02xh",	A_16 },		/* cd */
-	{ "adc	a,%02xh",	A_8 },		/* ce */
+	{ "call	z,"X_16,	A_16 },		/* cc */
+	{ "call	"X_16,		A_16 },		/* cd */
+	{ "adc	a,"X_8,		A_8 },		/* ce */
 	{ "rst	8",		A_0 },		/* cf */
 
 	{ "ret	nc",		A_0 },		/* d0 */
 	{ "pop	de",		A_0 },		/* d1 */
-	{ "jp	nc,%02x%02xh",	A_16 },		/* d2 */
-	{ "out	(%02xh),a",	A_8 },		/* d3 */
-	{ "call	nc,%02x%02xh",	A_16 },		/* d4 */
+	{ "jp	nc,"X_16,	A_16 },		/* d2 */
+	{ "out	("X_8"),a",	A_8 },		/* d3 */
+	{ "call	nc,"X_16,	A_16 },		/* d4 */
 	{ "push	de",		A_0 },		/* d5 */
-	{ "sub	%02xh",		A_8 },		/* d6 */
+	{ "sub	"X_8,		A_8 },		/* d6 */
 	{ "rst	10h",		A_0 },		/* d7 */
 
 	{ "ret	c",		A_0 },		/* d8 */
 	{ "exx",		A_0 },		/* d9 */
-	{ "jp	c,%02x%02xh",	A_16 },		/* da */
-	{ "in	a,(%02xh)",	A_8 },		/* db */
-	{ "call	c,%02x%02xh",	A_16 },		/* dc */
+	{ "jp	c,"X_16,	A_16 },		/* da */
+	{ "in	a,("X_8")",	A_8 },		/* db */
+	{ "call	c,"X_16,	A_16 },		/* dc */
 	{ 0,			1 },		/* dd */
-	{ "sbc	a,%02xh",	A_8 },		/* de */
+	{ "sbc	a,"X_8,		A_8 },		/* de */
 	{ "rst	18h",		A_0 },		/* df */
 
 	{ "ret	po",		A_0 },		/* e0 */
 	{ "pop	hl",		A_0 },		/* e1 */
-	{ "jp	po,%02x%02xh",	A_16 },		/* e2 */
+	{ "jp	po,"X_16,	A_16 },		/* e2 */
 	{ "ex	(sp),hl",	A_0 },		/* e3 */
-	{ "call	po,%02x%02xh",	A_16 },		/* e4 */
+	{ "call	po,"X_16,	A_16 },		/* e4 */
 	{ "push	hl",		A_0 },		/* e5 */
-	{ "and	%02xh",		A_8 },		/* e6 */
+	{ "and	"X_8,		A_8 },		/* e6 */
 	{ "rst	20h",		A_0 },		/* e7 */
 
 	{ "ret	pe",		A_0 },		/* e8 */
 	{ "jp	(hl)",		A_0 },		/* e9 */
-	{ "jp	pe,%02x%02xh",	A_16 },		/* ea */
+	{ "jp	pe,"X_16,	A_16 },		/* ea */
 	{ "ex	de,hl",		A_0 },		/* eb */
-	{ "call	pe,%02x%02xh",	A_16 },		/* ec */
+	{ "call	pe,"X_16,	A_16 },		/* ec */
 	{ 0,			2 },		/* ed */
-	{ "xor	%02xh",		A_8 },		/* ee */
+	{ "xor	"X_8,		A_8 },		/* ee */
 	{ "rst	28h",		A_0 },		/* ef */
 
 	{ "ret	p",		A_0 },		/* f0 */
 	{ "pop	af",		A_0 },		/* f1 */
-	{ "jp	p,%02x%02xh",	A_16 },		/* f2 */
+	{ "jp	p,"X_16,	A_16 },		/* f2 */
 	{ "di",			A_0 },		/* f3 */
-	{ "call	p,%02x%02xh",	A_16 },		/* f4 */
+	{ "call	p,"X_16,	A_16 },		/* f4 */
 	{ "push	af",		A_0 },		/* f5 */
-	{ "or	%02xh",		A_8 },		/* f6 */
+	{ "or	"X_8,		A_8 },		/* f6 */
 	{ "rst	30h",		A_0 },		/* f7 */
 
 	{ "ret	m",		A_0 },		/* f8 */
 	{ "ld	sp,hl",		A_0 },		/* f9 */
-	{ "jp	m,%02x%02xh",	A_16 },		/* fa */
+	{ "jp	m,"X_16,	A_16 },		/* fa */
 	{ "ei",			A_0 },		/* fb */
-	{ "call	m,%02x%02xh",	A_16 },		/* fc */
+	{ "call	m,"X_16,	A_16 },		/* fc */
 	{ 0,			3 },		/* fd */
-	{ "cp	%02xh",		A_8 },		/* fe */
+	{ "cp	"X_8,		A_8 },		/* fe */
 	{ "rst	38h",		A_0 },		/* ff */
 };
 
 static const struct opcode minor[6][256] = {
-    {							/* cb */
+    {						/* cb */
 	{ "rlc	b",		A_0 },		/* cb00 */
 	{ "rlc	c",		A_0 },		/* cb01 */
 	{ "rlc	d",		A_0 },		/* cb02 */
@@ -643,7 +650,7 @@ static const struct opcode minor[6][256] = {
 	{ "set	7,(hl)",	A_0 },		/* cbfe */
 	{ "set	7,a",		A_0 },		/* cbff */
     },
-    {							/* dd */
+    {						/* dd */
 	{ undefined,		A_0B },		/* dd00 */
 	{ undefined,		A_0B },		/* dd01 */
 	{ undefined,		A_0B },		/* dd02 */
@@ -681,30 +688,30 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dd1f */
 
 	{ undefined,		A_0B },		/* dd20 */
-	{ "ld	ix,%02x%02xh",	A_16 },		/* dd21 */
-	{ "ld	(%02x%02xh),ix",A_16 },		/* dd22 */
+	{ "ld	ix,"X_16,	A_16 },		/* dd21 */
+	{ "ld	("X_16"),ix",	A_16 },		/* dd22 */
 	{ "inc	ix",		A_0 },		/* dd23 */
 	{ "inc	ixh",		A_0 },		/* dd24 [undoc] */
 	{ "dec	ixh",		A_0 },		/* dd25 [undoc] */
-	{ "ld	ixh,%02xh",	A_8 },		/* dd26 [undoc] */
+	{ "ld	ixh,"X_8,	A_8 },		/* dd26 [undoc] */
 	{ undefined,		A_0B },		/* dd27 */
 
 	{ undefined,		A_0B },		/* dd28 */
 	{ "add	ix,ix",		A_0 },		/* dd29 */
-	{ "ld	ix,(%02x%02xh)",A_16 },		/* dd2a */
+	{ "ld	ix,("X_16")",	A_16 },		/* dd2a */
 	{ "dec	ix",		A_0 },		/* dd2b */
 	{ "inc	ixl",		A_0 },		/* dd2c [undoc] */
 	{ "dec	ixl",		A_0 },		/* dd2d [undoc] */
-	{ "ld	ixl,%02xh",	A_8 },		/* dd2e [undoc] */
+	{ "ld	ixl,"X_8,	A_8 },		/* dd2e [undoc] */
 	{ undefined,		A_0B },		/* dd2f */
 
 	{ undefined,		A_0B },		/* dd30 */
 	{ undefined,		A_0B },		/* dd31 */
 	{ undefined,		A_0B },		/* dd32 */
 	{ undefined,		A_0B },		/* dd33 */
-	{ "inc	(ix+%02xh)",	A_8 },		/* dd34 */
-	{ "dec	(ix+%02xh)",	A_8 },		/* dd35 */
-	{ "ld	(ix+%02xh),%02xh",A_8X2 },	/* dd36 */
+	{ "inc	(ix+"X_8")",	A_8 },		/* dd34 */
+	{ "dec	(ix+"X_8")",	A_8 },		/* dd35 */
+	{ "ld	(ix+"X_8"),"X_8,A_8X2 },	/* dd36 */
 	{ undefined,		A_0B },		/* dd37 */
 
 	{ undefined,		A_0B },		/* dd38 */
@@ -722,7 +729,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dd43 */
 	{ "ld	b,ixh",		A_0 },		/* dd44 [undoc] */
 	{ "ld	b,ixl",		A_0 },		/* dd45 [undoc] */
-	{ "ld	b,(ix+%02xh)",	A_8 },		/* dd46 */
+	{ "ld	b,(ix+"X_8")",	A_8 },		/* dd46 */
 	{ undefined,		A_0B },		/* dd47 */
 
 	{ undefined,		A_0B },		/* dd48 */
@@ -731,7 +738,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dd4b */
 	{ "ld	c,ixh",		A_0 },		/* dd4c [undoc] */
 	{ "ld	c,ixl",		A_0 },		/* dd4d [undoc] */
-	{ "ld	c,(ix+%02xh)",	A_8 },		/* dd4e */
+	{ "ld	c,(ix+"X_8")",	A_8 },		/* dd4e */
 	{ undefined,		A_0B },		/* dd4f */
 
 	{ undefined,		A_0B },		/* dd50 */
@@ -740,7 +747,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dd53 */
 	{ "ld	d,ixh",		A_0 },		/* dd54 [undoc] */
 	{ "ld	d,ixl",		A_0 },		/* dd55 [undoc] */
-	{ "ld	d,(ix+%02xh)",	A_8 },		/* dd56 */
+	{ "ld	d,(ix+"X_8")",	A_8 },		/* dd56 */
 	{ undefined,		A_0B },		/* dd57 */
 
 	{ undefined,		A_0B },		/* dd58 */
@@ -749,7 +756,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dd5b */
 	{ "ld	e,ixh",		A_0 },		/* dd5c [undoc] */
 	{ "ld	e,ixl",		A_0 },		/* dd5d [undoc] */
-	{ "ld	e,(ix+%02xh)",	A_8 },		/* dd5e */
+	{ "ld	e,(ix+"X_8")",	A_8 },		/* dd5e */
 	{ undefined,		A_0B },		/* dd5f */
 
 	{ "ld	ixh,b",		A_0 },		/* dd60 [undoc] */
@@ -758,7 +765,7 @@ static const struct opcode minor[6][256] = {
 	{ "ld	ixh,e",		A_0 },		/* dd63 [undoc] */
 	{ "ld	ixh,ixh",	A_0 },		/* dd64 [undoc] */
 	{ "ld	ixh,ixl",	A_0 },		/* dd65 [undoc] */
-	{ "ld	h,(ix+%02xh)",	A_8 },		/* dd66 */
+	{ "ld	h,(ix+"X_8")",	A_8 },		/* dd66 */
 	{ "ld	ixh,a",		A_0 },		/* dd67 [undoc] */
 
 	{ "ld	ixl,b",		A_0 },		/* dd68 [undoc] */
@@ -767,17 +774,17 @@ static const struct opcode minor[6][256] = {
 	{ "ld	ixl,e",		A_0 },		/* dd6b [undoc] */
 	{ "ld	ixl,ixh",	A_0 },		/* dd6c [undoc] */
 	{ "ld	ixl,ixl",	A_0 },		/* dd6d [undoc] */
-	{ "ld	l,(ix+%02xh)",	A_8 },		/* dd6e */
+	{ "ld	l,(ix+"X_8")",	A_8 },		/* dd6e */
 	{ "ld	ixl,a",		A_0 },		/* dd6f [undoc] */
 
-	{ "ld	(ix+%02xh),b",	A_8 },		/* dd70 */
-	{ "ld	(ix+%02xh),c",	A_8 },		/* dd71 */
-	{ "ld	(ix+%02xh),d",	A_8 },		/* dd72 */
-	{ "ld	(ix+%02xh),e",	A_8 },		/* dd73 */
-	{ "ld	(ix+%02xh),h",	A_8 },		/* dd74 */
-	{ "ld	(ix+%02xh),l",	A_8 },		/* dd75 */
+	{ "ld	(ix+"X_8"),b",	A_8 },		/* dd70 */
+	{ "ld	(ix+"X_8"),c",	A_8 },		/* dd71 */
+	{ "ld	(ix+"X_8"),d",	A_8 },		/* dd72 */
+	{ "ld	(ix+"X_8"),e",	A_8 },		/* dd73 */
+	{ "ld	(ix+"X_8"),h",	A_8 },		/* dd74 */
+	{ "ld	(ix+"X_8"),l",	A_8 },		/* dd75 */
 	{ undefined,		A_0B },		/* dd76 */
-	{ "ld	(ix+%02xh),a",	A_8 },		/* dd77 */
+	{ "ld	(ix+"X_8"),a",	A_8 },		/* dd77 */
 
 	{ undefined,		A_0B },		/* dd78 */
 	{ undefined,		A_0B },		/* dd79 */
@@ -785,7 +792,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dd7b */
 	{ "ld	a,ixh",		A_0 },		/* dd7c [undoc] */
 	{ "ld	a,ixl",		A_0 },		/* dd7d [undoc] */
-	{ "ld	a,(ix+%02xh)",	A_8 },		/* dd7e */
+	{ "ld	a,(ix+"X_8")",	A_8 },		/* dd7e */
 	{ undefined,		A_0B },		/* dd7f */
 
 	{ undefined,		A_0B },		/* dd80 */
@@ -794,7 +801,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dd83 */
 	{ "add	a,ixh",		A_0 },		/* dd84 [undoc] */
 	{ "add	a,ixl",		A_0 },		/* dd85 [undoc] */
-	{ "add	a,(ix+%02xh)",	A_8 },		/* dd86 */
+	{ "add	a,(ix+"X_8")",	A_8 },		/* dd86 */
 	{ undefined,		A_0B },		/* dd87 */
 
 	{ undefined,		A_0B },		/* dd88 */
@@ -803,7 +810,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dd8b */
 	{ "adc	a,ixh",		A_0 },		/* dd8c [undoc] */
 	{ "adc	a,ixl",		A_0 },		/* dd8d [undoc] */
-	{ "adc	a,(ix+%02xh)",	A_8 },		/* dd8e */
+	{ "adc	a,(ix+"X_8")",	A_8 },		/* dd8e */
 	{ undefined,		A_0B },		/* dd8f */
 
 	{ undefined,		A_0B },		/* dd90 */
@@ -812,7 +819,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dd93 */
 	{ "sub	ixh",		A_0 },		/* dd94 [undoc] */
 	{ "sub	ixl",		A_0 },		/* dd95 [undoc] */
-	{ "sub	(ix+%02xh)",	A_8 },		/* dd96 */
+	{ "sub	(ix+"X_8")",	A_8 },		/* dd96 */
 	{ undefined,		A_0B },		/* dd97 */
 
 	{ undefined,		A_0B },		/* dd98 */
@@ -821,7 +828,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dd9b */
 	{ "sbc	ixh",		A_0 },		/* dd9c [undoc] */
 	{ "sbc	ixl",		A_0 },		/* dd9d [undoc] */
-	{ "sbc	a,(ix+%02xh)",	A_8 },		/* dd9e */
+	{ "sbc	a,(ix+"X_8")",	A_8 },		/* dd9e */
 	{ undefined,		A_0B },		/* dd9f */
 
 	{ undefined,		A_0B },		/* dda0 */
@@ -830,7 +837,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* dda3 */
 	{ "and	ixh",		A_0 },		/* dda4 [undoc] */
 	{ "and	ixl",		A_0 },		/* dda5 [undoc] */
-	{ "and	(ix+%02xh)",	A_8 },		/* dda6 */
+	{ "and	(ix+"X_8")",	A_8 },		/* dda6 */
 	{ undefined,		A_0B },		/* dda7 */
 
 	{ undefined,		A_0B },		/* dda8 */
@@ -839,7 +846,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* ddab */
 	{ "xor	ixh",		A_0 },		/* ddac [undoc] */
 	{ "xor	ixl",		A_0 },		/* ddad [undoc] */
-	{ "xor	(ix+%02xh)",	A_8 },		/* ddae */
+	{ "xor	(ix+"X_8")",	A_8 },		/* ddae */
 	{ undefined,		A_0B },		/* ddaf */
 
 	{ undefined,		A_0B },		/* ddb0 */
@@ -848,7 +855,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* ddb3 */
 	{ "or	ixh",		A_0 },		/* ddb4 [undoc] */
 	{ "or	ixl",		A_0 },		/* ddb5 [undoc] */
-	{ "or	(ix+%02xh)",	A_8 },		/* ddb6 */
+	{ "or	(ix+"X_8")",	A_8 },		/* ddb6 */
 	{ undefined,		A_0B },		/* ddb7 */
 
 	{ undefined,		A_0B },		/* ddb8 */
@@ -857,7 +864,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* ddbb */
 	{ "cp	ixh",		A_0 },		/* ddbc [undoc] */
 	{ "cp	ixl",		A_0 },		/* ddbd [undoc] */
-	{ "cp	(ix+%02xh)",	A_8 },		/* ddbe */
+	{ "cp	(ix+"X_8")",	A_8 },		/* ddbe */
 	{ undefined,		A_0B },		/* ddbf */
 
 	{ undefined,		A_0B },		/* ddc0 */
@@ -932,7 +939,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* ddfe */
 	{ undefined,		A_0B },		/* ddff */
     },
-    {							/* ed */
+    {						/* ed */
 	{ undefined,		A_0 },		/* ed00 */
 	{ undefined,		A_0 },		/* ed01 */
 	{ undefined,		A_0 },		/* ed02 */
@@ -1010,7 +1017,7 @@ static const struct opcode minor[6][256] = {
 	{ "in	b,(c)",		A_0 },		/* ed40 */
 	{ "out	(c),b",		A_0 },		/* ed41 */
 	{ "sbc	hl,bc",		A_0 },		/* ed42 */
-	{ "ld	(%02x%02xh),bc",A_16 },		/* ed43 */
+	{ "ld	("X_16"),bc",	A_16 },		/* ed43 */
 	{ "neg",		A_0 },		/* ed44 */
 	{ "retn",		A_0 },		/* ed45 */
 	{ "im	0",		A_0 },		/* ed46 */
@@ -1019,8 +1026,8 @@ static const struct opcode minor[6][256] = {
 	{ "in	c,(c)",		A_0 },		/* ed48 */
 	{ "out	(c),c",		A_0 },		/* ed49 */
 	{ "adc	hl,bc",		A_0 },		/* ed4a */
-	{ "ld	bc,(%02x%02xh)",A_16 },		/* ed4b */
-	{ "neg\t\t\t;undoc equiv",A_0 },	/* ed4c [undoc] */
+	{ "ld	bc,("X_16")",	A_16 },		/* ed4b */
+	{ "neg\t\t\t;UNDOC",	A_0 },		/* ed4c [undoc] */
 	{ "reti",		A_0 },		/* ed4d */
 	{ undefined,		A_0 },		/* ed4e */
 	{ "ld	r,a",		A_0 },		/* ed4f */
@@ -1028,57 +1035,55 @@ static const struct opcode minor[6][256] = {
 	{ "in	d,(c)",		A_0 },		/* ed50 */
 	{ "out	(c),d",		A_0 },		/* ed51 */
 	{ "sbc	hl,de",		A_0 },		/* ed52 */
-	{ "ld	(%02x%02xh),de",A_16 },		/* ed53 */
-	{ "neg\t\t\t;undoc equiv",A_0 },	/* ed54 [undoc] */
-	{ "ret\t\t\t;undoc equiv",A_0 },	/* ed55 [undoc] */
+	{ "ld	("X_16"),de",	A_16 },		/* ed53 */
+	{ "neg\t\t\t;UNDOC",	A_0 },		/* ed54 [undoc] */
+	{ "ret\t\t\t;UNDOC",	A_0 },		/* ed55 [undoc] */
 	{ "im	1",		A_0 },		/* ed56 */
 	{ "ld	a,i",		A_0 },		/* ed57 */
 
 	{ "in	e,(c)",		A_0 },		/* ed58 */
 	{ "out	(c),e",		A_0 },		/* ed59 */
 	{ "adc	hl,de",		A_0 },		/* ed5a */
-	{ "ld	de,(%02x%02xh)",A_16 },		/* ed5b */
-	{ "neg\t\t\t;undoc equiv",A_0 },	/* ed5c [undoc] */
-	{ "ret\t\t\t;undoc equiv",A_0 },	/* ed5d [undoc] */
+	{ "ld	de,("X_16")",	A_16 },		/* ed5b */
+	{ "neg\t\t\t;UNDOC",	A_0 },		/* ed5c [undoc] */
+	{ "ret\t\t\t;UNDOC",	A_0 },		/* ed5d [undoc] */
 	{ "im	2",		A_0 },		/* ed5e */
 	{ "ld	a,r",		A_0 },		/* ed5f */
 
 	{ "in	h,(c)",		A_0 },		/* ed60 */
 	{ "out	(c),h",		A_0 },		/* ed61 */
 	{ "sbc	hl,hl",		A_0 },		/* ed62 */
-	{ "ld	(%02x%02xh),hl\t;undoc equiv",A_16 },
-	                                        /* ed63 [semi-documented] */
-	{ "neg\t\t\t;undoc equiv",A_0 },	/* ed64 [undoc] */
-	{ "ret\t\t\t;undoc equiv",A_0 },	/* ed65 [undoc] */
-	{ "im\t0\t\t;undoc equiv",A_0 },	/* ed66 [undoc] */
+	{ "ld	("X_16"),hl\t;UNDOC",	A_16 }, /* ed63 [semi-documented] */
+	{ "neg\t\t\t;UNDOC",	A_0 },		/* ed64 [undoc] */
+	{ "ret\t\t\t;UNDOC",	A_0 },		/* ed65 [undoc] */
+	{ "im\t0\t\t;UNDOC",	A_0 },		/* ed66 [undoc] */
 	{ "rrd",		A_0 },		/* ed67 */
 
 	{ "in	l,(c)",		A_0 },		/* ed68 */
 	{ "out	(c),l",		A_0 },		/* ed69 */
 	{ "adc	hl,hl",		A_0 },		/* ed6a */
-	{ "ld	hl,(%02x%02xh)\t;undoc equiv",A_16 },
-                                                /* ed6b [semi-documented] */
-	{ "neg\t\t\t;undoc equiv",A_0 },	/* ed6c [undoc] */
-	{ "ret\t\t\t;undoc equiv",A_0 },	/* ed6d [undoc] */
+	{ "ld	hl,("X_16")\t;UNDOC",	A_16 }, /* ed6b [semi-documented] */
+	{ "neg\t\t\t;UNDOC",	A_0 },		/* ed6c [undoc] */
+	{ "ret\t\t\t;UNDOC",	A_0 },		/* ed6d [undoc] */
 	{ undefined,		A_0 },		/* ed6e */
 	{ "rld",		A_0 },		/* ed6f */
 
 	{ "in	(c)",		A_0 },		/* ed70 [undoc] */
 	{ "out	(c),0",		A_0 },		/* ed71 [undoc] */
 	{ "sbc	hl,sp",		A_0 },		/* ed72 */
-	{ "ld	(%02x%02xh),sp",A_16 },		/* ed73 */
-	{ "neg\t\t\t;undoc equiv",A_0 },	/* ed74 [undoc] */
-	{ "ret\t\t\t;undoc equiv",A_0 },	/* ed75 [undoc] */
-	{ "im\t1\t\t;undoc equiv",A_0 },	/* ed76 [undoc] */
+	{ "ld	("X_16"),sp",	A_16 },		/* ed73 */
+	{ "neg\t\t\t;UNDOC",	A_0 },		/* ed74 [undoc] */
+	{ "ret\t\t\t;UNDOC",	A_0 },		/* ed75 [undoc] */
+	{ "im\t1\t\t;UNDOC",	A_0 },		/* ed76 [undoc] */
 	{ undefined,		A_0 },		/* ed77 */
 
 	{ "in	a,(c)",		A_0 },		/* ed78 */
 	{ "out	(c),a",		A_0 },		/* ed79 */
 	{ "adc	hl,sp",		A_0 },		/* ed7a */
-	{ "ld	sp,(%02x%02xh)",A_16 },		/* ed7b */
-	{ "neg\t\t\t;undoc equiv",A_0 },	/* ed7c [undoc] */
-	{ "ret\t\t\t;undoc equiv",A_0 },	/* ed7d [undoc] */
-	{ "im\t2\t\t;undoc equiv",A_0 },	/* ed7e [undoc] */
+	{ "ld	sp,("X_16")",	A_16 },		/* ed7b */
+	{ "neg\t\t\t;UNDOC",	A_0 },		/* ed7c [undoc] */
+	{ "ret\t\t\t;UNDOC",	A_0 },		/* ed7d [undoc] */
+	{ "im\t2\t\t;UNDOC",	A_0 },		/* ed7e [undoc] */
 	{ undefined,		A_0 },		/* ed7f */
 
 	{ undefined,		A_0 },		/* ed80 */
@@ -1225,7 +1230,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0 },		/* edfe */
 	{ undefined,		A_0 },		/* edff */
     },
-    {							/* fd */
+    {						/* fd */
 	{ undefined,		A_0B },		/* fd00 */
 	{ undefined,		A_0B },		/* fd01 */
 	{ undefined,		A_0B },		/* fd02 */
@@ -1263,8 +1268,8 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd1f */
 
 	{ undefined,		A_0B },		/* fd20 */
-	{ "ld	iy,%02x%02xh",	A_16 },		/* fd21 */
-	{ "ld	(%02x%02xh),iy",A_16 },		/* fd22 */
+	{ "ld	iy,"X_16,	A_16 },		/* fd21 */
+	{ "ld	("X_16"),iy",	A_16 },		/* fd22 */
 	{ "inc	iy",		A_0 },		/* fd23 */
 	{ undefined,		A_0B },		/* fd24 */
 	{ undefined,		A_0B },		/* fd25 */
@@ -1273,7 +1278,7 @@ static const struct opcode minor[6][256] = {
 
 	{ undefined,		A_0B },		/* fd28 */
 	{ "add	iy,iy",		A_0 },		/* fd29 */
-	{ "ld	iy,(%02x%02xh)",A_16 },		/* fd2a */
+	{ "ld	iy,("X_16")",	A_16 },		/* fd2a */
 	{ "dec	iy",		A_0 },		/* fd2b */
 	{ undefined,		A_0B },		/* fd2c */
 	{ undefined,		A_0B },		/* fd2d */
@@ -1284,9 +1289,9 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd31 */
 	{ undefined,		A_0B },		/* fd32 */
 	{ undefined,		A_0B },		/* fd33 */
-	{ "inc	(iy+%02xh)",	A_8 },		/* fd34 */
-	{ "dec	(iy+%02xh)",	A_8 },		/* fd35 */
-	{ "ld	(iy+%02xh),%02xh",A_8X2 },	/* fd36 */
+	{ "inc	(iy+"X_8")",	A_8 },		/* fd34 */
+	{ "dec	(iy+"X_8")",	A_8 },		/* fd35 */
+	{ "ld	(iy+"X_8"),"X_8,A_8X2 },	/* fd36 */
 	{ undefined,		A_0B },		/* fd37 */
 
 	{ undefined,		A_0B },		/* fd38 */
@@ -1304,7 +1309,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd43 */
 	{ undefined,		A_0B },		/* fd44 */
 	{ undefined,		A_0B },		/* fd45 */
-	{ "ld	b,(iy+%02xh)",	A_8 },		/* fd46 */
+	{ "ld	b,(iy+"X_8")",	A_8 },		/* fd46 */
 	{ undefined,		A_0B },		/* fd47 */
 
 	{ undefined,		A_0B },		/* fd48 */
@@ -1313,7 +1318,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd4b */
 	{ undefined,		A_0B },		/* fd4c */
 	{ undefined,		A_0B },		/* fd4d */
-	{ "ld	c,(iy+%02xh)",	A_8 },		/* fd4e */
+	{ "ld	c,(iy+"X_8")",	A_8 },		/* fd4e */
 	{ undefined,		A_0B },		/* fd4f */
 
 	{ undefined,		A_0B },		/* fd50 */
@@ -1322,7 +1327,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd53 */
 	{ undefined,		A_0B },		/* fd54 */
 	{ undefined,		A_0B },		/* fd55 */
-	{ "ld	d,(iy+%02xh)",	A_8 },		/* fd56 */
+	{ "ld	d,(iy+"X_8")",	A_8 },		/* fd56 */
 	{ undefined,		A_0B },		/* fd57 */
 
 	{ undefined,		A_0B },		/* fd58 */
@@ -1331,7 +1336,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd5b */
 	{ undefined,		A_0B },		/* fd5c */
 	{ undefined,		A_0B },		/* fd5d */
-	{ "ld	e,(iy+%02xh)",	A_8 },		/* fd5e */
+	{ "ld	e,(iy+"X_8")",	A_8 },		/* fd5e */
 	{ undefined,		A_0B },		/* fd5f */
 
 	{ undefined,		A_0B },		/* fd60 */
@@ -1340,7 +1345,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd63 */
 	{ undefined,		A_0B },		/* fd64 */
 	{ undefined,		A_0B },		/* fd65 */
-	{ "ld	h,(iy+%02xh)",	A_8 },		/* fd66 */
+	{ "ld	h,(iy+"X_8")",	A_8 },		/* fd66 */
 	{ undefined,		A_0B },		/* fd67 */
 
 	{ undefined,		A_0B },		/* fd68 */
@@ -1349,17 +1354,17 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd6b */
 	{ undefined,		A_0B },		/* fd6c */
 	{ undefined,		A_0B },		/* fd6d */
-	{ "ld	l,(iy+%02xh)",	A_8 },		/* fd6e */
+	{ "ld	l,(iy+"X_8")",	A_8 },		/* fd6e */
 	{ undefined,		A_0B },		/* fd6f */
 
-	{ "ld	(iy+%02xh),b",	A_8 },		/* fd70 */
-	{ "ld	(iy+%02xh),c",	A_8 },		/* fd71 */
-	{ "ld	(iy+%02xh),d",	A_8 },		/* fd72 */
-	{ "ld	(iy+%02xh),e",	A_8 },		/* fd73 */
-	{ "ld	(iy+%02xh),h",	A_8 },		/* fd74 */
-	{ "ld	(iy+%02xh),l",	A_8 },		/* fd75 */
+	{ "ld	(iy+"X_8"),b",	A_8 },		/* fd70 */
+	{ "ld	(iy+"X_8"),c",	A_8 },		/* fd71 */
+	{ "ld	(iy+"X_8"),d",	A_8 },		/* fd72 */
+	{ "ld	(iy+"X_8"),e",	A_8 },		/* fd73 */
+	{ "ld	(iy+"X_8"),h",	A_8 },		/* fd74 */
+	{ "ld	(iy+"X_8"),l",	A_8 },		/* fd75 */
 	{ undefined,		A_0B },		/* fd76 */
-	{ "ld	(iy+%02xh),a",	A_8 },		/* fd77 */
+	{ "ld	(iy+"X_8"),a",	A_8 },		/* fd77 */
 
 	{ undefined,		A_0B },		/* fd78 */
 	{ undefined,		A_0B },		/* fd79 */
@@ -1367,7 +1372,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd7b */
 	{ undefined,		A_0B },		/* fd7c */
 	{ undefined,		A_0B },		/* fd7d */
-	{ "ld	a,(iy+%02xh)",	A_8 },		/* fd7e */
+	{ "ld	a,(iy+"X_8")",	A_8 },		/* fd7e */
 	{ undefined,		A_0B },		/* fd7f */
 
 	{ undefined,		A_0B },		/* fd80 */
@@ -1376,7 +1381,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd83 */
 	{ undefined,		A_0B },		/* fd84 */
 	{ undefined,		A_0B },		/* fd85 */
-	{ "add	a,(iy+%02xh)",	A_8 },		/* fd86 */
+	{ "add	a,(iy+"X_8")",	A_8 },		/* fd86 */
 	{ undefined,		A_0B },		/* fd87 */
 
 	{ undefined,		A_0B },		/* fd88 */
@@ -1385,7 +1390,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd8b */
 	{ undefined,		A_0B },		/* fd8c */
 	{ undefined,		A_0B },		/* fd8d */
-	{ "adc	a,(iy+%02xh)",	A_8 },		/* fd8e */
+	{ "adc	a,(iy+"X_8")",	A_8 },		/* fd8e */
 	{ undefined,		A_0B },		/* fd8f */
 
 	{ undefined,		A_0B },		/* fd90 */
@@ -1394,7 +1399,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd93 */
 	{ undefined,		A_0B },		/* fd94 */
 	{ undefined,		A_0B },		/* fd95 */
-	{ "sub	(iy+%02xh)",	A_8 },		/* fd96 */
+	{ "sub	(iy+"X_8")",	A_8 },		/* fd96 */
 	{ undefined,		A_0B },		/* fd97 */
 
 	{ undefined,		A_0B },		/* fd98 */
@@ -1403,7 +1408,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fd9b */
 	{ undefined,		A_0B },		/* fd9c */
 	{ undefined,		A_0B },		/* fd9d */
-	{ "sbc	a,(iy+%02xh)",	A_8 },		/* fd9e */
+	{ "sbc	a,(iy+"X_8")",	A_8 },		/* fd9e */
 	{ undefined,		A_0B },		/* fd9f */
 
 	{ undefined,		A_0B },		/* fda0 */
@@ -1412,7 +1417,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fda3 */
 	{ undefined,		A_0B },		/* fda4 */
 	{ undefined,		A_0B },		/* fda5 */
-	{ "and	(iy+%02xh)",	A_8 },		/* fda6 */
+	{ "and	(iy+"X_8")",	A_8 },		/* fda6 */
 	{ undefined,		A_0B },		/* fda7 */
 
 	{ undefined,		A_0B },		/* fda8 */
@@ -1421,7 +1426,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fdab */
 	{ undefined,		A_0B },		/* fdac */
 	{ undefined,		A_0B },		/* fdad */
-	{ "xor	(iy+%02xh)",	A_8 },		/* fdae */
+	{ "xor	(iy+"X_8")",	A_8 },		/* fdae */
 	{ undefined,		A_0B },		/* fdaf */
 
 	{ undefined,		A_0B },		/* fdb0 */
@@ -1430,7 +1435,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fdb3 */
 	{ undefined,		A_0B },		/* fdb4 */
 	{ undefined,		A_0B },		/* fdb5 */
-	{ "or	(iy+%02xh)",	A_8 },		/* fdb6 */
+	{ "or	(iy+"X_8")",	A_8 },		/* fdb6 */
 	{ undefined,		A_0B },		/* fdb7 */
 
 	{ undefined,		A_0B },		/* fdb8 */
@@ -1439,7 +1444,7 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fdbb */
 	{ undefined,		A_0B },		/* fdbc */
 	{ undefined,		A_0B },		/* fdbd */
-	{ "cp	(iy+%02xh)",	A_8 },		/* fdbe */
+	{ "cp	(iy+"X_8")",	A_8 },		/* fdbe */
 	{ undefined,		A_0B },		/* fdbf */
 
 	{ undefined,		A_0B },		/* fdc0 */
@@ -1514,587 +1519,587 @@ static const struct opcode minor[6][256] = {
 	{ undefined,		A_0B },		/* fdfe */
 	{ undefined,		A_0B },		/* fdff */
     },
-    {							/* dd cb */
-	{ "ld	b,rlc (ix+%02xh)",	A_8P },	/* ddcb..00 [undoc] */
-	{ "ld	c,rlc (ix+%02xh)",	A_8P },	/* ddcb..01 [undoc] */
-	{ "ld	d,rlc (ix+%02xh)",	A_8P },	/* ddcb..02 [undoc] */
-	{ "ld	e,rlc (ix+%02xh)",	A_8P },	/* ddcb..03 [undoc] */
-	{ "ld	h,rlc (ix+%02xh)",	A_8P },	/* ddcb..04 [undoc] */
-	{ "ld	l,rlc (ix+%02xh)",	A_8P },	/* ddcb..05 [undoc] */
-	{ "rlc	(ix+%02xh)",		A_8P },	/* ddcb..06 */
-	{ "ld	a,rlc (ix+%02xh)",	A_8P },	/* ddcb..07 [undoc] */
+    {						/* dd cb */
+	{ "ld	b,rlc (ix+"X_8")",	A_8P },	/* ddcb..00 [undoc] */
+	{ "ld	c,rlc (ix+"X_8")",	A_8P },	/* ddcb..01 [undoc] */
+	{ "ld	d,rlc (ix+"X_8")",	A_8P },	/* ddcb..02 [undoc] */
+	{ "ld	e,rlc (ix+"X_8")",	A_8P },	/* ddcb..03 [undoc] */
+	{ "ld	h,rlc (ix+"X_8")",	A_8P },	/* ddcb..04 [undoc] */
+	{ "ld	l,rlc (ix+"X_8")",	A_8P },	/* ddcb..05 [undoc] */
+	{ "rlc	(ix+"X_8")",		A_8P },	/* ddcb..06 */
+	{ "ld	a,rlc (ix+"X_8")",	A_8P },	/* ddcb..07 [undoc] */
 
-	{ "ld	b,rrc (ix+%02xh)",	A_8P },	/* ddcb..08 [undoc] */
-	{ "ld	c,rrc (ix+%02xh)",	A_8P },	/* ddcb..09 [undoc] */
-	{ "ld	d,rrc (ix+%02xh)",	A_8P },	/* ddcb..0a [undoc] */
-	{ "ld	e,rrc (ix+%02xh)",	A_8P },	/* ddcb..0b [undoc] */
-	{ "ld	h,rrc (ix+%02xh)",	A_8P },	/* ddcb..0c [undoc] */
-	{ "ld	l,rrc (ix+%02xh)",	A_8P },	/* ddcb..0d [undoc] */
-	{ "rrc	(ix+%02xh)",		A_8P },	/* ddcb..0e */
-	{ "ld	a,rrc (ix+%02xh)",	A_8P },	/* ddcb..0f [undoc] */
+	{ "ld	b,rrc (ix+"X_8")",	A_8P },	/* ddcb..08 [undoc] */
+	{ "ld	c,rrc (ix+"X_8")",	A_8P },	/* ddcb..09 [undoc] */
+	{ "ld	d,rrc (ix+"X_8")",	A_8P },	/* ddcb..0a [undoc] */
+	{ "ld	e,rrc (ix+"X_8")",	A_8P },	/* ddcb..0b [undoc] */
+	{ "ld	h,rrc (ix+"X_8")",	A_8P },	/* ddcb..0c [undoc] */
+	{ "ld	l,rrc (ix+"X_8")",	A_8P },	/* ddcb..0d [undoc] */
+	{ "rrc	(ix+"X_8")",		A_8P },	/* ddcb..0e */
+	{ "ld	a,rrc (ix+"X_8")",	A_8P },	/* ddcb..0f [undoc] */
 
-	{ "ld	b,rl (ix+%02xh)",	A_8P },	/* ddcb..10 [undoc] */
-	{ "ld	c,rl (ix+%02xh)",	A_8P },	/* ddcb..11 [undoc] */
-	{ "ld	d,rl (ix+%02xh)",	A_8P },	/* ddcb..12 [undoc] */
-	{ "ld	e,rl (ix+%02xh)",	A_8P },	/* ddcb..13 [undoc] */
-	{ "ld	h,rl (ix+%02xh)",	A_8P },	/* ddcb..14 [undoc] */
-	{ "ld	l,rl (ix+%02xh)",	A_8P },	/* ddcb..15 [undoc] */
-	{ "rl	(ix+%02xh)",		A_8P },	/* ddcb..16 */
-	{ "ld	a,rl (ix+%02xh)",	A_8P },	/* ddcb..17 [undoc] */
+	{ "ld	b,rl (ix+"X_8")",	A_8P },	/* ddcb..10 [undoc] */
+	{ "ld	c,rl (ix+"X_8")",	A_8P },	/* ddcb..11 [undoc] */
+	{ "ld	d,rl (ix+"X_8")",	A_8P },	/* ddcb..12 [undoc] */
+	{ "ld	e,rl (ix+"X_8")",	A_8P },	/* ddcb..13 [undoc] */
+	{ "ld	h,rl (ix+"X_8")",	A_8P },	/* ddcb..14 [undoc] */
+	{ "ld	l,rl (ix+"X_8")",	A_8P },	/* ddcb..15 [undoc] */
+	{ "rl	(ix+"X_8")",		A_8P },	/* ddcb..16 */
+	{ "ld	a,rl (ix+"X_8")",	A_8P },	/* ddcb..17 [undoc] */
 
-	{ "ld	b,rr (ix+%02xh)",	A_8P },	/* ddcb..18 [undoc] */
-	{ "ld	c,rr (ix+%02xh)",	A_8P },	/* ddcb..19 [undoc] */
-	{ "ld	d,rr (ix+%02xh)",	A_8P },	/* ddcb..1a [undoc] */
-	{ "ld	e,rr (ix+%02xh)",	A_8P },	/* ddcb..1b [undoc] */
-	{ "ld	h,rr (ix+%02xh)",	A_8P },	/* ddcb..1c [undoc] */
-	{ "ld	l,rr (ix+%02xh)",	A_8P },	/* ddcb..1d [undoc] */
-	{ "rr	(ix+%02xh)",		A_8P },	/* ddcb..1e */
-	{ "ld	a,rr (ix+%02xh)",	A_8P },	/* ddcb..1f [undoc] */
+	{ "ld	b,rr (ix+"X_8")",	A_8P },	/* ddcb..18 [undoc] */
+	{ "ld	c,rr (ix+"X_8")",	A_8P },	/* ddcb..19 [undoc] */
+	{ "ld	d,rr (ix+"X_8")",	A_8P },	/* ddcb..1a [undoc] */
+	{ "ld	e,rr (ix+"X_8")",	A_8P },	/* ddcb..1b [undoc] */
+	{ "ld	h,rr (ix+"X_8")",	A_8P },	/* ddcb..1c [undoc] */
+	{ "ld	l,rr (ix+"X_8")",	A_8P },	/* ddcb..1d [undoc] */
+	{ "rr	(ix+"X_8")",		A_8P },	/* ddcb..1e */
+	{ "ld	a,rr (ix+"X_8")",	A_8P },	/* ddcb..1f [undoc] */
 
-	{ "ld	b,sla (ix+%02xh)",	A_8P },	/* ddcb..20 [undoc] */
-	{ "ld	c,sla (ix+%02xh)",	A_8P },	/* ddcb..21 [undoc] */
-	{ "ld	d,sla (ix+%02xh)",	A_8P },	/* ddcb..22 [undoc] */
-	{ "ld	e,sla (ix+%02xh)",	A_8P },	/* ddcb..23 [undoc] */
-	{ "ld	h,sla (ix+%02xh)",	A_8P },	/* ddcb..24 [undoc] */
-	{ "ld	l,sla (ix+%02xh)",	A_8P },	/* ddcb..25 [undoc] */
-	{ "sla	(ix+%02xh)",		A_8P },	/* ddcb..26 */
-	{ "ld	a,sla (ix+%02xh)",	A_8P },	/* ddcb..27 [undoc] */
+	{ "ld	b,sla (ix+"X_8")",	A_8P },	/* ddcb..20 [undoc] */
+	{ "ld	c,sla (ix+"X_8")",	A_8P },	/* ddcb..21 [undoc] */
+	{ "ld	d,sla (ix+"X_8")",	A_8P },	/* ddcb..22 [undoc] */
+	{ "ld	e,sla (ix+"X_8")",	A_8P },	/* ddcb..23 [undoc] */
+	{ "ld	h,sla (ix+"X_8")",	A_8P },	/* ddcb..24 [undoc] */
+	{ "ld	l,sla (ix+"X_8")",	A_8P },	/* ddcb..25 [undoc] */
+	{ "sla	(ix+"X_8")",		A_8P },	/* ddcb..26 */
+	{ "ld	a,sla (ix+"X_8")",	A_8P },	/* ddcb..27 [undoc] */
 
-	{ "ld	b,sra (ix+%02xh)",	A_8P },	/* ddcb..28 [undoc] */
-	{ "ld	c,sra (ix+%02xh)",	A_8P },	/* ddcb..29 [undoc] */
-	{ "ld	d,sra (ix+%02xh)",	A_8P },	/* ddcb..2a [undoc] */
-	{ "ld	e,sra (ix+%02xh)",	A_8P },	/* ddcb..2b [undoc] */
-	{ "ld	h,sra (ix+%02xh)",	A_8P },	/* ddcb..2c [undoc] */
-	{ "ld	l,sra (ix+%02xh)",	A_8P },	/* ddcb..2d [undoc] */
-	{ "sra	(ix+%02xh)",		A_8P },	/* ddcb..2e */
-	{ "ld	a,sra (ix+%02xh)",	A_8P },	/* ddcb..2f [undoc] */
+	{ "ld	b,sra (ix+"X_8")",	A_8P },	/* ddcb..28 [undoc] */
+	{ "ld	c,sra (ix+"X_8")",	A_8P },	/* ddcb..29 [undoc] */
+	{ "ld	d,sra (ix+"X_8")",	A_8P },	/* ddcb..2a [undoc] */
+	{ "ld	e,sra (ix+"X_8")",	A_8P },	/* ddcb..2b [undoc] */
+	{ "ld	h,sra (ix+"X_8")",	A_8P },	/* ddcb..2c [undoc] */
+	{ "ld	l,sra (ix+"X_8")",	A_8P },	/* ddcb..2d [undoc] */
+	{ "sra	(ix+"X_8")",		A_8P },	/* ddcb..2e */
+	{ "ld	a,sra (ix+"X_8")",	A_8P },	/* ddcb..2f [undoc] */
 
-	{ "ld	b,slia (ix+%02xh)",	A_8P },	/* ddcb..30 [undoc] */
-	{ "ld	c,slia (ix+%02xh)",	A_8P },	/* ddcb..31 [undoc] */
-	{ "ld	d,slia (ix+%02xh)",	A_8P },	/* ddcb..32 [undoc] */
-	{ "ld	e,slia (ix+%02xh)",	A_8P },	/* ddcb..33 [undoc] */
-	{ "ld	h,slia (ix+%02xh)",	A_8P },	/* ddcb..34 [undoc] */
-	{ "ld	l,slia (ix+%02xh)",	A_8P },	/* ddcb..35 [undoc] */
-	{ "slia	(ix+%02xh)",		A_8P },	/* ddcb..36 [undoc] */
-	{ "ld	a,slia (ix+%02xh)",	A_8P },	/* ddcb..37 [undoc] */
+	{ "ld	b,slia (ix+"X_8")",	A_8P },	/* ddcb..30 [undoc] */
+	{ "ld	c,slia (ix+"X_8")",	A_8P },	/* ddcb..31 [undoc] */
+	{ "ld	d,slia (ix+"X_8")",	A_8P },	/* ddcb..32 [undoc] */
+	{ "ld	e,slia (ix+"X_8")",	A_8P },	/* ddcb..33 [undoc] */
+	{ "ld	h,slia (ix+"X_8")",	A_8P },	/* ddcb..34 [undoc] */
+	{ "ld	l,slia (ix+"X_8")",	A_8P },	/* ddcb..35 [undoc] */
+	{ "slia	(ix+"X_8")",		A_8P },	/* ddcb..36 [undoc] */
+	{ "ld	a,slia (ix+"X_8")",	A_8P },	/* ddcb..37 [undoc] */
 
-	{ "ld	b,srl (ix+%02xh)",	A_8P },	/* ddcb..38 [undoc] */
-	{ "ld	c,srl (ix+%02xh)",	A_8P },	/* ddcb..39 [undoc] */
-	{ "ld	d,srl (ix+%02xh)",	A_8P },	/* ddcb..3a [undoc] */
-	{ "ld	e,srl (ix+%02xh)",	A_8P },	/* ddcb..3b [undoc] */
-	{ "ld	h,srl (ix+%02xh)",	A_8P },	/* ddcb..3c [undoc] */
-	{ "ld	l,srl (ix+%02xh)",	A_8P },	/* ddcb..3d [undoc] */
-	{ "srl	(ix+%02xh)",		A_8P },	/* ddcb..3e */
-	{ "ld	a,srl (ix+%02xh)",	A_8P },	/* ddcb..3f [undoc] */
+	{ "ld	b,srl (ix+"X_8")",	A_8P },	/* ddcb..38 [undoc] */
+	{ "ld	c,srl (ix+"X_8")",	A_8P },	/* ddcb..39 [undoc] */
+	{ "ld	d,srl (ix+"X_8")",	A_8P },	/* ddcb..3a [undoc] */
+	{ "ld	e,srl (ix+"X_8")",	A_8P },	/* ddcb..3b [undoc] */
+	{ "ld	h,srl (ix+"X_8")",	A_8P },	/* ddcb..3c [undoc] */
+	{ "ld	l,srl (ix+"X_8")",	A_8P },	/* ddcb..3d [undoc] */
+	{ "srl	(ix+"X_8")",		A_8P },	/* ddcb..3e */
+	{ "ld	a,srl (ix+"X_8")",	A_8P },	/* ddcb..3f [undoc] */
 
-	{ "bit	0,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..40 [undoc] */
-	{ "bit	0,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..41 [undoc] */
-	{ "bit	0,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..42 [undoc] */
-	{ "bit	0,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..43 [undoc] */
-	{ "bit	0,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..44 [undoc] */
-	{ "bit	0,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..45 [undoc] */
-	{ "bit	0,(ix+%02xh)",	A_8P },		     /* ddcb..46 */
-	{ "bit	0,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..47 [undoc] */
+	{ "bit	0,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..40 [undoc] */
+	{ "bit	0,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..41 [undoc] */
+	{ "bit	0,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..42 [undoc] */
+	{ "bit	0,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..43 [undoc] */
+	{ "bit	0,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..44 [undoc] */
+	{ "bit	0,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..45 [undoc] */
+	{ "bit	0,(ix+"X_8")"	,	A_8P },	/* ddcb..46 */
+	{ "bit	0,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..47 [undoc] */
 
-	{ "bit	1,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..48 [undoc] */
-	{ "bit	1,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..49 [undoc] */
-	{ "bit	1,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..4a [undoc] */
-	{ "bit	1,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..4b [undoc] */
-	{ "bit	1,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..4c [undoc] */
-	{ "bit	1,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..4d [undoc] */
-	{ "bit	1,(ix+%02xh)",	A_8P },		     /* ddcb..4e */
-	{ "bit	1,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..4f [undoc] */
+	{ "bit	1,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..48 [undoc] */
+	{ "bit	1,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..49 [undoc] */
+	{ "bit	1,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..4a [undoc] */
+	{ "bit	1,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..4b [undoc] */
+	{ "bit	1,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..4c [undoc] */
+	{ "bit	1,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..4d [undoc] */
+	{ "bit	1,(ix+"X_8")",		A_8P },	/* ddcb..4e */
+	{ "bit	1,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..4f [undoc] */
 
-	{ "bit	2,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..50 [undoc] */
-	{ "bit	2,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..51 [undoc] */
-	{ "bit	2,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..52 [undoc] */
-	{ "bit	2,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..53 [undoc] */
-	{ "bit	2,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..54 [undoc] */
-	{ "bit	2,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..55 [undoc] */
-	{ "bit	2,(ix+%02xh)",	A_8P },		     /* ddcb..56 */
-	{ "bit	2,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..57 [undoc] */
+	{ "bit	2,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..50 [undoc] */
+	{ "bit	2,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..51 [undoc] */
+	{ "bit	2,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..52 [undoc] */
+	{ "bit	2,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..53 [undoc] */
+	{ "bit	2,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..54 [undoc] */
+	{ "bit	2,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..55 [undoc] */
+	{ "bit	2,(ix+"X_8")",		A_8P },	/* ddcb..56 */
+	{ "bit	2,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..57 [undoc] */
 
-	{ "bit	3,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..58 [undoc] */
-	{ "bit	3,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..59 [undoc] */
-	{ "bit	3,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..5a [undoc] */
-	{ "bit	3,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..5b [undoc] */
-	{ "bit	3,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..5c [undoc] */
-	{ "bit	3,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..5d [undoc] */
-	{ "bit	3,(ix+%02xh)",	A_8P },		     /* ddcb..5e */
-	{ "bit	3,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..5f [undoc] */
+	{ "bit	3,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..58 [undoc] */
+	{ "bit	3,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..59 [undoc] */
+	{ "bit	3,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..5a [undoc] */
+	{ "bit	3,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..5b [undoc] */
+	{ "bit	3,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..5c [undoc] */
+	{ "bit	3,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..5d [undoc] */
+	{ "bit	3,(ix+"X_8")",		A_8P },	/* ddcb..5e */
+	{ "bit	3,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..5f [undoc] */
 
-	{ "bit	4,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..60 [undoc] */
-	{ "bit	4,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..61 [undoc] */
-	{ "bit	4,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..62 [undoc] */
-	{ "bit	4,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..63 [undoc] */
-	{ "bit	4,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..64 [undoc] */
-	{ "bit	4,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..65 [undoc] */
-	{ "bit	4,(ix+%02xh)",	A_8P },		     /* ddcb..66 */
-	{ "bit	4,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..67 [undoc] */
+	{ "bit	4,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..60 [undoc] */
+	{ "bit	4,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..61 [undoc] */
+	{ "bit	4,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..62 [undoc] */
+	{ "bit	4,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..63 [undoc] */
+	{ "bit	4,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..64 [undoc] */
+	{ "bit	4,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..65 [undoc] */
+	{ "bit	4,(ix+"X_8")",		A_8P },	/* ddcb..66 */
+	{ "bit	4,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..67 [undoc] */
 
-	{ "bit	5,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..68 [undoc] */
-	{ "bit	5,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..69 [undoc] */
-	{ "bit	5,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..6a [undoc] */
-	{ "bit	5,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..6b [undoc] */
-	{ "bit	5,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..6c [undoc] */
-	{ "bit	5,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..6d [undoc] */
-	{ "bit	5,(ix+%02xh)",	A_8P },		     /* ddcb..6e */
-	{ "bit	5,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..6f [undoc] */
+	{ "bit	5,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..68 [undoc] */
+	{ "bit	5,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..69 [undoc] */
+	{ "bit	5,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..6a [undoc] */
+	{ "bit	5,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..6b [undoc] */
+	{ "bit	5,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..6c [undoc] */
+	{ "bit	5,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..6d [undoc] */
+	{ "bit	5,(ix+"X_8")",		A_8P },	/* ddcb..6e */
+	{ "bit	5,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..6f [undoc] */
 
-	{ "bit	6,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..70 [undoc] */
-	{ "bit	6,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..71 [undoc] */
-	{ "bit	6,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..72 [undoc] */
-	{ "bit	6,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..73 [undoc] */
-	{ "bit	6,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..74 [undoc] */
-	{ "bit	6,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..75 [undoc] */
-	{ "bit	6,(ix+%02xh)",	A_8P },		     /* ddcb..76 */
-	{ "bit	6,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..77 [undoc] */
+	{ "bit	6,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..70 [undoc] */
+	{ "bit	6,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..71 [undoc] */
+	{ "bit	6,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..72 [undoc] */
+	{ "bit	6,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..73 [undoc] */
+	{ "bit	6,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..74 [undoc] */
+	{ "bit	6,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..75 [undoc] */
+	{ "bit	6,(ix+"X_8")",		A_8P },	/* ddcb..76 */
+	{ "bit	6,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..77 [undoc] */
 
-	{ "bit	7,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..78 [undoc] */
-	{ "bit	7,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..79 [undoc] */
-	{ "bit	7,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..7a [undoc] */
-	{ "bit	7,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..7b [undoc] */
-	{ "bit	7,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..7c [undoc] */
-	{ "bit	7,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..7d [undoc] */
-	{ "bit	7,(ix+%02xh)",	A_8P },		     /* ddcb..7e */
-	{ "bit	7,(ix+%02xh)\t;undoc equiv", A_8P }, /* ddcb..7f [undoc] */
+	{ "bit	7,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..78 [undoc] */
+	{ "bit	7,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..79 [undoc] */
+	{ "bit	7,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..7a [undoc] */
+	{ "bit	7,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..7b [undoc] */
+	{ "bit	7,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..7c [undoc] */
+	{ "bit	7,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..7d [undoc] */
+	{ "bit	7,(ix+"X_8")",		A_8P },	/* ddcb..7e */
+	{ "bit	7,(ix+"X_8")\t;UNDOC",	A_8P },	/* ddcb..7f [undoc] */
 
-	{ "ld	b,res 0,(ix+%02xh)",	A_8P },	/* ddcb..80 [undoc] */
-	{ "ld	c,res 0,(ix+%02xh)",	A_8P },	/* ddcb..81 [undoc] */
-	{ "ld	d,res 0,(ix+%02xh)",	A_8P },	/* ddcb..82 [undoc] */
-	{ "ld	e,res 0,(ix+%02xh)",	A_8P },	/* ddcb..83 [undoc] */
-	{ "ld	h,res 0,(ix+%02xh)",	A_8P },	/* ddcb..84 [undoc] */
-	{ "ld	l,res 0,(ix+%02xh)",	A_8P },	/* ddcb..85 [undoc] */
-	{ "res	0,(ix+%02xh)",		A_8P },	/* ddcb..86 */
-	{ "ld	a,res 0,(ix+%02xh)",	A_8P },	/* ddcb..87 [undoc] */
+	{ "ld	b,res 0,(ix+"X_8")",	A_8P },	/* ddcb..80 [undoc] */
+	{ "ld	c,res 0,(ix+"X_8")",	A_8P },	/* ddcb..81 [undoc] */
+	{ "ld	d,res 0,(ix+"X_8")",	A_8P },	/* ddcb..82 [undoc] */
+	{ "ld	e,res 0,(ix+"X_8")",	A_8P },	/* ddcb..83 [undoc] */
+	{ "ld	h,res 0,(ix+"X_8")",	A_8P },	/* ddcb..84 [undoc] */
+	{ "ld	l,res 0,(ix+"X_8")",	A_8P },	/* ddcb..85 [undoc] */
+	{ "res	0,(ix+"X_8")",		A_8P },	/* ddcb..86 */
+	{ "ld	a,res 0,(ix+"X_8")",	A_8P },	/* ddcb..87 [undoc] */
 
-	{ "ld	b,res 1,(ix+%02xh)",	A_8P },	/* ddcb..88 [undoc] */
-	{ "ld	c,res 1,(ix+%02xh)",	A_8P },	/* ddcb..89 [undoc] */
-	{ "ld	d,res 1,(ix+%02xh)",	A_8P },	/* ddcb..8a [undoc] */
-	{ "ld	e,res 1,(ix+%02xh)",	A_8P },	/* ddcb..8b [undoc] */
-	{ "ld	h,res 1,(ix+%02xh)",	A_8P },	/* ddcb..8c [undoc] */
-	{ "ld	l,res 1,(ix+%02xh)",	A_8P },	/* ddcb..8d [undoc] */
-	{ "res	1,(ix+%02xh)",		A_8P },	/* ddcb..8e */
-	{ "ld	a,res 1,(ix+%02xh)",	A_8P },	/* ddcb..8f [undoc] */
+	{ "ld	b,res 1,(ix+"X_8")",	A_8P },	/* ddcb..88 [undoc] */
+	{ "ld	c,res 1,(ix+"X_8")",	A_8P },	/* ddcb..89 [undoc] */
+	{ "ld	d,res 1,(ix+"X_8")",	A_8P },	/* ddcb..8a [undoc] */
+	{ "ld	e,res 1,(ix+"X_8")",	A_8P },	/* ddcb..8b [undoc] */
+	{ "ld	h,res 1,(ix+"X_8")",	A_8P },	/* ddcb..8c [undoc] */
+	{ "ld	l,res 1,(ix+"X_8")",	A_8P },	/* ddcb..8d [undoc] */
+	{ "res	1,(ix+"X_8")",		A_8P },	/* ddcb..8e */
+	{ "ld	a,res 1,(ix+"X_8")",	A_8P },	/* ddcb..8f [undoc] */
 
-	{ "ld	b,res 2,(ix+%02xh)",	A_8P },	/* ddcb..90 [undoc] */
-	{ "ld	c,res 2,(ix+%02xh)",	A_8P },	/* ddcb..91 [undoc] */
-	{ "ld	d,res 2,(ix+%02xh)",	A_8P },	/* ddcb..92 [undoc] */
-	{ "ld	e,res 2,(ix+%02xh)",	A_8P },	/* ddcb..93 [undoc] */
-	{ "ld	h,res 2,(ix+%02xh)",	A_8P },	/* ddcb..94 [undoc] */
-	{ "ld	l,res 2,(ix+%02xh)",	A_8P },	/* ddcb..95 [undoc] */
-	{ "res	2,(ix+%02xh)",		A_8P },	/* ddcb..96 */
-	{ "ld	a,res 2,(ix+%02xh)",	A_8P },	/* ddcb..97 [undoc] */
+	{ "ld	b,res 2,(ix+"X_8")",	A_8P },	/* ddcb..90 [undoc] */
+	{ "ld	c,res 2,(ix+"X_8")",	A_8P },	/* ddcb..91 [undoc] */
+	{ "ld	d,res 2,(ix+"X_8")",	A_8P },	/* ddcb..92 [undoc] */
+	{ "ld	e,res 2,(ix+"X_8")",	A_8P },	/* ddcb..93 [undoc] */
+	{ "ld	h,res 2,(ix+"X_8")",	A_8P },	/* ddcb..94 [undoc] */
+	{ "ld	l,res 2,(ix+"X_8")",	A_8P },	/* ddcb..95 [undoc] */
+	{ "res	2,(ix+"X_8")",		A_8P },	/* ddcb..96 */
+	{ "ld	a,res 2,(ix+"X_8")",	A_8P },	/* ddcb..97 [undoc] */
 
-	{ "ld	b,res 3,(ix+%02xh)",	A_8P },	/* ddcb..98 [undoc] */
-	{ "ld	c,res 3,(ix+%02xh)",	A_8P },	/* ddcb..99 [undoc] */
-	{ "ld	d,res 3,(ix+%02xh)",	A_8P },	/* ddcb..9a [undoc] */
-	{ "ld	e,res 3,(ix+%02xh)",	A_8P },	/* ddcb..9b [undoc] */
-	{ "ld	h,res 3,(ix+%02xh)",	A_8P },	/* ddcb..9c [undoc] */
-	{ "ld	l,res 3,(ix+%02xh)",	A_8P },	/* ddcb..9d [undoc] */
-	{ "res	3,(ix+%02xh)",		A_8P },	/* ddcb..9e */
-	{ "ld	a,res 3,(ix+%02xh)",	A_8P },	/* ddcb..9f [undoc] */
+	{ "ld	b,res 3,(ix+"X_8")",	A_8P },	/* ddcb..98 [undoc] */
+	{ "ld	c,res 3,(ix+"X_8")",	A_8P },	/* ddcb..99 [undoc] */
+	{ "ld	d,res 3,(ix+"X_8")",	A_8P },	/* ddcb..9a [undoc] */
+	{ "ld	e,res 3,(ix+"X_8")",	A_8P },	/* ddcb..9b [undoc] */
+	{ "ld	h,res 3,(ix+"X_8")",	A_8P },	/* ddcb..9c [undoc] */
+	{ "ld	l,res 3,(ix+"X_8")",	A_8P },	/* ddcb..9d [undoc] */
+	{ "res	3,(ix+"X_8")",		A_8P },	/* ddcb..9e */
+	{ "ld	a,res 3,(ix+"X_8")",	A_8P },	/* ddcb..9f [undoc] */
 
-	{ "ld	b,res 4,(ix+%02xh)",	A_8P },	/* ddcb..a0 [undoc] */
-	{ "ld	c,res 4,(ix+%02xh)",	A_8P },	/* ddcb..a1 [undoc] */
-	{ "ld	d,res 4,(ix+%02xh)",	A_8P },	/* ddcb..a2 [undoc] */
-	{ "ld	e,res 4,(ix+%02xh)",	A_8P },	/* ddcb..a3 [undoc] */
-	{ "ld	h,res 4,(ix+%02xh)",	A_8P },	/* ddcb..a4 [undoc] */
-	{ "ld	l,res 4,(ix+%02xh)",	A_8P },	/* ddcb..a5 [undoc] */
-	{ "res	4,(ix+%02xh)",		A_8P },	/* ddcb..a6 */
-	{ "ld	a,res 4,(ix+%02xh)",	A_8P },	/* ddcb..a7 [undoc] */
+	{ "ld	b,res 4,(ix+"X_8")",	A_8P },	/* ddcb..a0 [undoc] */
+	{ "ld	c,res 4,(ix+"X_8")",	A_8P },	/* ddcb..a1 [undoc] */
+	{ "ld	d,res 4,(ix+"X_8")",	A_8P },	/* ddcb..a2 [undoc] */
+	{ "ld	e,res 4,(ix+"X_8")",	A_8P },	/* ddcb..a3 [undoc] */
+	{ "ld	h,res 4,(ix+"X_8")",	A_8P },	/* ddcb..a4 [undoc] */
+	{ "ld	l,res 4,(ix+"X_8")",	A_8P },	/* ddcb..a5 [undoc] */
+	{ "res	4,(ix+"X_8")",		A_8P },	/* ddcb..a6 */
+	{ "ld	a,res 4,(ix+"X_8")",	A_8P },	/* ddcb..a7 [undoc] */
 
-	{ "ld	b,res 5,(ix+%02xh)",	A_8P },	/* ddcb..a8 [undoc] */
-	{ "ld	c,res 5,(ix+%02xh)",	A_8P },	/* ddcb..a9 [undoc] */
-	{ "ld	d,res 5,(ix+%02xh)",	A_8P },	/* ddcb..aa [undoc] */
-	{ "ld	e,res 5,(ix+%02xh)",	A_8P },	/* ddcb..ab [undoc] */
-	{ "ld	h,res 5,(ix+%02xh)",	A_8P },	/* ddcb..ac [undoc] */
-	{ "ld	l,res 5,(ix+%02xh)",	A_8P },	/* ddcb..ad [undoc] */
-	{ "res	5,(ix+%02xh)",		A_8P },	/* ddcb..ae */
-	{ "ld	a,res 5,(ix+%02xh)",	A_8P },	/* ddcb..af [undoc] */
+	{ "ld	b,res 5,(ix+"X_8")",	A_8P },	/* ddcb..a8 [undoc] */
+	{ "ld	c,res 5,(ix+"X_8")",	A_8P },	/* ddcb..a9 [undoc] */
+	{ "ld	d,res 5,(ix+"X_8")",	A_8P },	/* ddcb..aa [undoc] */
+	{ "ld	e,res 5,(ix+"X_8")",	A_8P },	/* ddcb..ab [undoc] */
+	{ "ld	h,res 5,(ix+"X_8")",	A_8P },	/* ddcb..ac [undoc] */
+	{ "ld	l,res 5,(ix+"X_8")",	A_8P },	/* ddcb..ad [undoc] */
+	{ "res	5,(ix+"X_8")",		A_8P },	/* ddcb..ae */
+	{ "ld	a,res 5,(ix+"X_8")",	A_8P },	/* ddcb..af [undoc] */
 
-	{ "ld	b,res 6,(ix+%02xh)",	A_8P },	/* ddcb..b0 [undoc] */
-	{ "ld	c,res 6,(ix+%02xh)",	A_8P },	/* ddcb..b1 [undoc] */
-	{ "ld	d,res 6,(ix+%02xh)",	A_8P },	/* ddcb..b2 [undoc] */
-	{ "ld	e,res 6,(ix+%02xh)",	A_8P },	/* ddcb..b3 [undoc] */
-	{ "ld	h,res 6,(ix+%02xh)",	A_8P },	/* ddcb..b4 [undoc] */
-	{ "ld	l,res 6,(ix+%02xh)",	A_8P },	/* ddcb..b5 [undoc] */
-	{ "res	6,(ix+%02xh)",		A_8P },	/* ddcb..b6 */
-	{ "ld	a,res 6,(ix+%02xh)",	A_8P },	/* ddcb..b7 [undoc] */
+	{ "ld	b,res 6,(ix+"X_8")",	A_8P },	/* ddcb..b0 [undoc] */
+	{ "ld	c,res 6,(ix+"X_8")",	A_8P },	/* ddcb..b1 [undoc] */
+	{ "ld	d,res 6,(ix+"X_8")",	A_8P },	/* ddcb..b2 [undoc] */
+	{ "ld	e,res 6,(ix+"X_8")",	A_8P },	/* ddcb..b3 [undoc] */
+	{ "ld	h,res 6,(ix+"X_8")",	A_8P },	/* ddcb..b4 [undoc] */
+	{ "ld	l,res 6,(ix+"X_8")",	A_8P },	/* ddcb..b5 [undoc] */
+	{ "res	6,(ix+"X_8")",		A_8P },	/* ddcb..b6 */
+	{ "ld	a,res 6,(ix+"X_8")",	A_8P },	/* ddcb..b7 [undoc] */
 
-	{ "ld	b,res 7,(ix+%02xh)",	A_8P },	/* ddcb..b8 [undoc] */
-	{ "ld	c,res 7,(ix+%02xh)",	A_8P },	/* ddcb..b9 [undoc] */
-	{ "ld	d,res 7,(ix+%02xh)",	A_8P },	/* ddcb..ba [undoc] */
-	{ "ld	e,res 7,(ix+%02xh)",	A_8P },	/* ddcb..bb [undoc] */
-	{ "ld	h,res 7,(ix+%02xh)",	A_8P },	/* ddcb..bc [undoc] */
-	{ "ld	l,res 7,(ix+%02xh)",	A_8P },	/* ddcb..bd [undoc] */
-	{ "res	7,(ix+%02xh)",		A_8P },	/* ddcb..be */
-	{ "ld	a,res 7,(ix+%02xh)",	A_8P },	/* ddcb..bf [undoc] */
+	{ "ld	b,res 7,(ix+"X_8")",	A_8P },	/* ddcb..b8 [undoc] */
+	{ "ld	c,res 7,(ix+"X_8")",	A_8P },	/* ddcb..b9 [undoc] */
+	{ "ld	d,res 7,(ix+"X_8")",	A_8P },	/* ddcb..ba [undoc] */
+	{ "ld	e,res 7,(ix+"X_8")",	A_8P },	/* ddcb..bb [undoc] */
+	{ "ld	h,res 7,(ix+"X_8")",	A_8P },	/* ddcb..bc [undoc] */
+	{ "ld	l,res 7,(ix+"X_8")",	A_8P },	/* ddcb..bd [undoc] */
+	{ "res	7,(ix+"X_8")",		A_8P },	/* ddcb..be */
+	{ "ld	a,res 7,(ix+"X_8")",	A_8P },	/* ddcb..bf [undoc] */
 
-	{ "ld	b,set 0,(ix+%02xh)",	A_8P },	/* ddcb..c0 [undoc] */
-	{ "ld	c,set 0,(ix+%02xh)",	A_8P },	/* ddcb..c1 [undoc] */
-	{ "ld	d,set 0,(ix+%02xh)",	A_8P },	/* ddcb..c2 [undoc] */
-	{ "ld	e,set 0,(ix+%02xh)",	A_8P },	/* ddcb..c3 [undoc] */
-	{ "ld	h,set 0,(ix+%02xh)",	A_8P },	/* ddcb..c4 [undoc] */
-	{ "ld	l,set 0,(ix+%02xh)",	A_8P },	/* ddcb..c5 [undoc] */
-	{ "set	0,(ix+%02xh)",		A_8P },	/* ddcb..c6 */
-	{ "ld	a,set 0,(ix+%02xh)",	A_8P },	/* ddcb..c7 [undoc] */
+	{ "ld	b,set 0,(ix+"X_8")",	A_8P },	/* ddcb..c0 [undoc] */
+	{ "ld	c,set 0,(ix+"X_8")",	A_8P },	/* ddcb..c1 [undoc] */
+	{ "ld	d,set 0,(ix+"X_8")",	A_8P },	/* ddcb..c2 [undoc] */
+	{ "ld	e,set 0,(ix+"X_8")",	A_8P },	/* ddcb..c3 [undoc] */
+	{ "ld	h,set 0,(ix+"X_8")",	A_8P },	/* ddcb..c4 [undoc] */
+	{ "ld	l,set 0,(ix+"X_8")",	A_8P },	/* ddcb..c5 [undoc] */
+	{ "set	0,(ix+"X_8")",		A_8P },	/* ddcb..c6 */
+	{ "ld	a,set 0,(ix+"X_8")",	A_8P },	/* ddcb..c7 [undoc] */
 
-	{ "ld	b,set 1,(ix+%02xh)",	A_8P },	/* ddcb..c8 [undoc] */
-	{ "ld	c,set 1,(ix+%02xh)",	A_8P },	/* ddcb..c9 [undoc] */
-	{ "ld	d,set 1,(ix+%02xh)",	A_8P },	/* ddcb..ca [undoc] */
-	{ "ld	e,set 1,(ix+%02xh)",	A_8P },	/* ddcb..cb [undoc] */
-	{ "ld	h,set 1,(ix+%02xh)",	A_8P },	/* ddcb..cc [undoc] */
-	{ "ld	l,set 1,(ix+%02xh)",	A_8P },	/* ddcb..cd [undoc] */
-	{ "set	1,(ix+%02xh)",		A_8P },	/* ddcb..ce */
-	{ "ld	a,set 1,(ix+%02xh)",	A_8P },	/* ddcb..cf [undoc] */
+	{ "ld	b,set 1,(ix+"X_8")",	A_8P },	/* ddcb..c8 [undoc] */
+	{ "ld	c,set 1,(ix+"X_8")",	A_8P },	/* ddcb..c9 [undoc] */
+	{ "ld	d,set 1,(ix+"X_8")",	A_8P },	/* ddcb..ca [undoc] */
+	{ "ld	e,set 1,(ix+"X_8")",	A_8P },	/* ddcb..cb [undoc] */
+	{ "ld	h,set 1,(ix+"X_8")",	A_8P },	/* ddcb..cc [undoc] */
+	{ "ld	l,set 1,(ix+"X_8")",	A_8P },	/* ddcb..cd [undoc] */
+	{ "set	1,(ix+"X_8")",		A_8P },	/* ddcb..ce */
+	{ "ld	a,set 1,(ix+"X_8")",	A_8P },	/* ddcb..cf [undoc] */
 
-	{ "ld	b,set 2,(ix+%02xh)",	A_8P },	/* ddcb..d0 [undoc] */
-	{ "ld	c,set 2,(ix+%02xh)",	A_8P },	/* ddcb..d1 [undoc] */
-	{ "ld	d,set 2,(ix+%02xh)",	A_8P },	/* ddcb..d2 [undoc] */
-	{ "ld	e,set 2,(ix+%02xh)",	A_8P },	/* ddcb..d3 [undoc] */
-	{ "ld	h,set 2,(ix+%02xh)",	A_8P },	/* ddcb..d4 [undoc] */
-	{ "ld	l,set 2,(ix+%02xh)",	A_8P },	/* ddcb..d5 [undoc] */
-	{ "set	2,(ix+%02xh)",		A_8P },	/* ddcb..d6 */
-	{ "ld	a,set 2,(ix+%02xh)",	A_8P },	/* ddcb..d7 [undoc] */
+	{ "ld	b,set 2,(ix+"X_8")",	A_8P },	/* ddcb..d0 [undoc] */
+	{ "ld	c,set 2,(ix+"X_8")",	A_8P },	/* ddcb..d1 [undoc] */
+	{ "ld	d,set 2,(ix+"X_8")",	A_8P },	/* ddcb..d2 [undoc] */
+	{ "ld	e,set 2,(ix+"X_8")",	A_8P },	/* ddcb..d3 [undoc] */
+	{ "ld	h,set 2,(ix+"X_8")",	A_8P },	/* ddcb..d4 [undoc] */
+	{ "ld	l,set 2,(ix+"X_8")",	A_8P },	/* ddcb..d5 [undoc] */
+	{ "set	2,(ix+"X_8")",		A_8P },	/* ddcb..d6 */
+	{ "ld	a,set 2,(ix+"X_8")",	A_8P },	/* ddcb..d7 [undoc] */
 
-	{ "ld	b,set 3,(ix+%02xh)",	A_8P },	/* ddcb..d8 [undoc] */
-	{ "ld	c,set 3,(ix+%02xh)",	A_8P },	/* ddcb..d9 [undoc] */
-	{ "ld	d,set 3,(ix+%02xh)",	A_8P },	/* ddcb..da [undoc] */
-	{ "ld	e,set 3,(ix+%02xh)",	A_8P },	/* ddcb..db [undoc] */
-	{ "ld	h,set 3,(ix+%02xh)",	A_8P },	/* ddcb..dc [undoc] */
-	{ "ld	l,set 3,(ix+%02xh)",	A_8P },	/* ddcb..dd [undoc] */
-	{ "set	3,(ix+%02xh)",		A_8P },	/* ddcb..de */
-	{ "ld	a,set 3,(ix+%02xh)",	A_8P },	/* ddcb..df [undoc] */
+	{ "ld	b,set 3,(ix+"X_8")",	A_8P },	/* ddcb..d8 [undoc] */
+	{ "ld	c,set 3,(ix+"X_8")",	A_8P },	/* ddcb..d9 [undoc] */
+	{ "ld	d,set 3,(ix+"X_8")",	A_8P },	/* ddcb..da [undoc] */
+	{ "ld	e,set 3,(ix+"X_8")",	A_8P },	/* ddcb..db [undoc] */
+	{ "ld	h,set 3,(ix+"X_8")",	A_8P },	/* ddcb..dc [undoc] */
+	{ "ld	l,set 3,(ix+"X_8")",	A_8P },	/* ddcb..dd [undoc] */
+	{ "set	3,(ix+"X_8")",		A_8P },	/* ddcb..de */
+	{ "ld	a,set 3,(ix+"X_8")",	A_8P },	/* ddcb..df [undoc] */
 
-	{ "ld	b,set 4,(ix+%02xh)",	A_8P },	/* ddcb..e0 [undoc] */
-	{ "ld	c,set 4,(ix+%02xh)",	A_8P },	/* ddcb..e1 [undoc] */
-	{ "ld	d,set 4,(ix+%02xh)",	A_8P },	/* ddcb..e2 [undoc] */
-	{ "ld	e,set 4,(ix+%02xh)",	A_8P },	/* ddcb..e3 [undoc] */
-	{ "ld	h,set 4,(ix+%02xh)",	A_8P },	/* ddcb..e4 [undoc] */
-	{ "ld	l,set 4,(ix+%02xh)",	A_8P },	/* ddcb..e5 [undoc] */
-	{ "set	4,(ix+%02xh)",		A_8P },	/* ddcb..e6 */
-	{ "ld	a,set 4,(ix+%02xh)",	A_8P },	/* ddcb..e7 [undoc] */
+	{ "ld	b,set 4,(ix+"X_8")",	A_8P },	/* ddcb..e0 [undoc] */
+	{ "ld	c,set 4,(ix+"X_8")",	A_8P },	/* ddcb..e1 [undoc] */
+	{ "ld	d,set 4,(ix+"X_8")",	A_8P },	/* ddcb..e2 [undoc] */
+	{ "ld	e,set 4,(ix+"X_8")",	A_8P },	/* ddcb..e3 [undoc] */
+	{ "ld	h,set 4,(ix+"X_8")",	A_8P },	/* ddcb..e4 [undoc] */
+	{ "ld	l,set 4,(ix+"X_8")",	A_8P },	/* ddcb..e5 [undoc] */
+	{ "set	4,(ix+"X_8")",		A_8P },	/* ddcb..e6 */
+	{ "ld	a,set 4,(ix+"X_8")",	A_8P },	/* ddcb..e7 [undoc] */
 
-	{ "ld	b,set 5,(ix+%02xh)",	A_8P },	/* ddcb..e8 [undoc] */
-	{ "ld	c,set 5,(ix+%02xh)",	A_8P },	/* ddcb..e9 [undoc] */
-	{ "ld	d,set 5,(ix+%02xh)",	A_8P },	/* ddcb..ea [undoc] */
-	{ "ld	e,set 5,(ix+%02xh)",	A_8P },	/* ddcb..eb [undoc] */
-	{ "ld	h,set 5,(ix+%02xh)",	A_8P },	/* ddcb..ec [undoc] */
-	{ "ld	l,set 5,(ix+%02xh)",	A_8P },	/* ddcb..ed [undoc] */
-	{ "set	5,(ix+%02xh)",		A_8P },	/* ddcb..ee */
-	{ "ld	a,set 5,(ix+%02xh)",	A_8P },	/* ddcb..ef [undoc] */
+	{ "ld	b,set 5,(ix+"X_8")",	A_8P },	/* ddcb..e8 [undoc] */
+	{ "ld	c,set 5,(ix+"X_8")",	A_8P },	/* ddcb..e9 [undoc] */
+	{ "ld	d,set 5,(ix+"X_8")",	A_8P },	/* ddcb..ea [undoc] */
+	{ "ld	e,set 5,(ix+"X_8")",	A_8P },	/* ddcb..eb [undoc] */
+	{ "ld	h,set 5,(ix+"X_8")",	A_8P },	/* ddcb..ec [undoc] */
+	{ "ld	l,set 5,(ix+"X_8")",	A_8P },	/* ddcb..ed [undoc] */
+	{ "set	5,(ix+"X_8")",		A_8P },	/* ddcb..ee */
+	{ "ld	a,set 5,(ix+"X_8")",	A_8P },	/* ddcb..ef [undoc] */
 
-	{ "ld	b,set 6,(ix+%02xh)",	A_8P },	/* ddcb..f0 [undoc] */
-	{ "ld	c,set 6,(ix+%02xh)",	A_8P },	/* ddcb..f1 [undoc] */
-	{ "ld	d,set 6,(ix+%02xh)",	A_8P },	/* ddcb..f2 [undoc] */
-	{ "ld	e,set 6,(ix+%02xh)",	A_8P },	/* ddcb..f3 [undoc] */
-	{ "ld	h,set 6,(ix+%02xh)",	A_8P },	/* ddcb..f4 [undoc] */
-	{ "ld	l,set 6,(ix+%02xh)",	A_8P },	/* ddcb..f5 [undoc] */
-	{ "set	6,(ix+%02xh)",		A_8P },	/* ddcb..f6 */
-	{ "ld	a,set 6,(ix+%02xh)",	A_8P },	/* ddcb..f7 [undoc] */
+	{ "ld	b,set 6,(ix+"X_8")",	A_8P },	/* ddcb..f0 [undoc] */
+	{ "ld	c,set 6,(ix+"X_8")",	A_8P },	/* ddcb..f1 [undoc] */
+	{ "ld	d,set 6,(ix+"X_8")",	A_8P },	/* ddcb..f2 [undoc] */
+	{ "ld	e,set 6,(ix+"X_8")",	A_8P },	/* ddcb..f3 [undoc] */
+	{ "ld	h,set 6,(ix+"X_8")",	A_8P },	/* ddcb..f4 [undoc] */
+	{ "ld	l,set 6,(ix+"X_8")",	A_8P },	/* ddcb..f5 [undoc] */
+	{ "set	6,(ix+"X_8")",		A_8P },	/* ddcb..f6 */
+	{ "ld	a,set 6,(ix+"X_8")",	A_8P },	/* ddcb..f7 [undoc] */
 
-	{ "ld	b,set 7,(ix+%02xh)",	A_8P },	/* ddcb..f8 [undoc] */
-	{ "ld	c,set 7,(ix+%02xh)",	A_8P },	/* ddcb..f9 [undoc] */
-	{ "ld	d,set 7,(ix+%02xh)",	A_8P },	/* ddcb..fa [undoc] */
-	{ "ld	e,set 7,(ix+%02xh)",	A_8P },	/* ddcb..fb [undoc] */
-	{ "ld	h,set 7,(ix+%02xh)",	A_8P },	/* ddcb..fc [undoc] */
-	{ "ld	l,set 7,(ix+%02xh)",	A_8P },	/* ddcb..fd [undoc] */
-	{ "set	7,(ix+%02xh)",		A_8P },	/* ddcb..fe */
-	{ "ld	a,set 7,(ix+%02xh)",	A_8P },	/* ddcb..ff [undoc] */
+	{ "ld	b,set 7,(ix+"X_8")",	A_8P },	/* ddcb..f8 [undoc] */
+	{ "ld	c,set 7,(ix+"X_8")",	A_8P },	/* ddcb..f9 [undoc] */
+	{ "ld	d,set 7,(ix+"X_8")",	A_8P },	/* ddcb..fa [undoc] */
+	{ "ld	e,set 7,(ix+"X_8")",	A_8P },	/* ddcb..fb [undoc] */
+	{ "ld	h,set 7,(ix+"X_8")",	A_8P },	/* ddcb..fc [undoc] */
+	{ "ld	l,set 7,(ix+"X_8")",	A_8P },	/* ddcb..fd [undoc] */
+	{ "set	7,(ix+"X_8")",		A_8P },	/* ddcb..fe */
+	{ "ld	a,set 7,(ix+"X_8")",	A_8P },	/* ddcb..ff [undoc] */
     },
-    {							/* fd cb */
-	{ "ld	b,rlc (iy+%02xh)",	A_8P },	/* fdcb..00 [undoc] */
-	{ "ld	c,rlc (iy+%02xh)",	A_8P },	/* fdcb..01 [undoc] */
-	{ "ld	d,rlc (iy+%02xh)",	A_8P },	/* fdcb..02 [undoc] */
-	{ "ld	e,rlc (iy+%02xh)",	A_8P },	/* fdcb..03 [undoc] */
-	{ "ld	h,rlc (iy+%02xh)",	A_8P },	/* fdcb..04 [undoc] */
-	{ "ld	l,rlc (iy+%02xh)",	A_8P },	/* fdcb..05 [undoc] */
-	{ "rlc	(iy+%02xh)",		A_8P },	/* fdcb..06 */
-	{ "ld	a,rlc (iy+%02xh)",	A_8P },	/* fdcb..07 [undoc] */
+    {						/* fd cb */
+	{ "ld	b,rlc (iy+"X_8")",	A_8P },	/* fdcb..00 [undoc] */
+	{ "ld	c,rlc (iy+"X_8")",	A_8P },	/* fdcb..01 [undoc] */
+	{ "ld	d,rlc (iy+"X_8")",	A_8P },	/* fdcb..02 [undoc] */
+	{ "ld	e,rlc (iy+"X_8")",	A_8P },	/* fdcb..03 [undoc] */
+	{ "ld	h,rlc (iy+"X_8")",	A_8P },	/* fdcb..04 [undoc] */
+	{ "ld	l,rlc (iy+"X_8")",	A_8P },	/* fdcb..05 [undoc] */
+	{ "rlc	(iy+"X_8")",		A_8P },	/* fdcb..06 */
+	{ "ld	a,rlc (iy+"X_8")",	A_8P },	/* fdcb..07 [undoc] */
 
-	{ "ld	b,rrc (iy+%02xh)",	A_8P },	/* fdcb..08 [undoc] */
-	{ "ld	c,rrc (iy+%02xh)",	A_8P },	/* fdcb..09 [undoc] */
-	{ "ld	d,rrc (iy+%02xh)",	A_8P },	/* fdcb..0a [undoc] */
-	{ "ld	e,rrc (iy+%02xh)",	A_8P },	/* fdcb..0b [undoc] */
-	{ "ld	h,rrc (iy+%02xh)",	A_8P },	/* fdcb..0c [undoc] */
-	{ "ld	l,rrc (iy+%02xh)",	A_8P },	/* fdcb..0d [undoc] */
-	{ "rrc	(iy+%02xh)",		A_8P },	/* fdcb..0e */
-	{ "ld	a,rrc (iy+%02xh)",	A_8P },	/* fdcb..0f [undoc] */
+	{ "ld	b,rrc (iy+"X_8")",	A_8P },	/* fdcb..08 [undoc] */
+	{ "ld	c,rrc (iy+"X_8")",	A_8P },	/* fdcb..09 [undoc] */
+	{ "ld	d,rrc (iy+"X_8")",	A_8P },	/* fdcb..0a [undoc] */
+	{ "ld	e,rrc (iy+"X_8")",	A_8P },	/* fdcb..0b [undoc] */
+	{ "ld	h,rrc (iy+"X_8")",	A_8P },	/* fdcb..0c [undoc] */
+	{ "ld	l,rrc (iy+"X_8")",	A_8P },	/* fdcb..0d [undoc] */
+	{ "rrc	(iy+"X_8")",		A_8P },	/* fdcb..0e */
+	{ "ld	a,rrc (iy+"X_8")",	A_8P },	/* fdcb..0f [undoc] */
 
-	{ "ld	b,rl (iy+%02xh)",	A_8P },	/* fdcb..10 [undoc] */
-	{ "ld	c,rl (iy+%02xh)",	A_8P },	/* fdcb..11 [undoc] */
-	{ "ld	d,rl (iy+%02xh)",	A_8P },	/* fdcb..12 [undoc] */
-	{ "ld	e,rl (iy+%02xh)",	A_8P },	/* fdcb..13 [undoc] */
-	{ "ld	h,rl (iy+%02xh)",	A_8P },	/* fdcb..14 [undoc] */
-	{ "ld	l,rl (iy+%02xh)",	A_8P },	/* fdcb..15 [undoc] */
-	{ "rl	(iy+%02xh)",		A_8P },	/* fdcb..16 */
-	{ "ld	a,rl (iy+%02xh)",	A_8P },	/* fdcb..17 [undoc] */
+	{ "ld	b,rl (iy+"X_8")",	A_8P },	/* fdcb..10 [undoc] */
+	{ "ld	c,rl (iy+"X_8")",	A_8P },	/* fdcb..11 [undoc] */
+	{ "ld	d,rl (iy+"X_8")",	A_8P },	/* fdcb..12 [undoc] */
+	{ "ld	e,rl (iy+"X_8")",	A_8P },	/* fdcb..13 [undoc] */
+	{ "ld	h,rl (iy+"X_8")",	A_8P },	/* fdcb..14 [undoc] */
+	{ "ld	l,rl (iy+"X_8")",	A_8P },	/* fdcb..15 [undoc] */
+	{ "rl	(iy+"X_8")",		A_8P },	/* fdcb..16 */
+	{ "ld	a,rl (iy+"X_8")",	A_8P },	/* fdcb..17 [undoc] */
 
-	{ "ld	b,rr (iy+%02xh)",	A_8P },	/* fdcb..18 [undoc] */
-	{ "ld	c,rr (iy+%02xh)",	A_8P },	/* fdcb..19 [undoc] */
-	{ "ld	d,rr (iy+%02xh)",	A_8P },	/* fdcb..1a [undoc] */
-	{ "ld	e,rr (iy+%02xh)",	A_8P },	/* fdcb..1b [undoc] */
-	{ "ld	h,rr (iy+%02xh)",	A_8P },	/* fdcb..1c [undoc] */
-	{ "ld	l,rr (iy+%02xh)",	A_8P },	/* fdcb..1d [undoc] */
-	{ "rr	(iy+%02xh)",		A_8P },	/* fdcb..1e */
-	{ "ld	a,rr (iy+%02xh)",	A_8P },	/* fdcb..1f [undoc] */
+	{ "ld	b,rr (iy+"X_8")",	A_8P },	/* fdcb..18 [undoc] */
+	{ "ld	c,rr (iy+"X_8")",	A_8P },	/* fdcb..19 [undoc] */
+	{ "ld	d,rr (iy+"X_8")",	A_8P },	/* fdcb..1a [undoc] */
+	{ "ld	e,rr (iy+"X_8")",	A_8P },	/* fdcb..1b [undoc] */
+	{ "ld	h,rr (iy+"X_8")",	A_8P },	/* fdcb..1c [undoc] */
+	{ "ld	l,rr (iy+"X_8")",	A_8P },	/* fdcb..1d [undoc] */
+	{ "rr	(iy+"X_8")",		A_8P },	/* fdcb..1e */
+	{ "ld	a,rr (iy+"X_8")",	A_8P },	/* fdcb..1f [undoc] */
 
-	{ "ld	b,sla (iy+%02xh)",	A_8P },	/* fdcb..20 [undoc] */
-	{ "ld	c,sla (iy+%02xh)",	A_8P },	/* fdcb..21 [undoc] */
-	{ "ld	d,sla (iy+%02xh)",	A_8P },	/* fdcb..22 [undoc] */
-	{ "ld	e,sla (iy+%02xh)",	A_8P },	/* fdcb..23 [undoc] */
-	{ "ld	h,sla (iy+%02xh)",	A_8P },	/* fdcb..24 [undoc] */
-	{ "ld	l,sla (iy+%02xh)",	A_8P },	/* fdcb..25 [undoc] */
-	{ "sla	(iy+%02xh)",		A_8P },	/* fdcb..26 */
-	{ "ld	a,sla (iy+%02xh)",	A_8P },	/* fdcb..27 [undoc] */
+	{ "ld	b,sla (iy+"X_8")",	A_8P },	/* fdcb..20 [undoc] */
+	{ "ld	c,sla (iy+"X_8")",	A_8P },	/* fdcb..21 [undoc] */
+	{ "ld	d,sla (iy+"X_8")",	A_8P },	/* fdcb..22 [undoc] */
+	{ "ld	e,sla (iy+"X_8")",	A_8P },	/* fdcb..23 [undoc] */
+	{ "ld	h,sla (iy+"X_8")",	A_8P },	/* fdcb..24 [undoc] */
+	{ "ld	l,sla (iy+"X_8")",	A_8P },	/* fdcb..25 [undoc] */
+	{ "sla	(iy+"X_8")",		A_8P },	/* fdcb..26 */
+	{ "ld	a,sla (iy+"X_8")",	A_8P },	/* fdcb..27 [undoc] */
 
-	{ "ld	b,sra (iy+%02xh)",	A_8P },	/* fdcb..28 [undoc] */
-	{ "ld	c,sra (iy+%02xh)",	A_8P },	/* fdcb..29 [undoc] */
-	{ "ld	d,sra (iy+%02xh)",	A_8P },	/* fdcb..2a [undoc] */
-	{ "ld	e,sra (iy+%02xh)",	A_8P },	/* fdcb..2b [undoc] */
-	{ "ld	h,sra (iy+%02xh)",	A_8P },	/* fdcb..2c [undoc] */
-	{ "ld	l,sra (iy+%02xh)",	A_8P },	/* fdcb..2d [undoc] */
-	{ "sra	(iy+%02xh)",		A_8P },	/* fdcb..2e */
-	{ "ld	a,sra (iy+%02xh)",	A_8P },	/* fdcb..2f [undoc] */
+	{ "ld	b,sra (iy+"X_8")",	A_8P },	/* fdcb..28 [undoc] */
+	{ "ld	c,sra (iy+"X_8")",	A_8P },	/* fdcb..29 [undoc] */
+	{ "ld	d,sra (iy+"X_8")",	A_8P },	/* fdcb..2a [undoc] */
+	{ "ld	e,sra (iy+"X_8")",	A_8P },	/* fdcb..2b [undoc] */
+	{ "ld	h,sra (iy+"X_8")",	A_8P },	/* fdcb..2c [undoc] */
+	{ "ld	l,sra (iy+"X_8")",	A_8P },	/* fdcb..2d [undoc] */
+	{ "sra	(iy+"X_8")",		A_8P },	/* fdcb..2e */
+	{ "ld	a,sra (iy+"X_8")",	A_8P },	/* fdcb..2f [undoc] */
 
-	{ "ld	b,slia (iy+%02xh)",	A_8P },	/* fdcb..30 [undoc] */
-	{ "ld	c,slia (iy+%02xh)",	A_8P },	/* fdcb..31 [undoc] */
-	{ "ld	d,slia (iy+%02xh)",	A_8P },	/* fdcb..32 [undoc] */
-	{ "ld	e,slia (iy+%02xh)",	A_8P },	/* fdcb..33 [undoc] */
-	{ "ld	h,slia (iy+%02xh)",	A_8P },	/* fdcb..34 [undoc] */
-	{ "ld	l,slia (iy+%02xh)",	A_8P },	/* fdcb..35 [undoc] */
-	{ "slia	(iy+%02xh)",		A_8P },	/* fdcb..36 [undoc] */
-	{ "ld	a,slia (iy+%02xh)",	A_8P },	/* fdcb..37 [undoc] */
+	{ "ld	b,slia (iy+"X_8")",	A_8P },	/* fdcb..30 [undoc] */
+	{ "ld	c,slia (iy+"X_8")",	A_8P },	/* fdcb..31 [undoc] */
+	{ "ld	d,slia (iy+"X_8")",	A_8P },	/* fdcb..32 [undoc] */
+	{ "ld	e,slia (iy+"X_8")",	A_8P },	/* fdcb..33 [undoc] */
+	{ "ld	h,slia (iy+"X_8")",	A_8P },	/* fdcb..34 [undoc] */
+	{ "ld	l,slia (iy+"X_8")",	A_8P },	/* fdcb..35 [undoc] */
+	{ "slia	(iy+"X_8")",		A_8P },	/* fdcb..36 [undoc] */
+	{ "ld	a,slia (iy+"X_8")",	A_8P },	/* fdcb..37 [undoc] */
 
-	{ "ld	b,srl (iy+%02xh)",	A_8P },	/* fdcb..38 [undoc] */
-	{ "ld	c,srl (iy+%02xh)",	A_8P },	/* fdcb..39 [undoc] */
-	{ "ld	d,srl (iy+%02xh)",	A_8P },	/* fdcb..3a [undoc] */
-	{ "ld	e,srl (iy+%02xh)",	A_8P },	/* fdcb..3b [undoc] */
-	{ "ld	h,srl (iy+%02xh)",	A_8P },	/* fdcb..3c [undoc] */
-	{ "ld	l,srl (iy+%02xh)",	A_8P },	/* fdcb..3d [undoc] */
-	{ "srl	(iy+%02xh)",		A_8P },	/* fdcb..3e */
-	{ "ld	a,srl (iy+%02xh)",	A_8P },	/* fdcb..3f [undoc] */
+	{ "ld	b,srl (iy+"X_8")",	A_8P },	/* fdcb..38 [undoc] */
+	{ "ld	c,srl (iy+"X_8")",	A_8P },	/* fdcb..39 [undoc] */
+	{ "ld	d,srl (iy+"X_8")",	A_8P },	/* fdcb..3a [undoc] */
+	{ "ld	e,srl (iy+"X_8")",	A_8P },	/* fdcb..3b [undoc] */
+	{ "ld	h,srl (iy+"X_8")",	A_8P },	/* fdcb..3c [undoc] */
+	{ "ld	l,srl (iy+"X_8")",	A_8P },	/* fdcb..3d [undoc] */
+	{ "srl	(iy+"X_8")",		A_8P },	/* fdcb..3e */
+	{ "ld	a,srl (iy+"X_8")",	A_8P },	/* fdcb..3f [undoc] */
 
-	{ "bit	0,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..40 [undoc] */
-	{ "bit	0,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..41 [undoc] */
-	{ "bit	0,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..42 [undoc] */
-	{ "bit	0,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..43 [undoc] */
-	{ "bit	0,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..44 [undoc] */
-	{ "bit	0,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..45 [undoc] */
-	{ "bit	0,(iy+%02xh)",	A_8P },		     /* fdcb..46 */
-	{ "bit	0,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..47 [undoc] */
+	{ "bit	0,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..40 [undoc] */
+	{ "bit	0,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..41 [undoc] */
+	{ "bit	0,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..42 [undoc] */
+	{ "bit	0,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..43 [undoc] */
+	{ "bit	0,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..44 [undoc] */
+	{ "bit	0,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..45 [undoc] */
+	{ "bit	0,(iy+"X_8")",		A_8P },	/* fdcb..46 */
+	{ "bit	0,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..47 [undoc] */
 
-	{ "bit	1,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..48 [undoc] */
-	{ "bit	1,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..49 [undoc] */
-	{ "bit	1,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..4a [undoc] */
-	{ "bit	1,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..4b [undoc] */
-	{ "bit	1,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..4c [undoc] */
-	{ "bit	1,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..4d [undoc] */
-	{ "bit	1,(iy+%02xh)",	A_8P },		     /* fdcb..4e */
-	{ "bit	1,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..4f [undoc] */
+	{ "bit	1,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..48 [undoc] */
+	{ "bit	1,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..49 [undoc] */
+	{ "bit	1,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..4a [undoc] */
+	{ "bit	1,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..4b [undoc] */
+	{ "bit	1,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..4c [undoc] */
+	{ "bit	1,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..4d [undoc] */
+	{ "bit	1,(iy+"X_8")",		A_8P },	/* fdcb..4e */
+	{ "bit	1,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..4f [undoc] */
 
-	{ "bit	2,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..50 [undoc] */
-	{ "bit	2,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..51 [undoc] */
-	{ "bit	2,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..52 [undoc] */
-	{ "bit	2,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..53 [undoc] */
-	{ "bit	2,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..54 [undoc] */
-	{ "bit	2,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..55 [undoc] */
-	{ "bit	2,(iy+%02xh)",	A_8P },		     /* fdcb..56 */
-	{ "bit	2,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..57 [undoc] */
+	{ "bit	2,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..50 [undoc] */
+	{ "bit	2,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..51 [undoc] */
+	{ "bit	2,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..52 [undoc] */
+	{ "bit	2,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..53 [undoc] */
+	{ "bit	2,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..54 [undoc] */
+	{ "bit	2,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..55 [undoc] */
+	{ "bit	2,(iy+"X_8")",		A_8P },	/* fdcb..56 */
+	{ "bit	2,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..57 [undoc] */
 
-	{ "bit	3,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..58 [undoc] */
-	{ "bit	3,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..59 [undoc] */
-	{ "bit	3,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..5a [undoc] */
-	{ "bit	3,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..5b [undoc] */
-	{ "bit	3,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..5c [undoc] */
-	{ "bit	3,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..5d [undoc] */
-	{ "bit	3,(iy+%02xh)",	A_8P },		     /* fdcb..5e */
-	{ "bit	3,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..5f [undoc] */
+	{ "bit	3,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..58 [undoc] */
+	{ "bit	3,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..59 [undoc] */
+	{ "bit	3,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..5a [undoc] */
+	{ "bit	3,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..5b [undoc] */
+	{ "bit	3,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..5c [undoc] */
+	{ "bit	3,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..5d [undoc] */
+	{ "bit	3,(iy+"X_8")",		A_8P },	/* fdcb..5e */
+	{ "bit	3,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..5f [undoc] */
 
-	{ "bit	4,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..60 [undoc] */
-	{ "bit	4,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..61 [undoc] */
-	{ "bit	4,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..62 [undoc] */
-	{ "bit	4,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..63 [undoc] */
-	{ "bit	4,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..64 [undoc] */
-	{ "bit	4,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..65 [undoc] */
-	{ "bit	4,(iy+%02xh)",	A_8P },		     /* fdcb..66 */
-	{ "bit	4,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..67 [undoc] */
+	{ "bit	4,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..60 [undoc] */
+	{ "bit	4,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..61 [undoc] */
+	{ "bit	4,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..62 [undoc] */
+	{ "bit	4,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..63 [undoc] */
+	{ "bit	4,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..64 [undoc] */
+	{ "bit	4,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..65 [undoc] */
+	{ "bit	4,(iy+"X_8")",		A_8P },	/* fdcb..66 */
+	{ "bit	4,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..67 [undoc] */
 
-	{ "bit	5,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..68 [undoc] */
-	{ "bit	5,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..69 [undoc] */
-	{ "bit	5,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..6a [undoc] */
-	{ "bit	5,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..6b [undoc] */
-	{ "bit	5,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..6c [undoc] */
-	{ "bit	5,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..6d [undoc] */
-	{ "bit	5,(iy+%02xh)",	A_8P },		     /* fdcb..6e */
-	{ "bit	5,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..6f [undoc] */
+	{ "bit	5,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..68 [undoc] */
+	{ "bit	5,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..69 [undoc] */
+	{ "bit	5,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..6a [undoc] */
+	{ "bit	5,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..6b [undoc] */
+	{ "bit	5,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..6c [undoc] */
+	{ "bit	5,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..6d [undoc] */
+	{ "bit	5,(iy+"X_8")",		A_8P },	/* fdcb..6e */
+	{ "bit	5,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..6f [undoc] */
 
-	{ "bit	6,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..70 [undoc] */
-	{ "bit	6,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..71 [undoc] */
-	{ "bit	6,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..72 [undoc] */
-	{ "bit	6,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..73 [undoc] */
-	{ "bit	6,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..74 [undoc] */
-	{ "bit	6,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..75 [undoc] */
-	{ "bit	6,(iy+%02xh)",	A_8P },		     /* fdcb..76 */
-	{ "bit	6,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..77 [undoc] */
+	{ "bit	6,(iy+"X_8")\t;UNDOC",	A_8P }, /* fdcb..70 [undoc] */
+	{ "bit	6,(iy+"X_8")\t;UNDOC",	A_8P }, /* fdcb..71 [undoc] */
+	{ "bit	6,(iy+"X_8")\t;UNDOC",	A_8P }, /* fdcb..72 [undoc] */
+	{ "bit	6,(iy+"X_8")\t;UNDOC",	A_8P }, /* fdcb..73 [undoc] */
+	{ "bit	6,(iy+"X_8")\t;UNDOC",	A_8P }, /* fdcb..74 [undoc] */
+	{ "bit	6,(iy+"X_8")\t;UNDOC",	A_8P }, /* fdcb..75 [undoc] */
+	{ "bit	6,(iy+"X_8")",		A_8P },	/* fdcb..76 */
+	{ "bit	6,(iy+"X_8")\t;UNDOC",	A_8P }, /* fdcb..77 [undoc] */
 
-	{ "bit	7,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..78 [undoc] */
-	{ "bit	7,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..79 [undoc] */
-	{ "bit	7,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..7a [undoc] */
-	{ "bit	7,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..7b [undoc] */
-	{ "bit	7,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..7c [undoc] */
-	{ "bit	7,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..7d [undoc] */
-	{ "bit	7,(iy+%02xh)",	A_8P },		     /* fdcb..7e */
-	{ "bit	7,(iy+%02xh)\t;undoc equiv", A_8P }, /* fdcb..7f [undoc] */
+	{ "bit	7,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..78 [undoc] */
+	{ "bit	7,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..79 [undoc] */
+	{ "bit	7,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..7a [undoc] */
+	{ "bit	7,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..7b [undoc] */
+	{ "bit	7,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..7c [undoc] */
+	{ "bit	7,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..7d [undoc] */
+	{ "bit	7,(iy+"X_8")",		A_8P },	/* fdcb..7e */
+	{ "bit	7,(iy+"X_8")\t;UNDOC",	A_8P },	/* fdcb..7f [undoc] */
 
-	{ "ld	b,res 0,(iy+%02xh)",	A_8P },	/* fdcb..80 [undoc] */
-	{ "ld	c,res 0,(iy+%02xh)",	A_8P },	/* fdcb..81 [undoc] */
-	{ "ld	d,res 0,(iy+%02xh)",	A_8P },	/* fdcb..82 [undoc] */
-	{ "ld	e,res 0,(iy+%02xh)",	A_8P },	/* fdcb..83 [undoc] */
-	{ "ld	h,res 0,(iy+%02xh)",	A_8P },	/* fdcb..84 [undoc] */
-	{ "ld	l,res 0,(iy+%02xh)",	A_8P },	/* fdcb..85 [undoc] */
-	{ "res	0,(iy+%02xh)",		A_8P },	/* fdcb..86 */
-	{ "ld	a,res 0,(iy+%02xh)",	A_8P },	/* fdcb..87 [undoc] */
+	{ "ld	b,res 0,(iy+"X_8")",	A_8P },	/* fdcb..80 [undoc] */
+	{ "ld	c,res 0,(iy+"X_8")",	A_8P },	/* fdcb..81 [undoc] */
+	{ "ld	d,res 0,(iy+"X_8")",	A_8P },	/* fdcb..82 [undoc] */
+	{ "ld	e,res 0,(iy+"X_8")",	A_8P },	/* fdcb..83 [undoc] */
+	{ "ld	h,res 0,(iy+"X_8")",	A_8P },	/* fdcb..84 [undoc] */
+	{ "ld	l,res 0,(iy+"X_8")",	A_8P },	/* fdcb..85 [undoc] */
+	{ "res	0,(iy+"X_8")",		A_8P },	/* fdcb..86 */
+	{ "ld	a,res 0,(iy+"X_8")",	A_8P },	/* fdcb..87 [undoc] */
 
-	{ "ld	b,res 1,(iy+%02xh)",	A_8P },	/* fdcb..88 [undoc] */
-	{ "ld	c,res 1,(iy+%02xh)",	A_8P },	/* fdcb..89 [undoc] */
-	{ "ld	d,res 1,(iy+%02xh)",	A_8P },	/* fdcb..8a [undoc] */
-	{ "ld	e,res 1,(iy+%02xh)",	A_8P },	/* fdcb..8b [undoc] */
-	{ "ld	h,res 1,(iy+%02xh)",	A_8P },	/* fdcb..8c [undoc] */
-	{ "ld	l,res 1,(iy+%02xh)",	A_8P },	/* fdcb..8d [undoc] */
-	{ "res	1,(iy+%02xh)",		A_8P },	/* fdcb..8e */
-	{ "ld	a,res 1,(iy+%02xh)",	A_8P },	/* fdcb..8f [undoc] */
+	{ "ld	b,res 1,(iy+"X_8")",	A_8P },	/* fdcb..88 [undoc] */
+	{ "ld	c,res 1,(iy+"X_8")",	A_8P },	/* fdcb..89 [undoc] */
+	{ "ld	d,res 1,(iy+"X_8")",	A_8P },	/* fdcb..8a [undoc] */
+	{ "ld	e,res 1,(iy+"X_8")",	A_8P },	/* fdcb..8b [undoc] */
+	{ "ld	h,res 1,(iy+"X_8")",	A_8P },	/* fdcb..8c [undoc] */
+	{ "ld	l,res 1,(iy+"X_8")",	A_8P },	/* fdcb..8d [undoc] */
+	{ "res	1,(iy+"X_8")",		A_8P },	/* fdcb..8e */
+	{ "ld	a,res 1,(iy+"X_8")",	A_8P },	/* fdcb..8f [undoc] */
 
-	{ "ld	b,res 2,(iy+%02xh)",	A_8P },	/* fdcb..90 [undoc] */
-	{ "ld	c,res 2,(iy+%02xh)",	A_8P },	/* fdcb..91 [undoc] */
-	{ "ld	d,res 2,(iy+%02xh)",	A_8P },	/* fdcb..92 [undoc] */
-	{ "ld	e,res 2,(iy+%02xh)",	A_8P },	/* fdcb..93 [undoc] */
-	{ "ld	h,res 2,(iy+%02xh)",	A_8P },	/* fdcb..94 [undoc] */
-	{ "ld	l,res 2,(iy+%02xh)",	A_8P },	/* fdcb..95 [undoc] */
-	{ "res	2,(iy+%02xh)",		A_8P },	/* fdcb..96 */
-	{ "ld	a,res 2,(iy+%02xh)",	A_8P },	/* fdcb..97 [undoc] */
+	{ "ld	b,res 2,(iy+"X_8")",	A_8P },	/* fdcb..90 [undoc] */
+	{ "ld	c,res 2,(iy+"X_8")",	A_8P },	/* fdcb..91 [undoc] */
+	{ "ld	d,res 2,(iy+"X_8")",	A_8P },	/* fdcb..92 [undoc] */
+	{ "ld	e,res 2,(iy+"X_8")",	A_8P },	/* fdcb..93 [undoc] */
+	{ "ld	h,res 2,(iy+"X_8")",	A_8P },	/* fdcb..94 [undoc] */
+	{ "ld	l,res 2,(iy+"X_8")",	A_8P },	/* fdcb..95 [undoc] */
+	{ "res	2,(iy+"X_8")",		A_8P },	/* fdcb..96 */
+	{ "ld	a,res 2,(iy+"X_8")",	A_8P },	/* fdcb..97 [undoc] */
 
-	{ "ld	b,res 3,(iy+%02xh)",	A_8P },	/* fdcb..98 [undoc] */
-	{ "ld	c,res 3,(iy+%02xh)",	A_8P },	/* fdcb..99 [undoc] */
-	{ "ld	d,res 3,(iy+%02xh)",	A_8P },	/* fdcb..9a [undoc] */
-	{ "ld	e,res 3,(iy+%02xh)",	A_8P },	/* fdcb..9b [undoc] */
-	{ "ld	h,res 3,(iy+%02xh)",	A_8P },	/* fdcb..9c [undoc] */
-	{ "ld	l,res 3,(iy+%02xh)",	A_8P },	/* fdcb..9d [undoc] */
-	{ "res	3,(iy+%02xh)",		A_8P },	/* fdcb..9e */
-	{ "ld	a,res 3,(iy+%02xh)",	A_8P },	/* fdcb..9f [undoc] */
+	{ "ld	b,res 3,(iy+"X_8")",	A_8P },	/* fdcb..98 [undoc] */
+	{ "ld	c,res 3,(iy+"X_8")",	A_8P },	/* fdcb..99 [undoc] */
+	{ "ld	d,res 3,(iy+"X_8")",	A_8P },	/* fdcb..9a [undoc] */
+	{ "ld	e,res 3,(iy+"X_8")",	A_8P },	/* fdcb..9b [undoc] */
+	{ "ld	h,res 3,(iy+"X_8")",	A_8P },	/* fdcb..9c [undoc] */
+	{ "ld	l,res 3,(iy+"X_8")",	A_8P },	/* fdcb..9d [undoc] */
+	{ "res	3,(iy+"X_8")",		A_8P },	/* fdcb..9e */
+	{ "ld	a,res 3,(iy+"X_8")",	A_8P },	/* fdcb..9f [undoc] */
 
-	{ "ld	b,res 4,(iy+%02xh)",	A_8P },	/* fdcb..a0 [undoc] */
-	{ "ld	c,res 4,(iy+%02xh)",	A_8P },	/* fdcb..a1 [undoc] */
-	{ "ld	d,res 4,(iy+%02xh)",	A_8P },	/* fdcb..a2 [undoc] */
-	{ "ld	e,res 4,(iy+%02xh)",	A_8P },	/* fdcb..a3 [undoc] */
-	{ "ld	h,res 4,(iy+%02xh)",	A_8P },	/* fdcb..a4 [undoc] */
-	{ "ld	l,res 4,(iy+%02xh)",	A_8P },	/* fdcb..a5 [undoc] */
-	{ "res	4,(iy+%02xh)",		A_8P },	/* fdcb..a6 */
-	{ "ld	a,res 4,(iy+%02xh)",	A_8P },	/* fdcb..a7 [undoc] */
+	{ "ld	b,res 4,(iy+"X_8")",	A_8P },	/* fdcb..a0 [undoc] */
+	{ "ld	c,res 4,(iy+"X_8")",	A_8P },	/* fdcb..a1 [undoc] */
+	{ "ld	d,res 4,(iy+"X_8")",	A_8P },	/* fdcb..a2 [undoc] */
+	{ "ld	e,res 4,(iy+"X_8")",	A_8P },	/* fdcb..a3 [undoc] */
+	{ "ld	h,res 4,(iy+"X_8")",	A_8P },	/* fdcb..a4 [undoc] */
+	{ "ld	l,res 4,(iy+"X_8")",	A_8P },	/* fdcb..a5 [undoc] */
+	{ "res	4,(iy+"X_8")",		A_8P },	/* fdcb..a6 */
+	{ "ld	a,res 4,(iy+"X_8")",	A_8P },	/* fdcb..a7 [undoc] */
 
-	{ "ld	b,res 5,(iy+%02xh)",	A_8P },	/* fdcb..a8 [undoc] */
-	{ "ld	c,res 5,(iy+%02xh)",	A_8P },	/* fdcb..a9 [undoc] */
-	{ "ld	d,res 5,(iy+%02xh)",	A_8P },	/* fdcb..aa [undoc] */
-	{ "ld	e,res 5,(iy+%02xh)",	A_8P },	/* fdcb..ab [undoc] */
-	{ "ld	h,res 5,(iy+%02xh)",	A_8P },	/* fdcb..ac [undoc] */
-	{ "ld	l,res 5,(iy+%02xh)",	A_8P },	/* fdcb..ad [undoc] */
-	{ "res	5,(iy+%02xh)",		A_8P },	/* fdcb..ae */
-	{ "ld	a,res 5,(iy+%02xh)",	A_8P },	/* fdcb..af [undoc] */
+	{ "ld	b,res 5,(iy+"X_8")",	A_8P },	/* fdcb..a8 [undoc] */
+	{ "ld	c,res 5,(iy+"X_8")",	A_8P },	/* fdcb..a9 [undoc] */
+	{ "ld	d,res 5,(iy+"X_8")",	A_8P },	/* fdcb..aa [undoc] */
+	{ "ld	e,res 5,(iy+"X_8")",	A_8P },	/* fdcb..ab [undoc] */
+	{ "ld	h,res 5,(iy+"X_8")",	A_8P },	/* fdcb..ac [undoc] */
+	{ "ld	l,res 5,(iy+"X_8")",	A_8P },	/* fdcb..ad [undoc] */
+	{ "res	5,(iy+"X_8")",		A_8P },	/* fdcb..ae */
+	{ "ld	a,res 5,(iy+"X_8")",	A_8P },	/* fdcb..af [undoc] */
 
-	{ "ld	b,res 6,(iy+%02xh)",	A_8P },	/* fdcb..b0 [undoc] */
-	{ "ld	c,res 6,(iy+%02xh)",	A_8P },	/* fdcb..b1 [undoc] */
-	{ "ld	d,res 6,(iy+%02xh)",	A_8P },	/* fdcb..b2 [undoc] */
-	{ "ld	e,res 6,(iy+%02xh)",	A_8P },	/* fdcb..b3 [undoc] */
-	{ "ld	h,res 6,(iy+%02xh)",	A_8P },	/* fdcb..b4 [undoc] */
-	{ "ld	l,res 6,(iy+%02xh)",	A_8P },	/* fdcb..b5 [undoc] */
-	{ "res	6,(iy+%02xh)",		A_8P },	/* fdcb..b6 */
-	{ "ld	a,res 6,(iy+%02xh)",	A_8P },	/* fdcb..b7 [undoc] */
+	{ "ld	b,res 6,(iy+"X_8")",	A_8P },	/* fdcb..b0 [undoc] */
+	{ "ld	c,res 6,(iy+"X_8")",	A_8P },	/* fdcb..b1 [undoc] */
+	{ "ld	d,res 6,(iy+"X_8")",	A_8P },	/* fdcb..b2 [undoc] */
+	{ "ld	e,res 6,(iy+"X_8")",	A_8P },	/* fdcb..b3 [undoc] */
+	{ "ld	h,res 6,(iy+"X_8")",	A_8P },	/* fdcb..b4 [undoc] */
+	{ "ld	l,res 6,(iy+"X_8")",	A_8P },	/* fdcb..b5 [undoc] */
+	{ "res	6,(iy+"X_8")",		A_8P },	/* fdcb..b6 */
+	{ "ld	a,res 6,(iy+"X_8")",	A_8P },	/* fdcb..b7 [undoc] */
 
-	{ "ld	b,res 7,(iy+%02xh)",	A_8P },	/* fdcb..b8 [undoc] */
-	{ "ld	c,res 7,(iy+%02xh)",	A_8P },	/* fdcb..b9 [undoc] */
-	{ "ld	d,res 7,(iy+%02xh)",	A_8P },	/* fdcb..ba [undoc] */
-	{ "ld	e,res 7,(iy+%02xh)",	A_8P },	/* fdcb..bb [undoc] */
-	{ "ld	h,res 7,(iy+%02xh)",	A_8P },	/* fdcb..bc [undoc] */
-	{ "ld	l,res 7,(iy+%02xh)",	A_8P },	/* fdcb..bd [undoc] */
-	{ "res	7,(iy+%02xh)",		A_8P },	/* fdcb..be */
-	{ "ld	a,res 7,(iy+%02xh)",	A_8P },	/* fdcb..bf [undoc] */
+	{ "ld	b,res 7,(iy+"X_8")",	A_8P },	/* fdcb..b8 [undoc] */
+	{ "ld	c,res 7,(iy+"X_8")",	A_8P },	/* fdcb..b9 [undoc] */
+	{ "ld	d,res 7,(iy+"X_8")",	A_8P },	/* fdcb..ba [undoc] */
+	{ "ld	e,res 7,(iy+"X_8")",	A_8P },	/* fdcb..bb [undoc] */
+	{ "ld	h,res 7,(iy+"X_8")",	A_8P },	/* fdcb..bc [undoc] */
+	{ "ld	l,res 7,(iy+"X_8")",	A_8P },	/* fdcb..bd [undoc] */
+	{ "res	7,(iy+"X_8")",		A_8P },	/* fdcb..be */
+	{ "ld	a,res 7,(iy+"X_8")",	A_8P },	/* fdcb..bf [undoc] */
 
-	{ "ld	b,set 0,(iy+%02xh)",	A_8P },	/* fdcb..c0 [undoc] */
-	{ "ld	c,set 0,(iy+%02xh)",	A_8P },	/* fdcb..c1 [undoc] */
-	{ "ld	d,set 0,(iy+%02xh)",	A_8P },	/* fdcb..c2 [undoc] */
-	{ "ld	e,set 0,(iy+%02xh)",	A_8P },	/* fdcb..c3 [undoc] */
-	{ "ld	h,set 0,(iy+%02xh)",	A_8P },	/* fdcb..c4 [undoc] */
-	{ "ld	l,set 0,(iy+%02xh)",	A_8P },	/* fdcb..c5 [undoc] */
-	{ "set	0,(iy+%02xh)",		A_8P },	/* fdcb..c6 */
-	{ "ld	a,set 0,(iy+%02xh)",	A_8P },	/* fdcb..c7 [undoc] */
+	{ "ld	b,set 0,(iy+"X_8")",	A_8P },	/* fdcb..c0 [undoc] */
+	{ "ld	c,set 0,(iy+"X_8")",	A_8P },	/* fdcb..c1 [undoc] */
+	{ "ld	d,set 0,(iy+"X_8")",	A_8P },	/* fdcb..c2 [undoc] */
+	{ "ld	e,set 0,(iy+"X_8")",	A_8P },	/* fdcb..c3 [undoc] */
+	{ "ld	h,set 0,(iy+"X_8")",	A_8P },	/* fdcb..c4 [undoc] */
+	{ "ld	l,set 0,(iy+"X_8")",	A_8P },	/* fdcb..c5 [undoc] */
+	{ "set	0,(iy+"X_8")",		A_8P },	/* fdcb..c6 */
+	{ "ld	a,set 0,(iy+"X_8")",	A_8P },	/* fdcb..c7 [undoc] */
 
-	{ "ld	b,set 1,(iy+%02xh)",	A_8P },	/* fdcb..c8 [undoc] */
-	{ "ld	c,set 1,(iy+%02xh)",	A_8P },	/* fdcb..c9 [undoc] */
-	{ "ld	d,set 1,(iy+%02xh)",	A_8P },	/* fdcb..ca [undoc] */
-	{ "ld	e,set 1,(iy+%02xh)",	A_8P },	/* fdcb..cb [undoc] */
-	{ "ld	h,set 1,(iy+%02xh)",	A_8P },	/* fdcb..cc [undoc] */
-	{ "ld	l,set 1,(iy+%02xh)",	A_8P },	/* fdcb..cd [undoc] */
-	{ "set	1,(iy+%02xh)",		A_8P },	/* fdcb..ce */
-	{ "ld	a,set 1,(iy+%02xh)",	A_8P },	/* fdcb..cf [undoc] */
+	{ "ld	b,set 1,(iy+"X_8")",	A_8P },	/* fdcb..c8 [undoc] */
+	{ "ld	c,set 1,(iy+"X_8")",	A_8P },	/* fdcb..c9 [undoc] */
+	{ "ld	d,set 1,(iy+"X_8")",	A_8P },	/* fdcb..ca [undoc] */
+	{ "ld	e,set 1,(iy+"X_8")",	A_8P },	/* fdcb..cb [undoc] */
+	{ "ld	h,set 1,(iy+"X_8")",	A_8P },	/* fdcb..cc [undoc] */
+	{ "ld	l,set 1,(iy+"X_8")",	A_8P },	/* fdcb..cd [undoc] */
+	{ "set	1,(iy+"X_8")",		A_8P },	/* fdcb..ce */
+	{ "ld	a,set 1,(iy+"X_8")",	A_8P },	/* fdcb..cf [undoc] */
 
-	{ "ld	b,set 2,(iy+%02xh)",	A_8P },	/* fdcb..d0 [undoc] */
-	{ "ld	c,set 2,(iy+%02xh)",	A_8P },	/* fdcb..d1 [undoc] */
-	{ "ld	d,set 2,(iy+%02xh)",	A_8P },	/* fdcb..d2 [undoc] */
-	{ "ld	e,set 2,(iy+%02xh)",	A_8P },	/* fdcb..d3 [undoc] */
-	{ "ld	h,set 2,(iy+%02xh)",	A_8P },	/* fdcb..d4 [undoc] */
-	{ "ld	l,set 2,(iy+%02xh)",	A_8P },	/* fdcb..d5 [undoc] */
-	{ "set	2,(iy+%02xh)",		A_8P },	/* fdcb..d6 */
-	{ "ld	a,set 2,(iy+%02xh)",	A_8P },	/* fdcb..d7 [undoc] */
+	{ "ld	b,set 2,(iy+"X_8")",	A_8P },	/* fdcb..d0 [undoc] */
+	{ "ld	c,set 2,(iy+"X_8")",	A_8P },	/* fdcb..d1 [undoc] */
+	{ "ld	d,set 2,(iy+"X_8")",	A_8P },	/* fdcb..d2 [undoc] */
+	{ "ld	e,set 2,(iy+"X_8")",	A_8P },	/* fdcb..d3 [undoc] */
+	{ "ld	h,set 2,(iy+"X_8")",	A_8P },	/* fdcb..d4 [undoc] */
+	{ "ld	l,set 2,(iy+"X_8")",	A_8P },	/* fdcb..d5 [undoc] */
+	{ "set	2,(iy+"X_8")",		A_8P },	/* fdcb..d6 */
+	{ "ld	a,set 2,(iy+"X_8")",	A_8P },	/* fdcb..d7 [undoc] */
 
-	{ "ld	b,set 3,(iy+%02xh)",	A_8P },	/* fdcb..d8 [undoc] */
-	{ "ld	c,set 3,(iy+%02xh)",	A_8P },	/* fdcb..d9 [undoc] */
-	{ "ld	d,set 3,(iy+%02xh)",	A_8P },	/* fdcb..da [undoc] */
-	{ "ld	e,set 3,(iy+%02xh)",	A_8P },	/* fdcb..db [undoc] */
-	{ "ld	h,set 3,(iy+%02xh)",	A_8P },	/* fdcb..dc [undoc] */
-	{ "ld	l,set 3,(iy+%02xh)",	A_8P },	/* fdcb..dd [undoc] */
-	{ "set	3,(iy+%02xh)",		A_8P },	/* fdcb..de */
-	{ "ld	a,set 3,(iy+%02xh)",	A_8P },	/* fdcb..df [undoc] */
+	{ "ld	b,set 3,(iy+"X_8")",	A_8P },	/* fdcb..d8 [undoc] */
+	{ "ld	c,set 3,(iy+"X_8")",	A_8P },	/* fdcb..d9 [undoc] */
+	{ "ld	d,set 3,(iy+"X_8")",	A_8P },	/* fdcb..da [undoc] */
+	{ "ld	e,set 3,(iy+"X_8")",	A_8P },	/* fdcb..db [undoc] */
+	{ "ld	h,set 3,(iy+"X_8")",	A_8P },	/* fdcb..dc [undoc] */
+	{ "ld	l,set 3,(iy+"X_8")",	A_8P },	/* fdcb..dd [undoc] */
+	{ "set	3,(iy+"X_8")",		A_8P },	/* fdcb..de */
+	{ "ld	a,set 3,(iy+"X_8")",	A_8P },	/* fdcb..df [undoc] */
 
-	{ "ld	b,set 4,(iy+%02xh)",	A_8P },	/* fdcb..e0 [undoc] */
-	{ "ld	c,set 4,(iy+%02xh)",	A_8P },	/* fdcb..e1 [undoc] */
-	{ "ld	d,set 4,(iy+%02xh)",	A_8P },	/* fdcb..e2 [undoc] */
-	{ "ld	e,set 4,(iy+%02xh)",	A_8P },	/* fdcb..e3 [undoc] */
-	{ "ld	h,set 4,(iy+%02xh)",	A_8P },	/* fdcb..e4 [undoc] */
-	{ "ld	l,set 4,(iy+%02xh)",	A_8P },	/* fdcb..e5 [undoc] */
-	{ "set	4,(iy+%02xh)",		A_8P },	/* fdcb..e6 */
-	{ "ld	a,set 4,(iy+%02xh)",	A_8P },	/* fdcb..e7 [undoc] */
+	{ "ld	b,set 4,(iy+"X_8")",	A_8P },	/* fdcb..e0 [undoc] */
+	{ "ld	c,set 4,(iy+"X_8")",	A_8P },	/* fdcb..e1 [undoc] */
+	{ "ld	d,set 4,(iy+"X_8")",	A_8P },	/* fdcb..e2 [undoc] */
+	{ "ld	e,set 4,(iy+"X_8")",	A_8P },	/* fdcb..e3 [undoc] */
+	{ "ld	h,set 4,(iy+"X_8")",	A_8P },	/* fdcb..e4 [undoc] */
+	{ "ld	l,set 4,(iy+"X_8")",	A_8P },	/* fdcb..e5 [undoc] */
+	{ "set	4,(iy+"X_8")",		A_8P },	/* fdcb..e6 */
+	{ "ld	a,set 4,(iy+"X_8")",	A_8P },	/* fdcb..e7 [undoc] */
 
-	{ "ld	b,set 5,(iy+%02xh)",	A_8P },	/* fdcb..e8 [undoc] */
-	{ "ld	c,set 5,(iy+%02xh)",	A_8P },	/* fdcb..e9 [undoc] */
-	{ "ld	d,set 5,(iy+%02xh)",	A_8P },	/* fdcb..ea [undoc] */
-	{ "ld	e,set 5,(iy+%02xh)",	A_8P },	/* fdcb..eb [undoc] */
-	{ "ld	h,set 5,(iy+%02xh)",	A_8P },	/* fdcb..ec [undoc] */
-	{ "ld	l,set 5,(iy+%02xh)",	A_8P },	/* fdcb..ed [undoc] */
-	{ "set	5,(iy+%02xh)",		A_8P },	/* fdcb..ee */
-	{ "ld	a,set 5,(iy+%02xh)",	A_8P },	/* fdcb..ef [undoc] */
+	{ "ld	b,set 5,(iy+"X_8")",	A_8P },	/* fdcb..e8 [undoc] */
+	{ "ld	c,set 5,(iy+"X_8")",	A_8P },	/* fdcb..e9 [undoc] */
+	{ "ld	d,set 5,(iy+"X_8")",	A_8P },	/* fdcb..ea [undoc] */
+	{ "ld	e,set 5,(iy+"X_8")",	A_8P },	/* fdcb..eb [undoc] */
+	{ "ld	h,set 5,(iy+"X_8")",	A_8P },	/* fdcb..ec [undoc] */
+	{ "ld	l,set 5,(iy+"X_8")",	A_8P },	/* fdcb..ed [undoc] */
+	{ "set	5,(iy+"X_8")",		A_8P },	/* fdcb..ee */
+	{ "ld	a,set 5,(iy+"X_8")",	A_8P },	/* fdcb..ef [undoc] */
 
-	{ "ld	b,set 6,(iy+%02xh)",	A_8P },	/* fdcb..f0 [undoc] */
-	{ "ld	c,set 6,(iy+%02xh)",	A_8P },	/* fdcb..f1 [undoc] */
-	{ "ld	d,set 6,(iy+%02xh)",	A_8P },	/* fdcb..f2 [undoc] */
-	{ "ld	e,set 6,(iy+%02xh)",	A_8P },	/* fdcb..f3 [undoc] */
-	{ "ld	h,set 6,(iy+%02xh)",	A_8P },	/* fdcb..f4 [undoc] */
-	{ "ld	l,set 6,(iy+%02xh)",	A_8P },	/* fdcb..f5 [undoc] */
-	{ "set	6,(iy+%02xh)",		A_8P },	/* fdcb..f6 */
-	{ "ld	a,set 6,(iy+%02xh)",	A_8P },	/* fdcb..f7 [undoc] */
+	{ "ld	b,set 6,(iy+"X_8")",	A_8P },	/* fdcb..f0 [undoc] */
+	{ "ld	c,set 6,(iy+"X_8")",	A_8P },	/* fdcb..f1 [undoc] */
+	{ "ld	d,set 6,(iy+"X_8")",	A_8P },	/* fdcb..f2 [undoc] */
+	{ "ld	e,set 6,(iy+"X_8")",	A_8P },	/* fdcb..f3 [undoc] */
+	{ "ld	h,set 6,(iy+"X_8")",	A_8P },	/* fdcb..f4 [undoc] */
+	{ "ld	l,set 6,(iy+"X_8")",	A_8P },	/* fdcb..f5 [undoc] */
+	{ "set	6,(iy+"X_8")",		A_8P },	/* fdcb..f6 */
+	{ "ld	a,set 6,(iy+"X_8")",	A_8P },	/* fdcb..f7 [undoc] */
 
-	{ "ld	b,set 7,(iy+%02xh)",	A_8P },	/* fdcb..f8 [undoc] */
-	{ "ld	c,set 7,(iy+%02xh)",	A_8P },	/* fdcb..f9 [undoc] */
-	{ "ld	d,set 7,(iy+%02xh)",	A_8P },	/* fdcb..fa [undoc] */
-	{ "ld	e,set 7,(iy+%02xh)",	A_8P },	/* fdcb..fb [undoc] */
-	{ "ld	h,set 7,(iy+%02xh)",	A_8P },	/* fdcb..fc [undoc] */
-	{ "ld	l,set 7,(iy+%02xh)",	A_8P },	/* fdcb..fd [undoc] */
-	{ "set	7,(iy+%02xh)",		A_8P },	/* fdcb..fe */
-	{ "ld	a,set 7,(iy+%02xh)",	A_8P },	/* fdcb..ff [undoc] */
+	{ "ld	b,set 7,(iy+"X_8")",	A_8P },	/* fdcb..f8 [undoc] */
+	{ "ld	c,set 7,(iy+"X_8")",	A_8P },	/* fdcb..f9 [undoc] */
+	{ "ld	d,set 7,(iy+"X_8")",	A_8P },	/* fdcb..fa [undoc] */
+	{ "ld	e,set 7,(iy+"X_8")",	A_8P },	/* fdcb..fb [undoc] */
+	{ "ld	h,set 7,(iy+"X_8")",	A_8P },	/* fdcb..fc [undoc] */
+	{ "ld	l,set 7,(iy+"X_8")",	A_8P },	/* fdcb..fd [undoc] */
+	{ "set	7,(iy+"X_8")",		A_8P },	/* fdcb..fe */
+	{ "ld	a,set 7,(iy+"X_8")",	A_8P },	/* fdcb..ff [undoc] */
     }
 };
 
-int disassemble(Uint16 pc)
+int disassemble(int pc)
 {
     int	i, j;
     const struct opcode	*code;
@@ -2120,9 +2125,9 @@ int disassemble(Uint16 pc)
     {
 	code = &major[i];
     }
-    printf ("%04x  ", addr);
+    printf ("%04x: ", addr);
 
-    for (i = 0; i < ((pc + arglen(code->args) - addr) & 0xffff); i++)
+    for (i = 0; i < ((pc + arglen(code->args) - addr) & 0xFFFF); i++)
 	printf("%02x ", mem_read(addr + i));
 
     for (; i < 4; i++)
@@ -2148,12 +2153,13 @@ int disassemble(Uint16 pc)
 	fputs (code->name, stdout);
 	break;
       case A_8R: /* One 8-bit relative address */
-	printf (code->name, (pc + 1 + (signed char) mem_read(pc)) & 0xffff);
+	printf (code->name, (pc + 1 + (signed char) mem_read(pc)) & 0xFFFF);
 	break;
     }
+
     putchar ('\n');
 
-    pc += arglen(code->args);
-    return pc;  /* return the location of the next instruction */
+    /* return the location of the next instruction */
+    return pc + arglen(code->args);
 }
 #endif

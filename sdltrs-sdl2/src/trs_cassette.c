@@ -51,6 +51,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <strings.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 
@@ -78,13 +79,14 @@
 #define WAV_FORMAT	3  /* wave file */
 #define DIRECT_FORMAT	4  /* direct to sound card */
 #define DEBUG_FORMAT	5  /* like cpt but in ASCII */
-static const char *format_name[] = {
-  NULL, "cas", "cpt", "wav", "direct", "debug" };
 #define NOISE_FLOOR	64
 
 #define DEFAULT_FORMAT	CAS_FORMAT
 
 #define FLUSH -500  /* special fake signal value used when turning off motor */
+
+int cassette_default_sample_rate = MAX_SAMPLE_RATE;
+int trs_sound = 1;
 
 static char cassette_filename[FILENAME_MAX];
 static int cassette_position;
@@ -96,12 +98,11 @@ static float cassette_avg;
 static float cassette_env;
 static int cassette_noisefloor;
 static int cassette_sample_rate;
-int cassette_default_sample_rate = MAX_SAMPLE_RATE;
 static int cassette_stereo;
 static Uint32 cassette_silence;
+static const char *format_name[] = {
+  NULL, "cas", "cpt", "wav", "direct", "debug" };
 static int soundDeviceOpen = 0;
-
-int trs_sound = 1;
 
 /* Windows won't work with a sound fragment size smaller than 2048,
    or you get gaps in sound */
@@ -240,7 +241,7 @@ int
 put_twobyte(Uint16 n, FILE* f)
 {
   int c;
-  struct twobyte *p = (struct twobyte *) &n;
+  const struct twobyte *p = (struct twobyte *) &n;
 
   c = putc(p->low, f);
   if (c == -1) return c;
@@ -255,7 +256,7 @@ int
 put_fourbyte(Uint32 n, FILE* f)
 {
   int c;
-  struct fourbyte *p = (struct fourbyte *) &n;
+  const struct fourbyte *p = (struct fourbyte *) &n;
 
   c = putc(p->byte0, f);
   if (c == -1) return c;
@@ -313,9 +314,9 @@ get_fourbyte(Uint32 *pp, FILE* f)
 static void
 put_sample(Uint8 sample, int convert, FILE* f)
 {
-  Uint16 two_byte;
-
   if (convert) {
+    Uint16 two_byte;
+
     SDL_LockAudio();
     switch (cassette_afmt) {
       case AUDIO_U8:
@@ -345,7 +346,7 @@ put_sample(Uint8 sample, int convert, FILE* f)
         sound_ring_count += 2;
         break;
       default:
-        error("sample format 0x%x not supported", cassette_afmt);
+        error("sample format 0x%X not supported", cassette_afmt);
         break;
     }
     SDL_UnlockAudio();
@@ -392,7 +393,7 @@ create_wav_header(FILE *f)
 
 /* Error message generator */
 static int
-check_chunk_id(char *expected, FILE* f)
+check_chunk_id(const char *expected, FILE* f)
 {
   char c4[5] = { 0 };
 
@@ -462,12 +463,9 @@ static void trs_sdl_sound_update(void *userdata, Uint8 * stream, int len)
   if (sound_ring_count == 0) {
     SDL_memset(stream, cassette_silence, len);
   } else {
-    int num_to_read;
-
-    if (sound_ring_count > (unsigned int)len)
-      num_to_read = len;
-    else
-      num_to_read = sound_ring_count;
+    int const num_to_read = (sound_ring_count > (unsigned int)len)
+        ? (unsigned int)len
+        : sound_ring_count;
 
     if (sound_ring_read_ptr + num_to_read > sound_ring_end) {
       int const len_to_end = sound_ring_end - sound_ring_read_ptr;
@@ -490,7 +488,7 @@ static void trs_sdl_sound_update(void *userdata, Uint8 * stream, int len)
 static int
 set_audio_format(int state)
 {
-  SDL_AudioSpec desired, obtained;
+  SDL_AudioSpec desired;
 
   SDL_CloseAudio();
   soundDeviceOpen = 0;
@@ -506,40 +504,16 @@ set_audio_format(int state)
   desired.userdata = NULL;
   desired.channels = (state == ORCH90) ? 2 : 1;
 
-  if (SDL_OpenAudio(&desired, &obtained) < 0) {
-    error("couldn't open cassette sound device");
+  if (SDL_OpenAudio(&desired, NULL) < 0) {
+    error("couldn't open cassette sound device: %s", SDL_GetError());
     cassette_state = FAILED;
     return -1;
   }
   soundDeviceOpen = 1;
-  if (obtained.format != AUDIO_U8 &&
-#ifdef big_endian
-      obtained.format != AUDIO_S16MSB) {
-#else
-      obtained.format != AUDIO_S16) {
-#endif
-    error("requested audio format 0x%x, got 0x%x",
-          desired.format, obtained.format);
-    errno = EINVAL;
-    return -1;
-  }
 
-  if (obtained.channels == 1 && desired.channels == 2) {
-    error("requested stereo, got mono");
-    errno = EINVAL;
-    return -1;
-  }
-
-  if (abs(obtained.freq - desired.freq) > desired.freq / 20) {
-    error("requested sample rate %d Hz, got %d Hz",
-          desired.freq, obtained.freq);
-    errno = EINVAL;
-    return -1;
-  }
-
-  cassette_afmt = obtained.format;
-  cassette_stereo = (obtained.channels == 2);
-  cassette_silence = obtained.silence;
+  cassette_afmt = desired.format;
+  cassette_stereo = (desired.channels == 2);
+  cassette_silence = desired.silence;
 
   SDL_PauseAudio(0);
 
@@ -554,7 +528,7 @@ trs_cassette_insert(const char *filename)
    struct stat st = { 0 };
 
    if (stat(filename, &st) == -1) {
-     file_error("open cassette '%s'", filename);
+     file_error("open cassette: '%s'", filename);
      return;
    }
 
@@ -584,7 +558,7 @@ trs_cassette_remove(void)
    cassette_format = DIRECT_FORMAT;
 }
 
-char*
+const char*
 trs_cassette_getfilename(void)
 {
   return cassette_filename;
@@ -673,12 +647,12 @@ static int assert_state(int state)
     }
     cassette_file = fopen(cassette_filename, "rb");
     if (cassette_file == NULL) {
-      file_error("read cassette '%s'", cassette_filename);
+      file_error("read cassette: '%s'", cassette_filename);
       cassette_state = FAILED;
       return -1;
     }
     if (cassette_format == WAV_FORMAT && parse_wav_header(cassette_file) < 0) {
-      error("removed unusable wav file '%s'", cassette_filename);
+      error("removed unusable wav file: '%s'", cassette_filename);
       cassette_filename[0] = 0;
       cassette_state = FAILED;
       fclose(cassette_file);
@@ -728,7 +702,7 @@ static int assert_state(int state)
         fseek(cassette_file, cassette_position, 0);
       }
       if (cassette_file == NULL) {
-        file_error("write cassette '%s'", cassette_filename);
+        file_error("write cassette: '%s'", cassette_filename);
         cassette_state = FAILED;
         return -1;
         }
@@ -1113,9 +1087,11 @@ trs_cassette_kickoff(int dummy)
 /* Z80 program is turning motor on or off */
 void trs_cassette_motor(int value)
 {
+  if (value == cassette_motor) return;
+
   if (value) {
     /* motor on */
-    if (!cassette_motor) {
+    if (!cassette_motor && cassette_filename[0]) {
 #if CASSDEBUG3
       debug("motor on %ld\n", z80_state.t_count);
 #endif
@@ -1170,13 +1146,13 @@ void trs_cassette_out(int value)
       if (assert_state(WRITE) < 0) return;
       transition_out(value);
     }
-  }
-
-  /* Do sound emulation by sending samples to /dev/dsp */
-  if (trs_sound && cassette_motor == 0) {
-    if (cassette_state != SOUND && value == 0) return;
-    if (assert_state(SOUND) < 0) return;
-    transition_out(value);
+  } else {
+    /* Do sound emulation */
+    if (trs_sound) {
+      if (cassette_state != SOUND && value == 0) return;
+      if (assert_state(SOUND) < 0) return;
+      transition_out(value);
+    }
   }
 }
 
@@ -1192,7 +1168,7 @@ trs_sound_out(int value)
 }
 
 void
-orch90_flush(int dummy)
+trs_orch90_flush(int dummy)
 {
   trs_orch90_out(0, FLUSH);
 }
@@ -1241,14 +1217,14 @@ trs_orch90_out(int channels, int value)
     put_sample(orch90_right, 1, cassette_file);
   }
 
-  if (trs_event_scheduled() == orch90_flush ||
+  if (trs_event_scheduled() == trs_orch90_flush ||
       trs_event_scheduled() == assert_state_void) {
     trs_cancel_event();
   }
   if (value == FLUSH) {
     trs_schedule_event(assert_state_void, CLOSE, 5000000);
   } else {
-    trs_schedule_event(orch90_flush, FLUSH,
+    trs_schedule_event(trs_orch90_flush, FLUSH,
 		       (int)(250000 * z80_state.clockMHz));
   }
 
@@ -1342,9 +1318,11 @@ trs_cassette_in(void)
 }
 
 void
-trs_cassette_reset(void)
+trs_cassette_reset(int poweron)
 {
   assert_state(CLOSE);
+
+  if (poweron) cassette_position = 0;
 }
 
 void

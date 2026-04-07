@@ -1,7 +1,6 @@
 /* Matthew Reed's hard drive format.  Thanks to Matthew for providing
    documentation.  The comments below are copied from his mail
-   messages, with some additions. HDV 1.0 File Format (HDV1):
-   http://www.trs-80emulators.com/hdv1-format/ */
+   messages, with some additions. */
 
 #ifndef _REED_H
 #define _REED_H
@@ -11,23 +10,30 @@
 typedef struct {
   Uint8 id1;       /* 0: Identifier #1: 56H */
   Uint8 id2;       /* 1: Identifier #2: CBH */
-  Uint8 ver;       /* 2: Version of format: 10H = version 1.0 */
-  Uint8 cksum;     /* 3: checksum (not used) */
-  Uint8 blks;      /* 4: Number of 256 byte blocks in header: must be 1 */
-  Uint8 mb4;       /* 5: Must be 4 */
+  Uint8 ver;       /* 2: Version of format:
+			 10H = version 1.0, created by Reed emulator or xtrs.
+			 11H = version 1.1, created by Keil emulator.
+			 xtrs assumes 1.1 and 1.0 don't differ significantly. */
+  Uint8 cksum;     /* 3: Simple checksum (not used):
+			 To calculate, add together bytes 0 to 31
+			 of header (excepting byte 3), then XOR
+			 result with 4CH */
+  Uint8 blks;      /* 4: Number of 256 byte blocks in header: should be 1 */
+  Uint8 mb4;       /* 5: Not used, but HDFORMAT sets to 4 */
   Uint8 media;     /* 6: Media type (must be 0 for hard disk) */
   Uint8 flag1;     /* 7: Write protection: 0x80 if write protected, 0x00 if not */
   Uint8 flag2;     /* 8: Flags: bit 7-1: reserved, bit 0: set if auto-boot */
   Uint8 flag3;     /* 9: Reserved */
   Uint8 crtr;      /* 10: Created by:
-		      14H = HDFORMAT
-		      42H = xtrs mkdisk
-                      80H = Cervasio xtrshard port to Vavasour M4 emulator */
+			  14H = HDFORMAT
+			  42H = xtrs mkdisk
+			  80H = Cervasio xtrshard port to Vavasour M4 emulator
+			  FFH = David M. Keil emulator */
   Uint8 dfmt;      /* 11: DOS type (only needed for auto-boot):
-		      0 = Model 4 LS-DOS
-		      1 = Model I/III LDOS
-		      2 = CP/M
-		      3 = NEWDOS */
+			  0 = Model 4 LS-DOS
+			  1 = Model I/III LDOS
+			  2 = CP/M
+			  3 = NEWDOS */
   Uint8 res1[14];  /* 12 - 25: reserved */
   Uint8 heads;     /* 26: If non-zero, number of heads per cylinder.
 			  If zero, number of heads per cylinder is calculated as

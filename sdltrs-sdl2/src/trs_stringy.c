@@ -102,12 +102,12 @@ static stringy_info_t stringy_info[STRINGY_MAX_UNITS];
 /*
  * .esf file format used by TRS32.
  */
-static const char stringy_esf_magic[4] = "ESF\x1a";
+static const Uint8 stringy_esf_magic[4] = { 'E', 'S', 'F', '\x1a' };
 static const Uint8 stringy_esf_header_length = 12;
 static const Uint8 stringy_esf_write_protected = 1;
 /*
 struct {
-  char magic[4] = stringy_esf_magic;
+  Uint8 magic[4] = stringy_esf_magic;
   Uint8 headerLength = 12;  // length of this header, in bytes
   Uint8 flags;              // bit 0: write protected; others reserved
   Uint16 leaderLength = 60; // little endian, in bit cells
@@ -141,36 +141,27 @@ stringy_create_with(const char *name,
 		    Uint32 eotCells,    /* leader length in bit cells */
 		    int writeProt)
 {
-  FILE *f;
-  int ires;
-  size_t sres;
+  FILE *f = fopen(name, "w");
 
-  f = fopen(name, "w");
   if (f == NULL) {
-    file_error("create Wafer Image '%s'", name);
+    file_error("create Wafer Image: '%s'", name);
     return errno;
   }
 
   switch (format) {
   case STRINGY_FMT_DEBUG:
-    ires = fprintf(f, stringy_debug_header,
-		   (stringy_pos_t)lengthBytes * STRINGY_CELL_WIDTH * 8,
-		   (stringy_pos_t)eotCells * STRINGY_CELL_WIDTH,
-		   writeProt);
-    if (ires < 0) goto error;
+    if (fprintf(f, stringy_debug_header,
+		(stringy_pos_t)lengthBytes * STRINGY_CELL_WIDTH * 8,
+		(stringy_pos_t)eotCells * STRINGY_CELL_WIDTH,
+		 writeProt) < 0) goto error;
     break;
 
   case STRINGY_FMT_ESF:
-    sres = fwrite(stringy_esf_magic, sizeof(stringy_esf_magic), 1, f);
-    if (sres < 1) goto error;
-    ires = fputc(stringy_esf_header_length, f);
-    if (ires < 0) goto error;
-    ires = fputc(writeProt ? stringy_esf_write_protected : 0, f);
-    if (ires < 0) goto error;
-    ires = put_twobyte(eotCells, f);
-    if (ires < 0) goto error;
-    ires = put_fourbyte(lengthBytes, f);
-    if (ires < 0) goto error;
+    if (fwrite(stringy_esf_magic, sizeof(stringy_esf_magic), 1, f) < 1) goto error;
+    if (fputc(stringy_esf_header_length, f) < 0) goto error;
+    if (fputc(writeProt ? stringy_esf_write_protected : 0, f) < 0) goto error;
+    if (put_twobyte(eotCells, f) < 0) goto error;
+    if (put_fourbyte(lengthBytes, f) < 0) goto error;
     break;
 
   default:
@@ -179,8 +170,7 @@ stringy_create_with(const char *name,
     return -1;
   }
 
-  ires = fclose(f);
-  if (ires < 0) return errno;
+  if (fclose(f) < 0) return errno;
 
   return 0;
 
@@ -325,7 +315,7 @@ stringy_change(int unit)
   return ires;
 }
 
-void
+static void
 stringy_change_all(void)
 {
   int i;
@@ -367,14 +357,8 @@ stringy_remove(int drive)
 void
 stringy_init(void)
 {
-  stringy_change_all();
-}
-
-/* Stringy controller hardware reset */
-void
-stringy_reset(void)
-{
-  /* Nothing to do (?) */
+  if (stringy)
+    stringy_change_all();
 }
 
 static void

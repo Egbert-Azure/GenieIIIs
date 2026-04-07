@@ -31,6 +31,7 @@
 #include <SDL.h>
 #include "trs.h"
 #include "trs_clones.h"
+#include "trs_memory.h"
 #include "trs_state_save.h"
 
 /*#define EDEBUG 1*/
@@ -54,15 +55,16 @@ static Uint8 interrupt_mask;
 #define M3_INTRQ_BIT    0x80  /* FDC chip INTRQ line */
 #define M3_MOTOROFF_BIT 0x40  /* FDC motor timed out (stopped) */
 #define M3_RESET_BIT    0x20  /* User pressed Reset button */
-static Uint8 nmi_latch = 1; /* ?? One diagnostic program needs this */
-static Uint8 nmi_mask = M3_RESET_BIT;
+#define M3_CONSTANT_BIT 0x01  /* Hardwired to true; see Model III schematic */
+static Uint8 nmi_latch = M3_CONSTANT_BIT;
+static Uint8 nmi_mask  = M3_RESET_BIT;
 
 #define TIMER_HZ_1 40
 #define TIMER_HZ_3 30
 #define TIMER_HZ_4 60
 int timer_hz = TIMER_HZ_1;
-int timer_overclock;
-int timer_overclock_rate = 5;
+int turbo_mode;
+int turbo_rate = 5;
 int speedup = 1;
 unsigned int cycles_per_timer;
 
@@ -81,6 +83,14 @@ float clock_mhz_1 = CLOCK_1_MHZ;
 float clock_mhz_3 = CLOCK_2_MHZ;
 float clock_mhz_4 = CLOCK_4_MHZ;
 
+/* Set time and date for DOSPLUS IV */
+#define DOSP4_SEC   0x00A4
+#define DOSP4_MIN   0x00A5
+#define DOSP4_HOUR  0x00A6
+#define DOSP4_YEAR  0x00A7
+#define DOSP4_DAY   0x00A8
+#define DOSP4_MONTH 0x00A9
+
 /* Kludge: LDOS hides the date (not time) in a memory area across reboots. */
 /* We put it there on powerup, so LDOS magically knows the date! */
 #define LDOS_MONTH  0x4306
@@ -92,6 +102,21 @@ float clock_mhz_4 = CLOCK_4_MHZ;
 #define LDOS4_MONTH 0x0035
 #define LDOS4_DAY   0x0034
 #define LDOS4_YEAR  0x0033
+
+/* Set time and date for MultiDOS v1.7-v2.10 Model I */
+#define MDOS_SEC    0x4041
+#define MDOS_MIN    0x4042
+#define MDOS_HOUR   0x4043
+#define MDOS_YEAR   0x4044
+#define MDOS_DAY    0x4045
+#define MDOS_MONTH  0x4046
+/* Set time and date for MultiDOS v5.11-v6.20 Model 4 */
+#define MDOS4_SEC   0x4151
+#define MDOS4_MIN   0x4152
+#define MDOS4_HOUR  0x4153
+#define MDOS4_YEAR  0x4154
+#define MDOS4_DAY   0x4155
+#define MDOS4_MONTH 0x4156
 
 /* Kludge, continued: On NEWDOS/80, both date and time are stored in memory
    across reboots, but a test is done on boot to decide whether to use the
@@ -121,7 +146,8 @@ float clock_mhz_4 = CLOCK_4_MHZ;
 #define NEWDOS3_MIN                 0x42cd
 #define NEWDOS3_SEC                 0x42cc
 
-static Uint32 deltatime = 25;
+static Uint32 deltatime1;
+static Uint32 deltatime2;
 static int timer_on = 1;
 #ifdef IDEBUG
 static long lost_timer_interrupts;
@@ -231,7 +257,7 @@ trs_disk_motoroff_interrupt(int state)
 }
 
 void
-trs_disk_drq_interrupt(int state)
+trs_disk_drq_interrupt(void)
 {
   /* no effect */
 }
@@ -302,20 +328,22 @@ trs_interrupt_latch_clear(void)
 Uint8
 trs_interrupt_latch_read(void)
 {
-  Uint8 tmp = interrupt_latch;
+  Uint8 const tmp = interrupt_latch;
 
   if (trs_model == 1) {
     interrupt_latch = z80_state.irq = 0;
     return tmp;
-  } else {
+  }
+
+  if (trs_model == 3) {
     /* In some clones (like CP-500/M80) reading from the
        interrupt latch clears pending timer interrupts */
     if (trs_clones.model & CP500_M80) {
       interrupt_latch &= ~M3_TIMER_BIT;
       z80_state.irq = (interrupt_latch & interrupt_mask) != 0;
     }
-    return ~tmp;
   }
+  return ~tmp;
 }
 
 void
@@ -335,11 +363,20 @@ trs_nmi_latch_read(void)
 void
 trs_nmi_mask_write(Uint8 value)
 {
-  nmi_mask = value | M3_RESET_BIT;
+  /*
+   * On real Model III hardware, only bits 7 and 6 of the NMI mask
+   * port exist, and only bits 7, 6, 5, and 0 of the NMI source port
+   * exist.  Although you can read the state of the reset button in
+   * bit 5 of the NMI source port, and bit 0 is hardwired to read as
+   * true, those bits aren't latched in flipflops and don't have
+   * mutable mask bits.  We emulate all bits in both ports as
+   * existing, but prevent software from changing the immutable ones.
+   */
+  nmi_mask = (value & (M3_INTRQ_BIT|M3_MOTOROFF_BIT)) | M3_RESET_BIT;
   z80_state.nmi = (nmi_latch & nmi_mask) != 0;
 #if IDEBUG2
   if (z80_state.nmi && !z80_state.nmi_seen) {
-    debug("mask write caused nmi, mask %02x latch %02x\n",
+    debug("mask write caused nmi, mask %02X, latch %02X\n",
           nmi_mask, nmi_latch);
   }
 #endif
@@ -399,14 +436,15 @@ void trs_timer_sync_with_host(void)
 {
   static Uint32 lasttime;
   Uint32 curtime = SDL_GetTicks();
+  Uint32 deltime = z80_state.keypress ? deltatime1 : deltatime2;
 
-  if (lasttime + deltatime > curtime)
-    SDL_Delay(lasttime + deltatime - curtime);
+  if (lasttime + deltime > curtime)
+    SDL_Delay(lasttime + deltime - curtime);
 
   curtime = SDL_GetTicks();
 
-  lasttime += deltatime;
-  if ((lasttime + deltatime) < curtime)
+  lasttime += deltime;
+  if ((lasttime + deltime) < curtime)
     lasttime = curtime;
 
   if (trs_show_led) {
@@ -423,22 +461,26 @@ trs_timer_init(void)
   switch (trs_model) {
     case 1:
       timer_hz = TIMER_HZ_1;
-      if (eg3200) {
-        z80_state.clockMHz = EG_3200_MHZ;
-      } else if (genie3s) {
-        z80_state.clockMHz = TCS_G3S_MHZ;
-      } else {
-        switch (speedup) {
-          case 6: /* LNW80 */
-            z80_state.clockMHz = CLOCK_4_MHZ;
-            break;
-          case 7: /* TCS SpeedMaster 5.3 */
-            z80_state.clockMHz = TCS_SPM_MHZ;
-            break;
-          default:
-            z80_state.clockMHz = clock_mhz_1;
-            break;
-        }
+      switch (trs_clones.model) {
+        case EG3200:
+          z80_state.clockMHz = EG_3200_MHZ;
+          break;
+        case GENIE3S:
+          z80_state.clockMHz = TCS_G3S_MHZ;
+          break;
+        default:
+          switch (speedup) {
+            case 6: /* LNW80/II */
+              z80_state.clockMHz = CLOCK_4_MHZ;
+              break;
+            case 7: /* TCS SpeedMaster 5.3 */
+              z80_state.clockMHz = TCS_SPM_MHZ;
+              break;
+            default:
+              z80_state.clockMHz = clock_mhz_1;
+              break;
+          }
+          break;
       }
       break;
     case 3:
@@ -452,7 +494,7 @@ trs_timer_init(void)
 
   trs_inityear();
   trs_timer_event();
-  trs_timer_mode(timer_overclock);
+  trs_timer_mode(turbo_mode);
 
   if ((trs_clones.model & (EG3200 | GENIE3S)) == 0) {
     /* Also initialize the clock in memory - hack */
@@ -460,34 +502,60 @@ trs_timer_init(void)
     const struct tm *lt = localtime(&tt);
 
     if (trs_model == 1) {
-        mem_write(LDOS_MONTH,  (lt->tm_mon + 1) ^ 0x50);
-        mem_write(LDOS_DAY,     lt->tm_mday);
-        mem_write(LDOS_YEAR,    lt->tm_year - 80);
+        mem_poke(LDOS_MONTH,    (lt->tm_mon + 1) ^ 0x50);
+        mem_poke(LDOS_DAY,       lt->tm_mday);
+        mem_poke(LDOS_YEAR,      lt->tm_year - 80);
 
-        mem_write(NEWDOS_DATETIME_VALID_ADDR, NEWDOS_DATETIME_VALID_BYTE);
-        mem_write(NEWDOS_MONTH, lt->tm_mon + 1);
-        mem_write(NEWDOS_DAY,   lt->tm_mday);
-        mem_write(NEWDOS_YEAR,  lt->tm_year % 100);
-        mem_write(NEWDOS_HOUR,  lt->tm_hour);
-        mem_write(NEWDOS_MIN,   lt->tm_min);
-        mem_write(NEWDOS_SEC,   lt->tm_sec);
+        mem_poke(MDOS_MONTH,     lt->tm_mon + 1);
+        mem_poke(MDOS_DAY,       lt->tm_mday);
+        mem_poke(MDOS_YEAR,      lt->tm_year % 100);
+        mem_poke(MDOS_HOUR,      lt->tm_hour);
+        mem_poke(MDOS_MIN,       lt->tm_min);
+        mem_poke(MDOS_SEC,       lt->tm_sec);
+
+        mem_poke(NEWDOS_DATETIME_VALID_ADDR, NEWDOS_DATETIME_VALID_BYTE);
+        if (trs_charset1 == 10) { /* Genie/German */
+          mem_poke(NEWDOS_DAY,   lt->tm_mon + 1);
+          mem_poke(NEWDOS_MONTH, lt->tm_mday);
+        } else {
+          mem_poke(NEWDOS_MONTH, lt->tm_mon + 1);
+          mem_poke(NEWDOS_DAY,   lt->tm_mday);
+        }
+        mem_poke(NEWDOS_YEAR,    lt->tm_year % 100);
+        mem_poke(NEWDOS_HOUR,    lt->tm_hour);
+        mem_poke(NEWDOS_MIN,     lt->tm_min);
+        mem_poke(NEWDOS_SEC,     lt->tm_sec);
     } else {
-        mem_write(LDOS3_MONTH, (lt->tm_mon + 1) ^ 0x50);
-        mem_write(LDOS3_DAY,    lt->tm_mday);
-        mem_write(LDOS3_YEAR,   lt->tm_year - 80);
+        mem_poke(LDOS3_MONTH,   (lt->tm_mon + 1) ^ 0x50);
+        mem_poke(LDOS3_DAY,      lt->tm_mday);
+        mem_poke(LDOS3_YEAR,     lt->tm_year - 80);
 
-        mem_write(NEWDOS3_DATETIME_VALID_ADDR, NEWDOS_DATETIME_VALID_BYTE);
-        mem_write(NEWDOS3_MONTH,lt->tm_mon + 1);
-        mem_write(NEWDOS3_DAY,  lt->tm_mday);
-        mem_write(NEWDOS3_YEAR, lt->tm_year % 100);
-        mem_write(NEWDOS3_HOUR, lt->tm_hour);
-        mem_write(NEWDOS3_MIN,  lt->tm_min);
-        mem_write(NEWDOS3_SEC,  lt->tm_sec);
+        mem_poke(NEWDOS3_DATETIME_VALID_ADDR, NEWDOS_DATETIME_VALID_BYTE);
+        mem_poke(NEWDOS3_MONTH,  lt->tm_mon + 1);
+        mem_poke(NEWDOS3_DAY,    lt->tm_mday);
+        mem_poke(NEWDOS3_YEAR,   lt->tm_year % 100);
+        mem_poke(NEWDOS3_HOUR,   lt->tm_hour);
+        mem_poke(NEWDOS3_MIN,    lt->tm_min);
+        mem_poke(NEWDOS3_SEC,    lt->tm_sec);
 
         if (trs_model >= 4) {
-          mem_write(LDOS4_MONTH,lt->tm_mon + 1);
-          mem_write(LDOS4_DAY,  lt->tm_mday);
-          mem_write(LDOS4_YEAR, lt->tm_year);
+          mem_poke(DOSP4_MONTH,  lt->tm_mon + 1);
+          mem_poke(DOSP4_DAY,    lt->tm_mday);
+          mem_poke(DOSP4_YEAR,   lt->tm_year % 100);
+          mem_poke(DOSP4_HOUR,   lt->tm_hour);
+          mem_poke(DOSP4_MIN,    lt->tm_min);
+          mem_poke(DOSP4_SEC,    lt->tm_sec);
+
+          mem_poke(LDOS4_MONTH,  lt->tm_mon + 1);
+          mem_poke(LDOS4_DAY,    lt->tm_mday);
+          mem_poke(LDOS4_YEAR,   lt->tm_year);
+
+          mem_poke(MDOS4_MONTH,  lt->tm_mon + 1);
+          mem_poke(MDOS4_DAY,    lt->tm_mday);
+          mem_poke(MDOS4_YEAR,   lt->tm_year % 100);
+          mem_poke(MDOS4_HOUR,   lt->tm_hour);
+          mem_poke(MDOS4_MIN,    lt->tm_min);
+          mem_poke(MDOS4_SEC,    lt->tm_sec);
         }
     }
   }
@@ -513,53 +581,50 @@ trs_timer_speed(int fast)
      * of port 0xec to select the Z80 CPU clock rate:
      *
      * Bit 7:  Bit 6:
-     *   1       1     = 8 MHz
-     *   1       0     = 5 MHz
-     *   0       1     = 4 MHz
      *   0       0     = 2 MHz
+     *   0       1     = 4 MHz
+     *   1       0     = 5 MHz
+     *   1       1     = 8 MHz
      */
-    if (fast & 0x80) {
-      if (fast & 0x40)
-        z80_state.clockMHz = CLOCK_8_MHZ;
-      else
-        z80_state.clockMHz = CLOCK_5_MHZ;
-    } else {
-      if (fast & 0x40)
-        z80_state.clockMHz = CLOCK_4_MHZ;
-      else
-        z80_state.clockMHz = CLOCK_2_MHZ;
-    }
+    static const float seatronics_MHz[] =
+        { CLOCK_2_MHZ, CLOCK_4_MHZ, CLOCK_5_MHZ, CLOCK_8_MHZ };
+
+    z80_state.clockMHz = seatronics_MHz[(fast & 0xC0) >> 6];
   } else {
     switch (trs_model) {
       case 1:
-        if (eg3200)
-          z80_state.clockMHz = (fast & 1) ? EG_3200_MHZ : CLOCK_1_MHZ;
-        else
-        if (genie3s)
-          z80_state.clockMHz = (fast & 1) ? TCS_G3S_MHZ : CLOCK_1_MHZ;
-        else
-        switch (speedup) {
-        case 1: /* Archbold */
-        case 5: /* CT-80 */
-          z80_state.clockMHz = clock_mhz_1 * ((fast & 1) + 1);
-          break;
-        case 2: /* Holmes Sprinter II */
-          z80_state.clockMHz = 10.6445 / (((fast + 4) & 7) + 2);
-          break;
-        case 6: /* LNW80 */
-          z80_state.clockMHz = (fast & 1) ? CLOCK_4_MHZ : CLOCK_1_MHZ;
-          break;
-        case 7: /* TCS SpeedMaster */
-          z80_state.clockMHz = (fast & 1) ? TCS_SPM_MHZ : CLOCK_1_MHZ;
-          break;
-        default:
-          break;
+        switch (trs_clones.model) {
+          case EG3200:
+            z80_state.clockMHz = fast ? EG_3200_MHZ : CLOCK_1_MHZ;
+            break;
+          case GENIE3S:
+            z80_state.clockMHz = fast ? TCS_G3S_MHZ : CLOCK_1_MHZ;
+            break;
+          case LNW80:
+            z80_state.clockMHz = fast ? CLOCK_4_MHZ : CLOCK_1_MHZ;
+            break;
+          case SPEEDMASTER:
+            z80_state.clockMHz = fast ? TCS_SPM_MHZ : CLOCK_1_MHZ;
+            break;
+          default:
+            switch (speedup) {
+              case 1: /* Archbold */
+              case 4: /* Banking */
+              case 5: /* CT-80 */
+                z80_state.clockMHz = clock_mhz_1 * ((fast & 1) + 1);
+                break;
+              case 2: /* Holmes Sprinter II */
+                z80_state.clockMHz = 10.6445 / (((fast + 4) & 7) + 2);
+                break;
+              default:
+                break;
+            }
         }
         break;
       case 3:
         if (speedup == 2)
           /* Switch to fastest possible speed of Sprinter III */
-          z80_state.clockMHz = (fast & 1) ? CLOCK_5_MHZ : clock_mhz_3;
+          z80_state.clockMHz = fast ? CLOCK_5_MHZ : clock_mhz_3;
         else
           z80_state.clockMHz = fast ? CLOCK_4_MHZ : clock_mhz_3;
         break;
@@ -569,30 +634,34 @@ trs_timer_speed(int fast)
       break;
     }
   }
+
   if (trs_model >= 4) {
     if ((fast & 0x80) || (fast & 0x40))
       timer_hz = TIMER_HZ_4;
     else
       timer_hz = TIMER_HZ_3;
   }
+
   trs_timer_mode(-1);
 }
 
 void
 trs_timer_mode(int mode)
 {
-  if (mode != -1) {
-    timer_overclock = mode;
-    if (timer_overclock)
-      deltatime = 1000 / (timer_overclock_rate * timer_hz);
+  if (mode >= 0) {
+    turbo_mode = mode;
+    deltatime1 = 1000 / timer_hz;
+
+    if (turbo_mode)
+      deltatime2 = 1000 / (turbo_rate * timer_hz);
     else
-      deltatime = 1000 / timer_hz;
+      deltatime2 = deltatime1;
 
     if (trs_show_led)
       trs_turbo_led();
   }
-  trs_screen_caption();
 
+  trs_screen_caption();
   cycles_per_timer = z80_state.clockMHz * 1000000 / timer_hz;
 }
 
@@ -675,7 +744,7 @@ void trs_interrupt_save(FILE *file)
     event = 2;
   else if (event_func == trs_cassette_kickoff)
     event = 3;
-  else if (event_func == orch90_flush)
+  else if (event_func == trs_orch90_flush)
     event = 4;
   else if (event_func == trs_cassette_fall_interrupt)
     event = 5;
@@ -723,7 +792,7 @@ void trs_interrupt_load(FILE *file)
       event_func = trs_cassette_kickoff;
       break;
     case 4:
-      event_func = orch90_flush;
+      event_func = trs_orch90_flush;
       break;
     case 5:
       event_func = trs_cassette_fall_interrupt;

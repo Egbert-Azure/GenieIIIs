@@ -129,21 +129,21 @@ Uint8 cp500_switch_mode(int mode)
     case 0x05: /* 64K RAM, 80x24, video lines 1-8 mapped to RAM */
     case 0x45: /* 64K RAM, 80x24, video lines 9-15 mapped to RAM */
     case 0x85: /* 64K RAM, 80x24, video lines 15-24 mapped to RAM */
-      mem_map(3);
       /* Precalculate now to avoid doing on every memory access: */
       cp500_m80_video_first_row = mode >> 3;
+      mem_map(3);
       mem_video_page((mode >> 6) * 1024);
       trs_clones_model(CP500_M80);
       trs_screen_80x24(1);
       break;
 
     default:
-      error("CP-500: port=0xF4 A=0x%02x: unimplemented PC=%04x\n",
-          Z80_A, Z80_PC - 2);
+      error("[PC=%04X] CP-500: port=0xF4 A=0x%02X unimplemented\n",
+          Z80_PC - 2, Z80_A);
   }
 
 #ifdef DEBUG_CP500
-  debug("CP-500: switched to mode A=%02x [PC=%04x]\n", Z80_A, Z80_PC);
+  debug("[PC=%04X] CP-500: switched to mode A=%02X\n", Z80_PC, Z80_A);
 #endif
 
   return 0; /* TODO: unknown what the hardware actually returns */
@@ -153,26 +153,22 @@ Uint8 cp500_mem_read(int address, int mem_map, const Uint8 *rom, const Uint8 *ra
 {
   switch (mem_map) {
     case 0x31: /* 3000-37FF = extra 2K in EPROM 4 */
-      if (address >= 0x3000 && address <= 0x37FF) {
+      if (address >= 0x3000 && address <= 0x37FF)
         return rom[address | 0x0800];
-      }
-      return trs80_model3_mem_read(address);
+      else
+        return trs80_model3_mem_read(address);
 
     case 0x32: /* 64K of RAM, nothing else mapped */
       return ram[address];
 
     case 0x33: /* 80x24, 3800 = keyboard, 3C00-3FFF = VRAM */
-      if (address >= RAM_START) {
-        return ram[address];
-      } else if (address >= VIDEO_START) {
-        return mem_video_page_read(address);
-      } else if (address >= KEYBOARD_START) {
-        return trs_kb_mem_read(address);
-      }
+      if (address >= RAM_START) return ram[address];
+      if (address >= VIDEO_START) return mem_video_page_read(address);
+      if (address >= KEYBOARD_START) return trs_kb_mem_read(address);
   }
 #ifdef DEBUG_CP500
-  error("Invalid read of address %04x, returning FF [PC=%04x, mem_map=%02x]",
-      address, Z80_PC, mem_map);
+  error("[PC=%04X] Invalid read of address %04X, returning FF, mem_map=%02X",
+      Z80_PC, address, mem_map);
 #endif
   return 0xFF;
 }
@@ -208,12 +204,12 @@ void cp500_mem_write(int address, Uint8 value, int mem_map, Uint8 *ram)
           trs_screen_write_char((address % 128) + (((address / 128) +
               cp500_m80_video_first_row) * 80), value);
         }
+        return;
       }
-      return;
   }
 #ifdef DEBUG_CP500
-  error("Invalid write of address %04x [PC=%04x, mem_map=%02x]",
-      address, Z80_PC, mem_map);
+  error("[PC=%04X] Invalid write of %02X to address %04X, mem_map=%02X",
+      Z80_PC, value, address, mem_map);
 #endif
 }
 
@@ -221,23 +217,17 @@ Uint8 *cp500_mem_addr(int address, int mem_map, Uint8 *rom, Uint8 *ram, int writ
 {
   switch (mem_map) {
     case 0x31: /* 3000-37FF = extra 2K in EPROM 4 */
-    case 0x39:
-      if (address >= 0x3000 && address <= 0x37FF && writing == 0) {
-        return &rom[address | 0x0800];
-      }
-      return trs80_model3_mem_addr(address, writing);
+      if (address >= 0x3000 && address <= 0x37FF)
+        return writing ? NULL : &rom[address | 0x0800];
+      else
+        return trs80_model3_mem_addr(address, writing);
 
     case 0x32: /* 64K of RAM, nothing else mapped */
-    case 0x3A:
       return &ram[address];
 
     case 0x33: /* 80x24, 3C00-3FFF = VRAM */
-    case 0x3B:
-      if (address >= RAM_START) {
-        return &ram[address];
-      } else if (address >= VIDEO_START) {
-        return mem_video_page_addr(address);
-      }
+      if (address >= RAM_START) return &ram[address];
+      if (address >= VIDEO_START) return mem_video_page_addr(address);
   }
   return NULL;
 }

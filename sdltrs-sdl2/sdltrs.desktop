@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Categories=Game;Emulator;
+Name=SDLTRS
+Comment=TRS-80 Model I/III/4/4P Emulator
+Exec=sdltrs %F
+Icon=sdltrs
+Terminal=true

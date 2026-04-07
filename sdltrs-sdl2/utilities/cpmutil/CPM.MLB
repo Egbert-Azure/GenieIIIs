@@ -111,6 +111,10 @@ b_fnext		equ	12h		; search for next file
 ;	exit:	a = offset (FFh=>file not found)
 ;	notes:	a = 0,1,2,3 (offset into current file buffer=>0,32,64,96 bytes)
 
+b_fdelete	equ	13h		; delete file
+;	entry:	de -> fcb
+;	exit:	a = status (0,1,2,3 or FFh if error)
+
 b_frseq		equ	14h		; sequential read
 
 b_fwseq		equ	15h		; sequential write

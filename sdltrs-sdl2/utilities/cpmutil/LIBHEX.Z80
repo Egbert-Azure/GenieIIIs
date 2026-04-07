@@ -1,4 +1,4 @@
-; LIBHEX.MAC
+; LIBHEX.Z80
 ; ~~~~~~~~~~
 ;
 ; Contents:
@@ -31,7 +31,7 @@ hex_start::	defb	'LIBHEX',0
 cout:
 ;------------------------------------------------------------------------------
 ; Display a character
-;	extry:	a  =  character to display
+;	entry:	a  =  character to display
 ;	exit:	all registers preserved
 ;------------------------------------------------------------------------------
 		push af
@@ -51,7 +51,7 @@ cout:
 coutprn:
 ;------------------------------------------------------------------------------
 ; Display a character (unprintable characters displayed as '.')
-;	extry:	a  =  character to display
+;	entry:	a  =  character to display
 ;	exit:	all registers preserved
 ;------------------------------------------------------------------------------
 		push af

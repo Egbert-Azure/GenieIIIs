@@ -10,10 +10,28 @@ option('OLDSCAN',
 	value		: false
 )
 
+option('NOX',
+	description	: 'Build SDL 1.2 version without X',
+	type		: 'boolean',
+	value		: false
+)
+
 option('READLINE',
 	description	: 'Readline support for zbx debugger',
 	type		: 'boolean',
 	value		: true
+)
+
+option('ROM_PATH',
+	description	: 'Set path prefix for ROM files',
+	type		: 'string',
+	value		: '""'
+)
+
+option('SDL1',
+	description	: 'Use SDL version 1.2 instead of SDL2',
+	type		: 'boolean',
+	value		: false
 )
 
 option('ZBX',

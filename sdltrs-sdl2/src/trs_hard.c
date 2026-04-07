@@ -29,18 +29,17 @@
  */
 
 #include <errno.h>
+#include <string.h>
 #include "error.h"
+#include "reed.h"
 #include "trs.h"
 #include "trs_hard.h"
 #include "trs_imp_exp.h"
 #include "trs_state_save.h"
 
-#include "reed.h"
-
-int trs_hd_boot;
-
-/*#define HARDDEBUG1 1*/  /* show detail on all port i/o */
-/*#define HARDDEBUG2 1*/  /* show all commands */
+#define HARDDEBUG1 (1 << 2)  /* show detail on all port i/o */
+#define HARDDEBUG2 (1 << 3)  /* show all commands */
+#define SECTORSIZE (1024)
 
 /* Private types and data */
 
@@ -73,6 +72,7 @@ typedef struct {
   Uint8  sdh;
   Uint8  status;
   Uint8  command;
+  Uint8  secbuf[SECTORSIZE];
 
   /* Number of bytes already done in current read/write */
   int bytesdone;
@@ -84,19 +84,73 @@ typedef struct {
 static State state;
 
 /* Forward */
+static void hard_error(int error);
 static int  hard_data_in(void);
 static void hard_data_out(int value);
-static void hard_restore(int cmd);
+static void hard_restore(void);
 static void hard_read(int cmd);
 static void hard_write(int cmd);
-static void hard_verify(int cmd);
-static void hard_format(int cmd);
+static void hard_verify(void);
+static void hard_format(void);
 static void hard_init(int cmd);
-static void hard_seek(int cmd);
+static void hard_seek(void);
 static int  open_drive(int drive);
 static int  find_sector(int newstatus);
-static int  open_drive(int n);
-static void set_dir_cyl(int cyl);
+
+#ifdef ZBX
+static const char *hard_cmd(int port)
+{
+  switch (port) {
+    case TRS_HARD_WP:
+      return "WP";
+    case TRS_HARD_CONTROL:
+      return "CONTROL";
+    case TRS_HARD_DATA:
+      return "DATA";
+    case TRS_HARD_PRECOMP:
+      return "PRECOMP/ERROR";
+    case TRS_HARD_SECCNT:
+      return "SECCNT";
+    case TRS_HARD_SECNUM:
+      return "SECNUM";
+    case TRS_HARD_CYLLO:
+      return "CYLLO";
+    case TRS_HARD_CYLHI:
+      return "CYLHI";
+    case TRS_HARD_SDH:
+      return "SDH";
+    case TRS_HARD_COMMAND:
+      return "COMMAND/STATUS";
+    default:
+      return "";
+  }
+}
+
+static void hard_debug(const char *cmd)
+{
+  debug("%s: drive:%d, head:%d, cyl:%4d, sec:%3d/%3d\n",
+    cmd, state.drive, state.head, state.cyl, state.secnum, state.seccnt);
+}
+
+void trs_hard_debug(void)
+{
+  int i;
+
+  puts("Hard disk controller state:");
+  printf("  hard drive:%d, head:%d, cyl:%d, sec:%d/%d, secsize:%d\n",
+      state.drive, state.head, state.cyl, state.secnum, state.seccnt, state.secsize);
+  printf("  status:0x%02X, command:0x%02X, control:0x%02X, data:0x%02X, error:0x%02X\n",
+      state.status, state.command, state.control, state.data, state.error);
+
+  for (i = 0; i < TRS_HARD_MAXDRIVES; i++) {
+    if (state.d[i].file) {
+      printf("\nhard%d: '%s'\n", i, state.d[i].filename);
+      printf("\theads %d, cyls %4d, secs %4d, writeprot %d\n",
+          state.d[i].heads, state.d[i].cyls, state.d[i].secs, state.d[i].writeprot);
+    }
+  }
+}
+#endif
 
 /* Powerup or reset button */
 void trs_hard_init(int poweron)
@@ -104,20 +158,21 @@ void trs_hard_init(int poweron)
   state.control = 0;
   state.data = 0;
   state.error = 0;
-  state.seccnt = 0;
   state.secnum = 0;
   state.secsize = 0;
   state.cyl = 0;
   state.drive = 0;
   state.head = 0;
   state.sdh = 0;
-  state.status = 0;
   state.command = 0;
+  memset(state.secbuf, 0, SECTORSIZE);
 
   if (poweron) {
     int i;
 
     state.present = 0;
+    state.seccnt = 0;
+    state.status = 0;
 
     for (i = 0; i < TRS_HARD_MAXDRIVES; i++) {
       state.d[i].writeprot = 0;
@@ -155,7 +210,7 @@ void trs_hard_remove(int drive)
   state.d[drive].secs = 0;
 }
 
-char*
+const char*
 trs_hard_getfilename(int unit)
 {
   return state.d[unit].filename;
@@ -189,10 +244,9 @@ int trs_hard_in(int port)
 
       v = 0;
       for (i = 0; i < TRS_HARD_MAXDRIVES; i++) {
-	open_drive(i);
-	if (state.d[i].writeprot) {
-	  v |= TRS_HARD_WPBIT(i) | TRS_HARD_WPSOME;
-	}
+        if (state.d[i].writeprot) {
+          v |= TRS_HARD_WPBIT(i) | TRS_HARD_WPSOME;
+        }
       }
       break; }
     case TRS_HARD_CONTROL:
@@ -226,8 +280,9 @@ int trs_hard_in(int port)
       break;
     }
   }
-#if HARDDEBUG1
-  debug("%02x -> %02x\n", port, v);
+#if ZBX
+  if (trs_io_debug_flags & HARDDEBUG1)
+    debug("[PC=%04X] trs_hard_in(%s) => %02X\n", Z80_PC, hard_cmd(port), v);
 #endif
   return v;
 }
@@ -235,8 +290,9 @@ int trs_hard_in(int port)
 /* Write to an I/O port mapped to the controller */
 void trs_hard_out(int port, int value)
 {
-#if HARDDEBUG1
-  debug("%02x <- %02x\n", port, value);
+#if ZBX
+  if (trs_io_debug_flags & HARDDEBUG1)
+    debug("[PC=%04X] trs_hard_out(%s), %02X\n", Z80_PC, hard_cmd(port), value);
 #endif
   switch (port) {
   case TRS_HARD_WP:
@@ -270,7 +326,7 @@ void trs_hard_out(int port, int value)
   case TRS_HARD_SDH:
     state.sdh = value;
     state.secsize = 256 << ((value & TRS_HARD_SIZEMASK) >> TRS_HARD_SIZESHIFT);
-    if (state.secsize > 1024) state.secsize = 128;
+    if (state.secsize > SECTORSIZE) state.secsize = 128;
     state.drive = (value & TRS_HARD_DRIVEMASK) >> TRS_HARD_DRIVESHIFT;
     state.head = (value & TRS_HARD_HEADMASK) >> TRS_HARD_HEADSHIFT;
 #if 0
@@ -287,11 +343,8 @@ void trs_hard_out(int port, int value)
     state.bytesdone = 0;
     state.command = value;
     switch (value & TRS_HARD_CMDMASK) {
-    default:
-      error("trs_hard: unknown command 0x%02x", value);
-      break;
     case TRS_HARD_RESTORE:
-      hard_restore(value);
+      hard_restore();
       break;
     case TRS_HARD_READ:
       hard_read(value);
@@ -300,16 +353,19 @@ void trs_hard_out(int port, int value)
       hard_write(value);
       break;
     case TRS_HARD_VERIFY:
-      hard_verify(value);
+      hard_verify();
       break;
     case TRS_HARD_FORMAT:
-      hard_format(value);
+      hard_format();
       break;
     case TRS_HARD_INIT:
       hard_init(value);
       break;
     case TRS_HARD_SEEK:
-      hard_seek(value);
+      hard_seek();
+      break;
+    default:
+      error("trs_hard: unknown command 0x%02X", value);
       break;
     }
     break;
@@ -319,10 +375,17 @@ void trs_hard_out(int port, int value)
   }
 }
 
-static void hard_restore(int cmd)
+static void hard_error(int error)
 {
-#if HARDDEBUG2
-  debug("hard_restore drive %d\n", state.drive);
+  state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_ERR;
+  state.error  = error;
+}
+
+static void hard_restore(void)
+{
+#if ZBX
+  if (trs_io_debug_flags & HARDDEBUG2)
+    debug("hard_restore drive:%d\n", state.drive);
 #endif
   state.cyl = 0;
   /*!! should anything else be zeroed? */
@@ -331,48 +394,53 @@ static void hard_restore(int cmd)
 
 static void hard_read(int cmd)
 {
-#if HARDDEBUG2
-  debug("hard_read drive %d cyl %d hd %d sec %d\n",
-	state.drive, state.cyl, state.head, state.secnum);
+#if ZBX
+  if (trs_io_debug_flags & HARDDEBUG2)
+    hard_debug("hard_read");
 #endif
   if (cmd & TRS_HARD_MULTI) {
-    error("trs_hard: multi-sector read not supported (0x%02x)", cmd);
-    state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_ERR;
-    state.error = TRS_HARD_ABRTERR;
+    error("trs_hard: multi-sector read not supported (0x%02X)", cmd);
+    hard_error(TRS_HARD_ABRTERR);
     return;
   }
-  find_sector(TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_DRQ);
+  if (find_sector(TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_DRQ) == 0) {
+    FILE *f = state.d[state.drive].file;
+
+    if (f && fread(state.secbuf, 1, state.secsize, f) != state.secsize) {
+      file_error("reading on hard%d", state.drive);
+      hard_error(TRS_HARD_DATAERR); /* arbitrary choice */
+    }
+  }
 }
 
 static void hard_write(int cmd)
 {
-#if HARDDEBUG2
-  debug("hard_write drive %d cyl %d hd %d sec %d\n",
-	state.drive, state.cyl, state.head, state.secnum);
+#if ZBX
+  if (trs_io_debug_flags & HARDDEBUG2)
+    hard_debug("hard_write");
 #endif
   if (cmd & TRS_HARD_MULTI) {
-    error("trs_hard: multi-sector write not supported (0x%02x)", cmd);
-    state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_ERR;
-    state.error = TRS_HARD_ABRTERR;
+    error("trs_hard: multi-sector write not supported (0x%02X)", cmd);
+    hard_error(TRS_HARD_ABRTERR);
     return;
   }
   find_sector(TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_DRQ);
 }
 
-static void hard_verify(int cmd)
+static void hard_verify(void)
 {
-#if HARDDEBUG2
-  debug("hard_verify drive %d cyl %d hd %d sec %d\n",
-	state.drive, state.cyl, state.head, state.secnum);
+#if ZBX
+  if (trs_io_debug_flags & HARDDEBUG2)
+    hard_debug("hard_verify");
 #endif
   find_sector(TRS_HARD_READY | TRS_HARD_SEEKDONE);
 }
 
-static void hard_format(int cmd)
+static void hard_format(void)
 {
-#if HARDDEBUG2
-  debug("hard_format drive %d cyl %d hd %d\n",
-	state.drive, state.cyl, state.head);
+#if ZBX
+  if (trs_io_debug_flags & HARDDEBUG2)
+    hard_debug("hard_format");
 #endif
   /* !!should probably set up to read skew table here */
   state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE;
@@ -380,20 +448,20 @@ static void hard_format(int cmd)
 
 static void hard_init(int cmd)
 {
-#if HARDDEBUG2
-  debug("hard_init drive %d cyl %d hd %d sec %d\n",
-	state.drive, state.cyl, state.head, state.secnum);
+#if ZBX
+  if (trs_io_debug_flags & HARDDEBUG2)
+    hard_debug("hard_init");
 #endif
   /* I don't know what this command does */
-  error("trs_hard: init command (0x%02x) not implemented", cmd);
+  error("trs_hard: init command (0x%02X) not implemented", cmd);
   state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE;
 }
 
-static void hard_seek(int cmd)
+static void hard_seek(void)
 {
-#if HARDDEBUG2
-  debug("hard_seek drive %d cyl %d hd %d sec %d\n",
-	state.drive, state.cyl, state.head, state.secnum);
+#if ZBX
+  if (trs_io_debug_flags & HARDDEBUG2)
+    hard_debug("hard_seek");
 #endif
   find_sector(TRS_HARD_READY | TRS_HARD_SEEKDONE);
 }
@@ -418,13 +486,13 @@ static int open_drive(int drive)
   int err = 0;
   int secs;
 
+  if (d->filename[0] == 0)
+    goto fail;
+
   if (d->file != NULL) {
     fclose(d->file);
     d->file = NULL;
   }
-  if (d->filename[0] == 0)
-    goto fail;
-
   /* First try opening for reading and writing */
   d->file = fopen(d->filename, "rb+");
   if (d->file == NULL) {
@@ -433,8 +501,7 @@ static int open_drive(int drive)
       d->file = fopen(d->filename, "rb");
     }
     if (d->file == NULL) {
-      file_error("open hard%d: '%s'",
-	    drive, d->filename);
+      file_error("open hard%d: '%s'", drive, d->filename);
       err = errno;
       goto fail;
     }
@@ -446,7 +513,7 @@ static int open_drive(int drive)
   /* Read in the Reed header and check some basic magic numbers (not all) */
   res = fread(&rhh, sizeof(rhh), 1, d->file);
   if (res != 1 || rhh.id1 != 0x56 || rhh.id2 != 0xcb || rhh.ver >= 0x20) {
-    error("unrecognized hard%d drive image '%s'", drive, d->filename);
+    error("unrecognized hard%d drive image: '%s'", drive, d->filename);
     err = -1;
     goto fail;
   }
@@ -471,19 +538,21 @@ static int open_drive(int drive)
     d->secs  = secs / d->heads;
   }
 
-#if HARDDEBUG2
-  debug("open_drive %d cyls %d heads %d secs %d\n",
-	drive, d->cyls, d->heads, d->secs);
+#if ZBX
+  if (trs_io_debug_flags & HARDDEBUG2)
+    debug("open_drive:%d, cyls:%d, heads:%d, secs:%d\n",
+          drive, d->cyls, d->heads, d->secs);
 #endif
 
   if ((rhh.sec % d->secs) != 0 ||
       d->heads <= 0 || d->heads > TRS_HARD_MAXHEADS) {
-    error("unusable geometry (%d heads/%d secs) in hard%d image '%s'",
+    error("unusable geometry (%d heads/%d secs) in hard%d image: '%s'",
           d->heads, d->secs, drive, d->filename);
     err = -1;
     goto fail;
   }
 
+  state.seccnt = d->secs;
   state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE;
   return 0;
 
@@ -491,55 +560,55 @@ fail:
   if (d->file) fclose(d->file);
   d->file = NULL;
   d->filename[0] = 0;
-  state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_ERR;
-  state.error = TRS_HARD_NFERR;
+  hard_error(TRS_HARD_NFERR);
   return err;
 }
 
 /*
  * Check whether the current position is in bounds for the geometry.
- * If not, return 0 and set the controller error status.  If so, fseek
- * the file to the start of the current sector, return 1, and set
- * the controller status to newstatus.
+ * If not, set the controller error status and return -1.  If so, fseek
+ * the file to the start of the current sector and set the controller
+ * status to newstatus and return 0.
  */
 static int find_sector(int newstatus)
 {
-  Drive *d = &state.d[state.drive];
+  const Drive *d = &state.d[state.drive];
 
-  if (d->cyls == 0 && open_drive(state.drive) < 0) return 0;
+  if (d->file == NULL) return -1;
 
   if (/**state.cyl >= d->cyls ||**/ /* ignore this limit */
       state.head >= d->heads ||
       state.secnum > d->secs /* allow 0-origin or 1-origin */ ) {
-    error("hard%d: requested cyl %d hd %d sec %d; max cyl %d hd %d sec %d",
-	  state.drive, state.cyl, state.head, state.secnum, d->cyls, d->heads, d->secs);
-    state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_ERR;
-    state.error = TRS_HARD_NFERR;
-    return 0;
+    error("hard%d: requested cyl:%d, head:%d, sec:%d (cyls:%d, heads:%d, secs:%d)",
+        state.drive, state.cyl, state.head, state.secnum, d->cyls, d->heads, d->secs);
+    hard_error(TRS_HARD_NFERR);
+    return -1;
   }
 
-  fseek(d->file,
-	sizeof(ReedHardHeader) +
-	state.secsize * (state.cyl * d->heads * d->secs +
-			 state.head * d->secs +
-			(state.secnum % d->secs)),
-	0);
+  if (fseek(d->file,
+    sizeof(ReedHardHeader) +
+    state.secsize * (state.cyl * d->heads * d->secs
+                  +  state.head * d->secs
+                  + (state.secnum % d->secs)), 0) != 0) {
+      file_error("hard%d: fseek '%s'", state.drive, d->filename);
+      hard_error(TRS_HARD_NFERR);
+      return -1;
+  }
 
   state.status = newstatus;
-  return 1;
-}
-
-static int hard_data_in(void)
-{
-  Drive *d = &state.d[state.drive];
 
   if (trs_show_led)
     trs_hard_led(state.drive, 1);
 
+  return 0;
+}
+
+static int hard_data_in(void)
+{
   if ((state.command & TRS_HARD_CMDMASK) == TRS_HARD_READ &&
       (state.status & TRS_HARD_ERR) == 0) {
     if (state.bytesdone < state.secsize) {
-      state.data = getc(d->file);
+      state.data = state.secbuf[state.bytesdone];
       state.bytesdone++;
     }
   }
@@ -548,48 +617,23 @@ static int hard_data_in(void)
 
 static void hard_data_out(int value)
 {
-  Drive *d = &state.d[state.drive];
-  int res = 0;
-
-  if (trs_show_led)
-    trs_hard_led(state.drive, 1);
-
   state.data = value;
 
   if ((state.command & TRS_HARD_CMDMASK) == TRS_HARD_WRITE &&
       (state.status & TRS_HARD_ERR) == 0) {
     if (state.bytesdone < state.secsize) {
-      if (state.cyl == 0 && state.head == 0 &&
-	  state.secnum == 0 && state.bytesdone == 2) {
-	set_dir_cyl(value);
-      }
-      res = putc(state.data, d->file);
+      state.secbuf[state.bytesdone] = value;
       state.bytesdone++;
-      if (res != EOF && state.bytesdone == state.secsize) {
-	res = fflush(d->file);
+      if (state.bytesdone == state.secsize) {
+        FILE *f = state.d[state.drive].file;
+
+        if (f && fwrite(state.secbuf, 1, state.secsize, f) != state.secsize) {
+          file_error("writing on hard%d", state.drive);
+          hard_error(TRS_HARD_DATAERR); /* arbitrary choice */
+        }
       }
     }
   }
-
-  if (res == EOF) {
-    file_error("writing on hard%d", state.drive);
-    state.status = TRS_HARD_READY | TRS_HARD_SEEKDONE | TRS_HARD_ERR;
-    state.error = TRS_HARD_DATAERR; /* arbitrary choice */
-  }
-}
-
-/* Sleazy trick to update the "directory cylinder" byte in the Reed
-   header.  This value is only needed by the Reed emulator itself, and
-   we would like xtrs to set it automatically so that the user doesn't
-   have to know about it. */
-static void set_dir_cyl(int cyl)
-{
-  Drive *d = &state.d[state.drive];
-  long where = ftell(d->file);
-
-  fseek(d->file, 31, 0);
-  putc(cyl, d->file);
-  fseek(d->file, where, 0);
 }
 
 static void trs_save_harddrive(FILE *file, Drive *d)
@@ -639,6 +683,7 @@ void trs_hard_save(FILE *file)
   trs_save_uint8(file, &state.sdh, 1);
   trs_save_uint8(file, &state.status, 1);
   trs_save_uint8(file, &state.command, 1);
+  trs_save_uint8(file, state.secbuf, SECTORSIZE);
   trs_save_int(file, &state.bytesdone, 1);
 
   for (i = 0; i < TRS_HARD_MAXDRIVES; i++)
@@ -667,6 +712,7 @@ void trs_hard_load(FILE *file)
   trs_load_uint8(file, &state.sdh, 1);
   trs_load_uint8(file, &state.status, 1);
   trs_load_uint8(file, &state.command, 1);
+  trs_load_uint8(file, state.secbuf, SECTORSIZE);
   trs_load_int(file, &state.bytesdone, 1);
 
   for (i = 0; i < TRS_HARD_MAXDRIVES; i++) {

@@ -132,6 +132,12 @@ struct z80_state_struct
      */
     int nmi, nmi_seen;
 
+    /* Action for HALT instruction */
+    int halt;
+
+    /* Disable turbo while any keys are pressed */
+    int keypress;
+
     /* Cyclic T-state counter */
     tstate_t t_count;
 
@@ -182,6 +188,8 @@ struct z80_state_struct
 #define Z80_R			(z80_state.r)
 #define Z80_R7			(z80_state.r7)
 
+#define Z80_HALT		(z80_state.halt)
+
 #define HIGH(p)			(((struct twobyte *)(p))->high)
 #define LOW(p)			(((struct twobyte *)(p))->low)
 
@@ -207,9 +215,9 @@ struct z80_state_struct
 #define SUBTRACT_MASK		(0x2)
 #define PARITY_MASK		(0x4)
 #define OVERFLOW_MASK		(0x4)
-#define UNDOC3_MASK             (0x8)
+#define UNDOC3_MASK		(0x8)
 #define HALF_CARRY_MASK		(0x10)
-#define UNDOC5_MASK             (0x20)
+#define UNDOC5_MASK		(0x20)
 #define ZERO_MASK		(0x40)
 #define	SIGN_MASK		(0x80)
 #define ALL_FLAGS_MASK		(CARRY_MASK | SUBTRACT_MASK | OVERFLOW_MASK | \
@@ -219,7 +227,7 @@ struct z80_state_struct
 #define CLEAR_SIGN()		(Z80_F &= (~SIGN_MASK))
 #define SET_ZERO()		(Z80_F |= ZERO_MASK)
 #define CLEAR_ZERO()		(Z80_F &= (~ZERO_MASK))
-#define SET_HALF_CARRY()       	(Z80_F |= HALF_CARRY_MASK)
+#define SET_HALF_CARRY()	(Z80_F |= HALF_CARRY_MASK)
 #define CLEAR_HALF_CARRY()	(Z80_F &= (~HALF_CARRY_MASK))
 #define SET_OVERFLOW()		(Z80_F |= OVERFLOW_MASK)
 #define CLEAR_OVERFLOW()	(Z80_F &= (~OVERFLOW_MASK))
@@ -238,24 +246,17 @@ struct z80_state_struct
 #define SUBTRACT_FLAG		(Z80_F & SUBTRACT_MASK)
 #define CARRY_FLAG		(Z80_F & CARRY_MASK)
 
-extern struct		z80_state_struct z80_state;
-extern unsigned int	z80_halt;
-extern unsigned int	cycles_per_timer;
+extern struct			z80_state_struct z80_state;
+extern unsigned int		cycles_per_timer;
 
-extern void	 z80_reset(void);
-extern int	 z80_run(int continuous);
-extern void	 z80_out(int port, int value);
-extern int	 z80_in(int port);
-extern int	 mem_read(int address);
-extern void	 mem_write(int address, int value);
-extern void	 rom_write(int address, int value);
-extern int	 mem_read_word(int address);
-extern void	 mem_write_word(int address, int value);
-extern Uint8	*mem_pointer(int address, int writing);
+extern void			z80_reset(void);
+extern int			z80_run(int continuous);
+extern void			z80_out(int port, int value);
+extern int			z80_in(int port);
 
 #ifdef ZBX
-extern int	 disassemble(Uint16 pc);
-extern void	 debug_shell(void);
+extern int			disassemble(int pc);
+extern void			debug_shell(void);
 #endif /* ZBX */
 
 #endif /* _Z80_H */

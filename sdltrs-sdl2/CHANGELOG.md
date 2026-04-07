@@ -1,3 +1,79 @@
+## Version 1.2.34 Release 12-07-2025:
+
+ * Added Holmes VID-80 (VX-3) support for TRS-80 Model III.
+ * Added 48 KB extended memory for Holmes VID-80 (VX-3).
+ * Added 256/512/768/1024 KB for Alpha Technology SuperMem.
+ * Added X-MEM/80 (Michael Wessel) 16K page Model I memory extension.
+ * Added printer type for text only output.
+ * Fixed LNW80 Model II banking and 80x24 text mode support.
+ * Fixed some bugs and internal improvements.
+
+## Version 1.2.33 Release 08-09-2025:
+
+ * Added Solid State Disk (RAM-Disk) for Aster CT-80.
+ * Added character set for Aster CT-80 CP/M.
+ * Added debugger command to show hard disk controller state.
+ * Added debugger commands to fill and move memory.
+ * Added support for 8 Disk Drives (TCS SpeedMaster/Genie IIs/IIIs).
+ * Added function to copy the emulator screen to printer file.
+ * Fixed Aster CT-80 emulation to run CP/M (thanks to Wim Nelis).
+ * Fixed CP/M utilities (reported by Wim Nelis).
+ * Fixed some bugs and internal improvements.
+
+## Version 1.2.32 Release 04-06-2025:
+
+ * Added support for TCS Genie IIIs HRG pages.
+ * Added character set for TCS Genie IIs/SpeedMaster.
+ * Added emulation of TCS Genie IIs ROM-Card.
+ * Added support for Aster CT-80 special keys.
+ * Added option to debug Hard Disk commands and I/O.
+ * Added command to load CMD files in debugger.
+ * Added debugger command to modify memory like DDT.
+ * Fixed boot with `LD4-631.III` ROM (reported by Daniel Srebnick/K2IE).
+ * Fixed bugs and internal improvements.
+
+## Version 1.2.31 Release 11-24-2024:
+
+ * Added TRS-80 Model III/4/4P NMI bug fix by Joshua Arnold.
+ * Added Model III/4/4P memory mapped printer port to be read-only.
+ * Added filter for supported file types in GUI file browser.
+ * Added window border in fullscreen mode.
+ * Added more shortcuts for command line options.
+ * Fixed command line options for memory expansion cards.
+ * Fixed TCS EG-64 Memory-Banking Adaptor.
+ * Fixed TCS Genie IIs/SpeedMaster RAM 192 B memory card.
+ * Fixed current date in LS-DOS for TRS-80 Model 4/4P.
+ * Fixed Hard Disk Activity LED for SDL2.
+ * Fixed Mouse cursor for selection in scaled SDL2 window.
+ * Fixed some bugs and other improvements.
+
+## Version 1.2.30 Release 08-18-2024:
+
+ * Added LNW80 Model II banking and 80x24 text mode support.
+ * Added 1024 KB memory support for Alpha Technology SuperMem.
+ * Added Alpha Technology SuperMem for TRS-80 Model 4/4P.
+ * Added Real Time Clock/Calendar Card (RTCC) for TRS-80 Model I.
+ * Added TRS-80 Model I printer address aliases.
+ * Added maskable interrupt in IM0 and IM2.
+ * Added turbo mode deactivation while any keys are pressed.
+ * Fixed scaling of block graphic characters for Model 4/4P.
+ * Fixed Z80 HALT action to run debugger.
+ * Fixed bugs and internal improvements.
+
+## Version 1.2.29 Release 04-07-2024:
+
+ * Added 1024 KB memory support for TCS Genie IIIs.
+ * Added 512 KB memory support for TRS-80 Model I Selector.
+ * Added 2nd printer MMIO for TRS-80 Model III/4/4P.
+ * Added more shortcuts for command line options.
+ * Added SDL2 aspect ratio option in GUI.
+ * Added debugger command to change Z80 HALT action.
+ * Fixed TRS-80 Model 4 MMIO in map 0.
+ * Fixed redraw of HRG1B screen.
+ * Fixed IMPORT.COM utility for CP/M 3.0.
+ * Fixed debugger alternate register set assignment by Nick Andrew.
+ * Fixed some bugs and other improvements.
+
 ## Version 1.2.28 Release 08-19-2023:
 
  * Added XTRS feature to fake year for TRS-80 time-of-day clock.
@@ -7,7 +83,7 @@
  * Added option to pause the emulator at startup.
  * Fixed 6845 CRTC cursor redraw issues.
  * Fixed bugs in mouse selection.
- * Fixed AlphaTech SuperMem 32K bank switch.
+ * Fixed AlphaTech SuperMem bank switching.
  * Fixed loading of state file for TRS-80 clones.
  * Fixed more bugs and internal improvements.
 
@@ -78,7 +154,7 @@
 
 ## Version 1.2.19 Release 06-06-2021:
 
-  * Added support for EACA EG 3200 (Genie III).
+  * Added support for EACA EG 3200 Genie III.
 
 ## Version 1.2.18 Release 05-09-2021:
 
@@ -90,7 +166,7 @@
 
 ## Version 1.2.17 Release 04-04-2021:
 
-  * Added support for Prologica CP-300/500 16kB ROM.
+  * Added support for Prologica CP-300/500 16 KB ROM.
   * Added support for Seatronics Super Speed-Up Board.
   * Added SuperMem RAM and Prologica ROM to state file.
 

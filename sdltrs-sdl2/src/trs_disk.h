@@ -42,13 +42,13 @@ extern void  trs_disk_command_write(Uint8 cmd);
 extern Uint8 trs_disk_interrupt_read(void); /* M3 only */
 extern void  trs_disk_interrupt_write(Uint8 mask); /* M3 only */
 
-#ifdef __linux
+#ifdef __linux__
 extern void trs_disk_setstep(int unit, int value);
 extern int  trs_disk_getstep(int unit);
 #endif
 extern void  trs_disk_setsize(int unit, int value);
 extern int   trs_disk_getsize(int unit);
-extern char *trs_disk_getfilename(int unit);
+extern const char *trs_disk_getfilename(int unit);
 extern int   trs_disk_getwriteprotect(int unit);
 extern int   trs_disk_getdisktype(int unit);
 
@@ -182,6 +182,9 @@ extern int trs_disk_truedam;
 /* These "commands" are peculiar to the Radio Shack Doubler.  They
    are written to the sector register, not the command register!
  */
+#define TRSDISK_RCMDBITS 0xe0
+#define TRSDISK_RSIDE0   0x40
+#define TRSDISK_RSIDE1   0x60
 #define TRSDISK_R1791    0x80
 #define TRSDISK_R1771    0xa0
 #define TRSDISK_NOPRECMP 0xc0

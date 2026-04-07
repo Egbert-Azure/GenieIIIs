@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-PACKAGE := sdl2trs
+PACKAGE := sdltrs
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
@@ -10,7 +10,7 @@ build-arch: build-stamp
 build-stamp:
 	dh_testdir
 	./autogen.sh
-	./configure --prefix=/usr --enable-readline --enable-zbx
+	./configure --prefix=/usr --enable-readline --enable-sdl1 --enable-zbx
 	touch build-stamp
 
 clean:

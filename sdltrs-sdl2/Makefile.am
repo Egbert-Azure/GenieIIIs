@@ -2,10 +2,10 @@ AUTOMAKE_OPTIONS=foreign
 
 AM_CFLAGS=	-Wall
 
-bin_PROGRAMS=	sdl2trs
-dist_man_MANS=	src/sdl2trs.1
+bin_PROGRAMS=	sdltrs
+dist_man_MANS=	src/sdltrs.1
 
-sdl2trs_SOURCES=src/debug.c \
+sdltrs_SOURCES=	src/debug.c \
 		src/dis.c \
 		src/error.c \
 		src/main.c \
@@ -32,19 +32,19 @@ sdl2trs_SOURCES=src/debug.c \
 		src/PasteManager.c
 
 appicondir=	$(datadir)/icons/hicolor/scalable/apps
-appicon_DATA=	icons/sdl2trs.svg
+appicon_DATA=	icons/sdltrs.svg
 
 diskimagedir=	$(datadir)/@PACKAGE@
-diskimage_DATA=	diskimages/*.dsk
+diskimage_DATA= diskimages/*.dsk
 
 desktopdir=	$(datadir)/applications
-desktop_DATA=	sdl2trs.desktop
+desktop_DATA=	sdltrs.desktop
 
 docdir=		$(datadir)/doc/@PACKAGE@
 nobase_doc_DATA=html/*.html html/images/*.png
 
 icondir=	$(datadir)/icons/hicolor/48x48/apps
-icon_DATA=	icons/sdl2trs.png
+icon_DATA=	icons/sdltrs.png
 
 pixmapdir=	$(datadir)/pixmaps
-pixmap_DATA=	icons/sdl2trs.xpm
+pixmap_DATA=	icons/sdltrs.xpm

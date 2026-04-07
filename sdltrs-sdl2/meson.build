@@ -1,11 +1,12 @@
-project('sdl2trs', 'c',
-	version: '1.2.28',
+project('sdltrs', 'c',
+	version: '1.2.34',
 	license: 'BSD',
 	default_options: [ 'buildtype=debugoptimized', 'c_std=gnu89', 'warning_level=2' ],
 	meson_version: '>= 0.36.0'
 )
 
 add_project_arguments('-Wno-unused-parameter', '-Wno-unused-result', language: 'c')
+add_project_arguments('-DROM_PATH=' + get_option('ROM_PATH'), language: 'c')
 
 sources = files([
 	'src/debug.c',
@@ -38,12 +39,14 @@ sources = files([
 compiler = meson.get_compiler('c')
 endian	 = host_machine.endian()
 readline = declare_dependency()
-sdl	 = dependency('sdl2', required : true)
+x11	 = declare_dependency()
 
 message('host machine endian: ' + endian)
 if endian == 'big'
 	add_project_arguments('-Dbig_endian', language : 'c')
 endif
+
+message('ROM path set to: ' + get_option('ROM_PATH'))
 
 if get_option('FASTMOVE')
 	add_project_arguments('-DFAST_MOVE', language : 'c')
@@ -53,6 +56,27 @@ endif
 if get_option('OLDSCAN')
 	add_project_arguments('-DOLD_SCANLINES', language : 'c')
 	message('Display Scanlines using old method')
+endif
+
+if get_option('NOX')
+	sdl = dependency('sdl', required : true)
+	add_project_arguments('-DNOX', language : 'c')
+	message('Build SDL 1.2 version without X')
+else
+	if get_option('SDL1')
+		sdl = dependency('sdl', required : true)
+		x11 = dependency('x11', required : true)
+		message('Use SDL version 1.2 instead of SDL2')
+	else
+		sdl = dependency('sdl2', required : true)
+		if sdl.found()
+			add_project_arguments('-DSDL2', language : 'c')
+		else
+			sdl = dependency('sdl', required : true)
+			x11 = dependency('x11', required : true)
+			message('SDL2 not found, falling back to SDL1')
+		endif
+	endif
 endif
 
 if get_option('ZBX')
@@ -67,4 +91,4 @@ if get_option('ZBX')
 	endif
 endif
 
-executable('sdl2trs', sources, dependencies : [ readline, sdl ])
+executable('sdltrs', sources, dependencies : [ readline, sdl, x11 ])

@@ -1,4 +1,4 @@
-; IMPORT.MAC
+; IMPORT.Z80
 ; ~~~~~~~~~~
 ;
 ; Contents:
@@ -11,9 +11,15 @@
 ;	IMPORT [-F][-H][-L][-T][-V] hostfilename [cpmfilename]
 ;
 ; Where:
-;	-n converts host lf to CP/M cr lf;
-;	hostfilename - name of the host file to import; and
-;	cpmfilename - name of the file in CP/M (must not exist);
+;	hostfilename is the name of the file to open on the host
+;	   (converted to uppercase by default), use -L to convert
+;	   to lowercase and [ to toggle case of next character.
+;	cpmfilename is the name of the imported file for CP/M.
+;	-F forces overwrite of existing file in CP/M.
+;	-H switches emulator to high speed and restores speed when done.
+;	-L converts hostfilename to lowercase.
+;	-T import text file (LF becomes CR LF, add SUB character at EOF).
+;	-V (verbose) display "r" for block read, "w" for block written.'
 ;
 ; Notes:
 ;	When started with no arguments, import will prompt for all args.
@@ -53,8 +59,19 @@ MACLIB LIBXTRS.MLB
 ; Messages
 ;##############################################################################
 
-m_usage:	defb	cr,lf,'Usage:',tab
-		defb	'IMPORT [-F][-H][-L][-T][-V] hostfilename [cpmfilename]'
+m_usage:	defb	cr,lf,'Import file from host operating system to CP/M.',cr,lf
+		defb	cr,lf,'Usage:'
+		defb	tab,'IMPORT [-F][-H][-L][-T][-V] hostfilename [cpmfilename]',cr,lf
+		defb	cr,lf,'Where:'
+		defb	tab,'hostfilename is the name of the file to open on the host',cr,lf
+		defb	tab,spc,spc,spc,'(converted to uppercase by default), use -L to convert',cr,lf
+		defb	tab,spc,spc,spc,'to lowercase and [ to toggle case of next character.',cr,lf
+		defb	tab,'cpmfilename is the name of the imported file for CP/M.',cr,lf
+		defb	tab,'-F forces overwrite of existing file in CP/M.',cr,lf
+		defb	tab,'-H switches emulator to high speed and restores speed when done.',cr,lf
+		defb	tab,'-L converts hostfilename to lowercase.',cr,lf
+		defb	tab,'-T import text file (LF becomes CR LF, add SUB character at EOF).',cr,lf
+		defb	tab,'-V (verbose) display "r" for block read, "w" for block written.'
 m_crlf:		defb	cr,lf,'$'
 
 m_boption::	defb	'Invalid option "'
@@ -110,7 +127,7 @@ main::
 		call options
 
 	; host filename
-		jp z,no_hfname		; end of paramters
+		jp z,no_hfname		; end of parameters
 		ld de,hostfname		; buffer for host filename
 		call hfnconvert		; save hfname
 		call skipspaces
@@ -177,7 +194,7 @@ opt_action:
 		bdos b_couts,m_boption
 		jp usage
 
-opt_f:	; "-F" overwrite exisiting file
+opt_f:	; "-F" overwrite existing file
 		ld a,1
 		ld (f_overwrite),a	; set overwrite flag
 		ret
@@ -395,9 +412,11 @@ copen::
 
 		ld a,(f_overwrite)
 		or a
-		jr nz,copen1		; overwrite
+		jr z,copen0		; open file
+		bdos b_fdelete,c_fcb1	; delete file
+		jr copen1
 
-		bdos b_fopen,c_fcb1	; open existing file (a=0ffh is error)
+copen0:		bdos b_fopen,c_fcb1	; open existing file (a=0ffh is error)
 		inc a
 		jr z,copen1		; file doesn't exist (good)
 		bdos b_fclose,c_fcb1	; close the existing file
@@ -456,14 +475,17 @@ cclose:
 ;==============================================================================
 ; close the cp/m filename in fcb1
 ;	entry:	(c_fcb1) contains cp/m fcb
-;	exit:	z indicates a sucessful close
+;	exit:	z indicates a successful close
 ;		all registers trashed
 ;==============================================================================
 		bdos b_fclose,c_fcb1
-		ret z
+		inc a
+		jr z,cerror
+		xor a
+		ret
 
 	; display error message
-		bdos b_couts,m_cclose
+cerror:		bdos b_couts,m_cclose
 		xor a
 		dec a
 		ret			; ret nz
@@ -496,7 +518,7 @@ uread::
 ; read a block from the host file
 ;	entry:	(hl) start of buffer (c_iobufsize length)
 ;		(hostfd) contains host file descriptor
-;	exit:	z indicates sucessful read
+;	exit:	z indicates successful read
 ;		b contains number of bytes read
 ;		af trashed (c,de,hl saved)
 ;==============================================================================
@@ -534,7 +556,7 @@ uclose::
 ;==============================================================================
 ; close the host file
 ;	entry:	(hostfd) contains host file descriptor
-;	exit:	z indicates a sucessful close
+;	exit:	z indicates a successful close
 ;		all registers trashed
 ;==============================================================================
 		ld de,(hostfd)		; get host fd

@@ -29,10 +29,10 @@
 #ifndef _TRS_UART_H
 #define _TRS_UART_H
 
-extern void trs_uart_init(int reset_button);
+extern void trs_uart_init(void);
 extern int  trs_uart_check_avail(void);
 extern int  trs_uart_modem_in(void);
-extern void trs_uart_reset_out(int value);
+extern void trs_uart_reset_out(void);
 extern int  trs_uart_switches_in(void);
 extern void trs_uart_baud_out(int value);
 extern int  trs_uart_status_in(void);

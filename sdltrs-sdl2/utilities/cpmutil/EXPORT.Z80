@@ -1,4 +1,4 @@
-; EXPORT.MAC
+; EXPORT.Z80
 ; ~~~~~~~~~~
 ;
 ; Contents:
@@ -656,7 +656,7 @@ cread::
 		ld e,'r'
 		call verbose
 
-	; preform read
+	; perform read
 		bdos b_frseq,c_fcb1	; a=0 is ok, a=1 is eof
 
 	; restore regs
@@ -712,12 +712,16 @@ cclose::
 ;==============================================================================
 ; close the cp/m filename in fcb1
 ;	entry:	(c_fcb1) contains cp/m fcb
-;	exit:	z indicates a sucessful close
+;	exit:	z indicates a successful close
 ;		all registers trashed
 ;==============================================================================
 		bdos b_fclose,c_fcb1
-		ret z
+		inc a
+		jr z,cerror
+		xor a
+		ret
 
+cerror:
 	; display error message
 		bdos b_couts,m_cclose
 		xor a
@@ -753,7 +757,7 @@ uwrite::
 ;	entry:	hl -> start of buffer
 ;		b  =  contains the number of bytes to write
 ;		(hostfd) contains host file descriptor
-;	exit:	f  =  z indicates sucessful write
+;	exit:	f  =  z indicates successful write
 ;		af trashed (bc,de,hl saved)
 ;==============================================================================
 
@@ -831,7 +835,7 @@ uclose::
 ;==============================================================================
 ; close the host file
 ;	entry:	(hostfd) contains host file descriptor
-;	exit:	z indicates a sucessful close
+;	exit:	z indicates a successful close
 ;		all registers trashed
 ;==============================================================================
 		ld de,(hostfd)		; get host fd

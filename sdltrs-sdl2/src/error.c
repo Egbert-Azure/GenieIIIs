@@ -50,7 +50,7 @@ void debug(const char *fmt, ...)
 {
   va_list args;
 
-  fprintf(stderr, "%s debug: ", program_name);
+  fprintf(stderr, "%s [debug] ", program_name);
   va_start(args, fmt);
   vfprintf(stderr, fmt, args);
   va_end(args);
@@ -61,7 +61,7 @@ void error(const char *fmt, ...)
 {
   va_list args;
 
-  fprintf(stderr, "%s ERROR: ", program_name);
+  fprintf(stderr, "%s [ERROR] ", program_name);
   va_start(args, fmt);
   vfprintf(stderr, fmt, args);
   va_end(args);
@@ -73,7 +73,7 @@ void fatal(const char *fmt, ...)
 {
   va_list args;
 
-  fprintf(stderr, "%s FATAL ERROR: ", program_name);
+  fprintf(stderr, "%s [FATAL] ", program_name);
   va_start(args, fmt);
   vfprintf(stderr, fmt, args);
   va_end(args);
@@ -86,7 +86,7 @@ void file_error(const char *fmt, ...)
 {
   va_list args;
 
-  fprintf(stderr, "%s ERROR: ", program_name);
+  fprintf(stderr, "%s [ERROR] ", program_name);
   va_start(args, fmt);
   vfprintf(stderr, fmt, args);
   va_end(args);

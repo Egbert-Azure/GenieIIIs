@@ -1,10 +1,17 @@
-**SDL2TRS** needs the development files of `SDL2` and optional
-`GNU readline` for the integrated Z80 debugger zbx.
+## Linux/BSD/Unix prerequesits
+
+**SDLTRS** needs the development files of `SDL2`/`SDL 1.2` and
+optional `GNU readline` for the integrated Z80 debugger zbx.
 
 On *Debian* and *Ubuntu* based systems these can be installed with:
 ```sh
 sudo apt install libsdl2-dev libreadline-dev
 ```
+or
+```sh
+sudo apt install libsdl1.2-dev libreadline-dev
+```
+for the SDL 1.2 version.
 
 ## Windows prerequesits
 
@@ -63,6 +70,14 @@ to enable faster but not accurate Z80 block moves,
 ./configure --enable-oldscan
 ```
 to enable old method to display Scanlines,
+```sh
+./configure --enable-sdl1
+```
+to build the SDL 1.2 version,
+```sh
+./configure --enable-sdl1 --without-x
+```
+to build with SDL 1.2 only (no *X11* and no *PasteManager*),
 ```
 ./configure --enable-zbx
 ```
@@ -99,23 +114,34 @@ make sdl2
 to build the SDL2 version,
 
 ```sh
+make sdl
+```
+to build the SDL 1.2 version,
+
+```sh
+make nox
+```
+to build with SDL 1.2 only (no X11: **SDLTRS** will be build without
+the *PasteManager* but works on systems with no *X11*-server like
+*Haiku* or *BeOS*),
+
+```sh
 make bsd
 ```
-(or just `make` on *FreeBSD*/*OpenBSD*) to build on BSD with SDL2.
+(or just `make` on *FreeBSD*/*OpenBSD*) to build on BSD with SDL 1.2.
 
-For *Win32/64* please copy the header files of the SDL2 library to
-`\MinGW\include\SDL2` (or `\MinGW64\include\SDL2` for [MinGW-w64]),
-and libraries to the `\MinGW\lib\` (or `\MinGW64\lib`) directory,
-or edit the macros `SDL_INC` and `SDL_LIB` in `Makefile` to point
-to the SDL2 installation location:
+For *Win32/64* please copy the header files of the SDL library to
+`\MinGW\include\SDL2` (or `\MinGW\include\SDL` for SDL 1.2), and
+libraries to the `\MinGW\lib\` directory or edit the macros `SDL_INC`
+and `SDL_LIB` in `Makefile` to point to the SDL or SDL2 location:
 ```sh
-mingw32-make win32
+mingw32-make wsdl2
 ```
 to build the SDL2 version, or
 ```sh
-mingw32-make win64
+mingw32-make win32
 ```
-to build the 64-bit SDL2 version.
+for the SDL 1.2 version.
 
 ---
 
@@ -126,7 +152,7 @@ Download and install [Homebrew] for macOS first.
 ```sh
 brew install autoconf automake libtool llvm readline sdl2
 ```
-should download and install the required packages to build **SDL2TRS**.
+should download and install the required packages to build **SDLTRS**.
 In the main directory of the source, execute the following commands:
 ```sh
 ./autogen.sh
@@ -135,6 +161,21 @@ make
 ```
 This will build the executable binary.
 
+---
+
+To build on OS/2:
+-----------------
+
+Use the [Arca Noae] Package Manager to install the following packages:
+```sh
+binutils gcc gcc-wlink gcc-wrc git kbuild-make libc-devel readline-devel SDL-devel
+```
+Clone the repository via `git`, change to the `src` directory and execute:
+```sh
+make os2
+```
+
+[Arca Noae]: https://www.arcanoae.com/resources/downloadables/arca-noae-package-manager/
 [Homebrew]: https://brew.sh
 [MinGW]: https://osdn.net/projects/mingw/
 [MinGW-w64]: http://mingw-w64.org

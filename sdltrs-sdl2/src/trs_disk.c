@@ -50,7 +50,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#if __linux
+#if __linux__
 #include <fcntl.h>
 #include <linux/fd.h>
 #include <linux/fdreg.h>
@@ -93,6 +93,7 @@ typedef struct {
   int curdrive;
   int curside;
   int density;			/* sden=0, dden=1 */
+  Uint8 inches;			/* 5"=0, 8"=4 */
   Uint8 controller;		/* TRSDISK_P1771 or TRSDISK_P1791 */
   int last_readadr;             /* id index found by last readadr */
   tstate_t motor_timeout;       /* 0 if stopped, else time when it stops */
@@ -302,15 +303,15 @@ static const Uint8 jv1_interleave[10] = {0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
 
 /* Forward */
 static void real_verify(void);
-static void real_restore(int curdrive);
 static void real_seek(void);
 static void real_read(void);
 static void real_write(void);
 static void real_readadr(void);
 static void real_readtrk(void);
 static void real_writetrk(void);
-#ifdef __linux
-static int  real_rate(DiskState *d);
+#ifdef __linux__
+static int  real_rate(const DiskState *d);
+static void real_restore(int curdrive);
 static void real_error(DiskState *d, unsigned int flags, const char *msg);
 static void real_ok(DiskState *d);
 #endif
@@ -324,16 +325,21 @@ trs_disk_debug(void)
 {
   int i;
 
-  puts("Floppy disk controller state:");
-  printf("  status 0x%02x, track %d (0x%02x), sector %d (0x%02x), "
-	 "data 0x%02x\n", state.status, state.track, state.track,
+  printf("Floppy disk controller state:");
+  if (trs_disk_controller == 0) {
+    puts(" DISABLED");
+    return;
+  }
+
+  printf("\n  status 0x%02X, track %d (0x%02X), sector %d (0x%02X), "
+	 "data 0x%02X\n", state.status, state.track, state.track,
 	 state.sector, state.sector, state.data);
-  printf("  currcommand 0x%02x, bytecount left %d, last step direction %d\n",
+  printf("  currcommand 0x%02X, bytecount left %d, last step direction %d\n",
 	 state.currcommand, state.bytecount, state.lastdirection);
-  printf("  curdrive %d, curside %d, density %d, controller %s\n",
-	 state.curdrive, state.curside, state.density,
+  printf("  curdrive %d, curside %d, density %d, inches %d, controller %s\n",
+	 state.curdrive, state.curside, state.density, state.inches ? 8 : 5,
 	 state.controller == TRSDISK_P1771 ? "WD1771" : "WD1791/93");
-  printf("  crc state 0x%04x, last_readadr %d, motor timeout %ld\n",
+  printf("  crc state 0x%04X, last_readadr %d, motor timeout %ld\n",
 	 state.crc, state.last_readadr,
 	 (long) (state.motor_timeout - z80_state.t_count));
   printf("  last (non-DMK) format gaps %d %d %d %d %d\n",
@@ -342,36 +348,34 @@ trs_disk_debug(void)
   printf("  debug flags: %#x\n", trs_disk_debug_flags);
 
   for (i = 0; i < NDRIVES; i++) {
-    DiskState *d = &disk[i];
+    const DiskState *d = &disk[i];
 
-    printf("Drive %d state: "
-	   "writeprot %d, phytrack %d (0x%02x), inches %d, step %d, type ",
-	   i, d->writeprot, d->phytrack, d->phytrack, d->inches, d->real_step);
-    if (d->file == NULL) {
-      puts("EMPTY");
-    } else {
-      switch (d->emutype) {
+   if (d->file) {
+     printf("\ndisk%d: '%s'\n", i, d->filename);
+     printf("\twriteprot %d, phytrack %d (0x%02X), inches %d, step %d, type ",
+	   d->writeprot, d->phytrack, d->phytrack, d->inches, d->real_step);
+     switch (d->emutype) {
       case JV1:
 	puts("JV1");
 	break;
       case JV3:
 	puts("JV3");
-	printf("  last used id %d, id blocks %d\n",
+	printf("\tlast used id %d, id blocks %d\n",
 	       d->u.jv3.last_used_id, d->u.jv3.nblocks);
 	break;
       case DMK:
 	puts("DMK");
-	printf("  ntracks %d (0x%02x), tracklen 0x%04x, nsides %d, sden %d, "
+	printf("\tntracks %d (0x%02X), tracklen 0x%04X, nsides %d, sden %d, "
 	       "ignden %d\n", d->u.dmk.ntracks, d->u.dmk.ntracks,
 	       d->u.dmk.tracklen, d->u.dmk.nsides, d->u.dmk.sden,
 	       d->u.dmk.ignden);
-	printf("  buffered track %d, side %d, curbyte %d, nextidam %d\n",
+	printf("\tbuffered track %d, side %d, curbyte %d, nextidam %d\n",
 	       d->u.dmk.curtrack, d->u.dmk.curside, d->u.dmk.curbyte,
 	       d->u.dmk.nextidam);
 	break;
       case REAL:
 	puts("REAL");
-	printf("  rpm %d, empty %d, last size code %d, last fmt fill 0x%02x\n",
+	printf("\trpm %d, empty %d, last size code %d, last fmt fill 0x%02X\n",
 	       d->u.real.rps * 60, d->u.real.empty, d->u.real.size_code,
 	       d->u.real.fmt_fill);
 	break;
@@ -391,7 +395,7 @@ trs_disk_setsize(int unit, int value)
   disk[unit].inches = (value == 8) ? 8 : 5;
 }
 
-#ifdef __linux
+#ifdef __linux__
 void
 trs_disk_setstep(int unit, int value)
 {
@@ -407,7 +411,7 @@ trs_disk_getsize(int unit)
   return disk[unit].inches;
 }
 
-char*
+const char*
 trs_disk_getfilename(int unit)
 {
   return disk[unit].filename;
@@ -425,7 +429,7 @@ trs_disk_getwriteprotect(int unit)
   return disk[unit].writeprot;
 }
 
-#ifdef __linux
+#ifdef __linux__
 int
 trs_disk_getstep(int unit)
 {
@@ -437,8 +441,6 @@ trs_disk_getstep(int unit)
 void
 trs_disk_init(int poweron)
 {
-  int i;
-
   state.status = TRSDISK_NOTRDY|TRSDISK_TRKZERO;
   state.track = 0;
   state.sector = 0;
@@ -451,11 +453,14 @@ trs_disk_init(int poweron)
   state.format_sec = 0;
   state.curdrive = state.curside = 0;
   state.density = 0;
+  state.inches = 0;
   state.controller = (trs_model == 1) ? TRSDISK_P1771 : TRSDISK_P1791;
   state.last_readadr = -1;
   state.motor_timeout = 0;
 
   if (poweron) {
+    int i;
+
     for (i = 0; i < NDRIVES; i++) {
       disk[i].phytrack = 0;
       if (disk[i].file == NULL) {
@@ -502,7 +507,7 @@ void
 trs_disk_firstdrq(int bits)
 {
   state.status |= TRSDISK_DRQ | bits;
-  trs_disk_drq_interrupt(1);
+  trs_disk_drq_interrupt();
   trs_schedule_event(trs_disk_lostdata, state.currcommand,
 		     500000 * z80_state.clockMHz);
 }
@@ -513,9 +518,9 @@ trs_disk_unimpl(Uint8 cmd, const char *more)
   state.status = TRSDISK_NOTRDY|TRSDISK_WRITEFLT|TRSDISK_NOTFOUND;
   state.bytecount = state.format_bytecount = 0;
   state.format = FMT_DONE;
-  trs_disk_drq_interrupt(0);
+  trs_disk_drq_interrupt();
   trs_schedule_event(trs_disk_done, 0, 0);
-  error("trs_disk_command(0x%02x) not implemented - %s", cmd, more);
+  error("trs_disk_command(0x%02X) not implemented - %s", cmd, more);
 }
 
 /* Sort first by track, second by side, third by position in emulated-disk
@@ -523,7 +528,7 @@ trs_disk_unimpl(Uint8 cmd, const char *more)
 static int
 jv3_id_compare(const void* p1, const void* p2)
 {
-  DiskState *d = &disk[state.curdrive];
+  const DiskState *d = &disk[state.curdrive];
   int const i1 = *(int*)p1;
   int const i2 = *(int*)p2;
   int r = d->u.jv3.id[i1].track - d->u.jv3.id[i2].track;
@@ -556,7 +561,8 @@ jv3_sort_ids(int drive)
   }
   track = side = -1;
   for (i = 0; i < JV3_SECSMAX; i++) {
-    SectorId *sid = &d->u.jv3.id[d->u.jv3.sorted_id[i]];
+    const SectorId *sid = &d->u.jv3.id[d->u.jv3.sorted_id[i]];
+
     if (sid->track != track ||
 	(sid->flags & JV3_SIDE ? 1 : 0) != side) {
       track = sid->track;
@@ -571,7 +577,7 @@ jv3_sort_ids(int drive)
 
 /* JV3 only */
 static int
-id_index_to_size_code(DiskState *d, int id_index)
+id_index_to_size_code(const DiskState *d, int id_index)
 {
   return (d->u.jv3.id[id_index].flags & JV3_SIZE) ^
     ((d->u.jv3.id[id_index].track == JV3_FREE) ? 2 : 1);
@@ -586,7 +592,7 @@ size_code_to_size(int code)
 
 /* JV3 only */
 static int
-id_index_to_size(DiskState *d, int id_index)
+id_index_to_size(const DiskState *d, int id_index)
 {
   return 128 << id_index_to_size_code(d, id_index);
 }
@@ -594,7 +600,7 @@ id_index_to_size(DiskState *d, int id_index)
 /* Return the offset of the data block for the id_index'th sector
    in an emulated-disk file.  Not used for DMK. */
 static off_t
-offset(DiskState *d, int id_index)
+offset(const DiskState *d, int id_index)
 {
   if (d->emutype == JV1) {
     return id_index * JV1_SECSIZE;
@@ -618,7 +624,7 @@ idoffset(DiskState *d, int id_index)
     if (id_index < JV3_SECSPERBLK) {
       return JV3_IDSTART + id_index * sizeof(SectorId);
     } else {
-      int idstart2 = d->u.jv3.offset[JV3_SECSPERBLK-1] +
+      int const idstart2 = d->u.jv3.offset[JV3_SECSPERBLK-1] +
 	id_index_to_size(d, JV3_SECSPERBLK-1);
 
       if (d->u.jv3.nblocks == 1) {
@@ -796,16 +802,15 @@ trs_disk_insert(int drive, const char *diskname)
         drive, diskname);
     return;
   }
-  #if __linux
+  #if __linux__
   if (S_ISBLK(st.st_mode)) {
     /* Real floppy drive */
-    int fd;
     int reset_now = 0;
     struct floppy_drive_params fdp;
+    int fd = open(diskname, O_ACCMODE|O_NDELAY);
 
-    fd = open(diskname, O_ACCMODE|O_NDELAY);
     if (fd == -1) {
-      file_error("open real '%s'", diskname);
+      file_error("open real: '%s'", diskname);
       d->file = NULL;
       d->filename[0] = 0;
       d->emutype = JV3;
@@ -813,7 +818,7 @@ trs_disk_insert(int drive, const char *diskname)
     }
     d->file = fdopen(fd, "r+");
     if (d->file == NULL) {
-      file_error("open real '%s'", diskname);
+      file_error("open real: '%s'", diskname);
       d->filename[0] = 0;
       d->emutype = JV3;
       return;
@@ -852,7 +857,11 @@ trs_disk_insert(int drive, const char *diskname)
 
     /* Read first block of ids */
     fseek(d->file, JV3_IDSTART, 0);
-    n = fread((void*)&d->u.jv3.id[0], 3, JV3_SECSPERBLK, d->file);
+    if (fread((void*)&d->u.jv3.id[0], 3, JV3_SECSPERBLK, d->file)
+        != JV3_SECSPERBLK) {
+      error("Failed to read first JV3 IDs: disk%d: '%s'", drive, diskname);
+      return;
+    }
 
     /* Scan to find their offsets */
     ofst = JV3_SECSTART;
@@ -902,7 +911,7 @@ trs_disk_insert(int drive, const char *diskname)
 
 #ifdef ZBX
     if (trs_disk_debug_flags & DISKDEBUG_DMK) {
-      debug("DMK drv=%d wp=%d #tk=%d tklen=0x%x nsides=%d sden=%d ignden=%d\n",
+      debug("DMK drv=%d wp=%d #tk=%d tklen=0x%X nsides=%d sden=%d ignden=%d\n",
 	    drive, d->writeprot, d->u.dmk.ntracks, d->u.dmk.tracklen,
 	    d->u.dmk.nsides, d->u.dmk.sden, d->u.dmk.ignden);
     }
@@ -1010,7 +1019,6 @@ search(int sector, int side)
     return JV1_SECPERTRK * d->phytrack + (sector < 0 ? 0 : sector);
   } else if (d->emutype == JV3) {
     int i;
-    SectorId *sid;
 
     if (d->phytrack < 0 || d->phytrack >= MAXTRACKS ||
 	state.curside >= JV3_SIDES ||
@@ -1023,7 +1031,8 @@ search(int sector, int side)
     i = d->u.jv3.track_start[d->phytrack][state.curside];
     if (i != -1) {
       for (;;) {
-	sid = &d->u.jv3.id[d->u.jv3.sorted_id[i]];
+	const SectorId *sid = &d->u.jv3.id[d->u.jv3.sorted_id[i]];
+
 	if (sid->track != d->phytrack ||
 	    (sid->flags & JV3_SIDE ? 1 : 0) != state.curside) break;
 	if ((sector == -1 || sid->sector == sector) &&
@@ -1047,7 +1056,7 @@ search(int sector, int side)
 
     /* loop through IDAMs in track */
     for (i = 0; i < DMK_TKHDR_SIZE; i += 2) {
-      Uint8 *p;
+      Uint8 const *p;
 
       /* fetch index of next IDAM */
       int idamp = d->u.dmk.buf[i] + (d->u.dmk.buf[i + 1] << 8);
@@ -1128,7 +1137,7 @@ search(int sector, int side)
 static int
 search_adr(void)
 {
-  DiskState *d = &disk[state.curdrive];
+  const DiskState *d = &disk[state.curdrive];
 
   if (d->file == NULL) {
     return -1;
@@ -1154,7 +1163,7 @@ static void
 verify(void)
 {
   /* Verify that head is on the expected track */
-  DiskState *d = &disk[state.curdrive];
+  const DiskState *d = &disk[state.curdrive];
 
   if (d->emutype == REAL) {
     real_verify();
@@ -1176,7 +1185,7 @@ verify(void)
 static float
 angle(void)
 {
-  DiskState *d = &disk[state.curdrive];
+  const DiskState *d = &disk[state.curdrive];
   /* Set revus to number of microseconds per revolution */
   int const revus = d->inches == 5 ? 200000 /* 300 RPM */ : 166666 /* 360 RPM */;
 #if TSTATEREV
@@ -1198,7 +1207,7 @@ angle(void)
 static void
 type1_status(void)
 {
-  DiskState *d = &disk[state.curdrive];
+  const DiskState *d = &disk[state.curdrive];
 
   switch (cmd_type(state.currcommand)) {
   case 1:
@@ -1242,7 +1251,7 @@ trs_disk_select_write(Uint8 data)
   static int old_data = -1;
 
   if ((trs_disk_debug_flags & DISKDEBUG_FDCREG) && data != old_data) {
-    debug("select_write(0x%02x) [PC=%04x]\n", data, Z80_PC);
+    debug("[PC=%04X] select_write(0x%02X)\n", Z80_PC, data);
     old_data = data;
   }
 #endif
@@ -1252,14 +1261,16 @@ trs_disk_select_write(Uint8 data)
     /* EG 3200 and TCS Genie IIs/IIIs/SpeedMaster uses bit 4 to select side */
     if (trs_clones.model & (EG3200 | GENIE3S | SPEEDMASTER)) {
       state.curside = (data & 0x10) != 0;
-    } else if (trs_clones.model & CT80) {
+    } else if (trs_clones.model & (CT80 | LNW80)) {
+      state.curside = (data & 0x08) != 0;
       /* Select Disk Density/Controller for Aster CT-80 */
-      state.curside = (data & 0x10) != 0;
       if (data & 0x80) {
         state.density = (data & 0x20) != 0;
-        state.controller = state.density ? TRSDISK_P1791 : TRSDISK_P1771;
-        return;
+        trs_disk_set_controller(state.density ? TRSDISK_P1791 : TRSDISK_P1771);
+        data &= 0x1F;
       }
+      /* Select drive :3 with bit 4 */
+      data = ((data & (1 << 4)) >> 1) | (data & 0x07);
     } else {
       /* Disk 3 and side select share a bit.  You can't have a drive :3
          on a real Model I if any drive is two-sided.  Here we are more
@@ -1320,6 +1331,9 @@ trs_disk_select_write(Uint8 data)
     break;
   }
 
+  /* Select drives 4-7 for 8" disks */
+  state.curdrive = (state.curdrive + state.inches) & 7;
+
   /* If a drive was selected... */
   if (!(state.status & TRSDISK_NOTRDY)) {
     DiskState *d = &disk[state.curdrive];
@@ -1339,7 +1353,7 @@ trs_disk_track_read(void)
 {
 #ifdef ZBX
   if (trs_disk_debug_flags & DISKDEBUG_FDCREG) {
-    debug("track_read() => 0x%02x [PC=%04x]\n", state.track, Z80_PC);
+    debug("[PC=%04X] track_read() => 0x%02X\n", Z80_PC, state.track);
   }
 #endif
   return state.track;
@@ -1350,7 +1364,7 @@ trs_disk_track_write(Uint8 data)
 {
 #ifdef ZBX
   if (trs_disk_debug_flags & DISKDEBUG_FDCREG) {
-    debug("track_write(0x%02x) [PC=%04x]\n", data, Z80_PC);
+    debug("[PC=%04X] track_write(0x%02X)\n", Z80_PC, data);
   }
 #endif
   state.track = data;
@@ -1361,7 +1375,7 @@ trs_disk_sector_read(void)
 {
 #ifdef ZBX
   if (trs_disk_debug_flags & DISKDEBUG_FDCREG) {
-    debug("sector_read() => 0x%02x [PC=%04x]\n", state.sector, Z80_PC);
+    debug("[PC=%04X] sector_read() => 0x%02X\n", Z80_PC, state.sector);
   }
 #endif
   return state.sector;
@@ -1398,13 +1412,21 @@ trs_disk_sector_write(Uint8 data)
 {
 #ifdef ZBX
   if (trs_disk_debug_flags & DISKDEBUG_FDCREG) {
-    debug("sector_write(0x%02x) [PC=%04x]\n", data, Z80_PC);
+    debug("[PC=%04X] sector_write(0x%02X)\n", Z80_PC, data);
   }
 #endif
   if (trs_model == 1) {
-    if (trs_disk_doubler & TRSDISK_TANDY) {
-      switch ((data) & ~0x1F) {
-        /* Emulate Radio Shack doubler */
+    if (trs_clones.model == 0 && trs_disk_doubler & TRSDISK_TANDY) {
+      /* Emulate Radio Shack doubler */
+      switch (data & TRSDISK_RCMDBITS) {
+      case TRSDISK_RSIDE0:
+      case TRSDISK_RSIDE1:
+        /* Nothing for the emulator to do.  In hardware, these commands
+           control a side select flip flop that exists on the board,
+           but its output is not connected. The service manual says it
+           is available for future enhancements but would require
+           changes to the expansion interface. */
+      break;
       case TRSDISK_R1791:
         trs_disk_set_controller(TRSDISK_P1791);
         state.density = 1;
@@ -1415,19 +1437,26 @@ trs_disk_sector_write(Uint8 data)
         break;
       case TRSDISK_NOPRECMP:
       case TRSDISK_PRECMP:
-        /* Nothing for emulator to do */
+        /* Nothing for the emulator to do */
         break;
       default:
         break;
       }
     } else {
-      if ((trs_disk_doubler & TRSDISK_PERCOM) ||
-          (trs_clones.model & (EG3200 | GENIE3S | LNW80 | SPEEDMASTER))) {
-        if (data & (1 << 7) && (data & 0x1F) == 0) {
-          DiskState *d = &disk[state.curdrive];
-
-          d->inches = (data & (1 << 6)) ? 8 : 5;
+      /* Switch 5" / 8" disk size */
+      if (data & (1 << 7) && (data & 0x1F) == 0) {
+        if (trs_clones.model & (GENIE3S | SPEEDMASTER)) {
+          state.inches = (data & (1 << 6)) ? 4 : 0;
+          state.curdrive = 0;
           return;
+        } else {
+          if ((trs_disk_doubler == TRSDISK_PERCOM) ||
+            (trs_clones.model & (EG3200 | LNW80))) {
+            DiskState *d = &disk[state.curdrive];
+
+            d->inches = (data & (1 << 6)) ? 8 : 5;
+            return;
+          }
         }
       }
     }
@@ -1439,7 +1468,6 @@ Uint8
 trs_disk_data_read(void)
 {
   DiskState *d = &disk[state.curdrive];
-  SectorId *sid;
 
   if (trs_show_led)
     trs_disk_led(state.curdrive, 1);
@@ -1481,7 +1509,7 @@ trs_disk_data_read(void)
 	}
 	state.bytecount = 0;
 	state.status &= ~TRSDISK_DRQ;
-        trs_disk_drq_interrupt(0);
+        trs_disk_drq_interrupt();
 	if (trs_event_scheduled() == trs_disk_lostdata) {
 	  trs_cancel_event();
 	}
@@ -1523,7 +1551,7 @@ trs_disk_data_read(void)
 	  break;
 	}
       } else if (d->emutype == JV3) {
-	sid = &d->u.jv3.id[d->u.jv3.sorted_id[state.last_readadr]];
+	SectorId *sid = &d->u.jv3.id[d->u.jv3.sorted_id[state.last_readadr]];
 	switch (state.bytecount) {
 	case 6:
 	  state.data = sid->track;
@@ -1576,7 +1604,7 @@ trs_disk_data_read(void)
       }
       state.bytecount = 0;
       state.status &= ~TRSDISK_DRQ;
-      trs_disk_drq_interrupt(0);
+      trs_disk_drq_interrupt();
       if (trs_event_scheduled() == trs_disk_lostdata) {
 	trs_cancel_event();
       }
@@ -1595,7 +1623,7 @@ trs_disk_data_read(void)
     if (state.bytecount <= 0) {
       state.bytecount = 0;
       state.status &= ~TRSDISK_DRQ;
-      trs_disk_drq_interrupt(0);
+      trs_disk_drq_interrupt();
       if (trs_event_scheduled() == trs_disk_lostdata) {
 	trs_cancel_event();
       }
@@ -1608,7 +1636,7 @@ trs_disk_data_read(void)
   }
 #ifdef ZBX
   if (trs_disk_debug_flags & DISKDEBUG_FDCREG) {
-    debug("data_read() => 0x%02x [PC=%04x]\n", state.data, Z80_PC);
+    debug("[PC=%04X] data_read() => 0x%02X\n", Z80_PC, state.data);
   }
 #endif
   return state.data;
@@ -1625,7 +1653,7 @@ trs_disk_data_write(Uint8 data)
 
 #ifdef ZBX
   if (trs_disk_debug_flags & DISKDEBUG_FDCREG) {
-    debug("data_write(0x%02x) [PC=%04x]\n", data, Z80_PC);
+    debug("[PC=%04X] data_write(0x%02X)\n", Z80_PC, data);
   }
 #endif
   switch (state.currcommand & TRSDISK_CMDMASK) {
@@ -1687,7 +1715,7 @@ trs_disk_data_write(Uint8 data)
 	      i += 2;
 #ifdef ZBX
 	      if (trs_disk_debug_flags & DISKDEBUG_DMK) {
-		debug("DMK smashed phytk %d physec %d\n", d->phytrack, i / 2);
+		debug("DMK smashed: phytk %d, physec %d\n", d->phytrack, i / 2);
 	      }
 #endif
 	    } else {
@@ -1711,7 +1739,7 @@ trs_disk_data_write(Uint8 data)
 	}
 	state.bytecount = 0;
 	state.status &= ~TRSDISK_DRQ;
-        trs_disk_drq_interrupt(0);
+        trs_disk_drq_interrupt();
 	if (trs_event_scheduled() == trs_disk_lostdata) {
 	  trs_cancel_event();
 	}
@@ -1728,7 +1756,7 @@ trs_disk_data_write(Uint8 data)
 	if (state.format != FMT_DONE) {
 #ifdef ZBX
 	  if (trs_disk_debug_flags & DISKDEBUG_DMK) {
-	    debug("complete track format dens %d tk %d side %d\n",
+	    debug("complete track format: dens %d, tk %d, side %d\n",
 		  state.density, d->phytrack, state.curside);
 	  }
 #endif
@@ -1747,7 +1775,7 @@ trs_disk_data_write(Uint8 data)
 	  }
 	  c = fflush(d->file);
 	  if (c == EOF) state.status |= TRSDISK_WRITEFLT;
-	  trs_disk_drq_interrupt(0);
+	  trs_disk_drq_interrupt();
 	  if (trs_event_scheduled() == trs_disk_lostdata) {
 	    trs_cancel_event();
 	  }
@@ -1878,7 +1906,7 @@ trs_disk_data_write(Uint8 data)
       }
 #ifdef ZBX
       if (trs_disk_debug_flags & DISKDEBUG_GAPS) {
-	debug("trk %d side %d gap0 %d gap1 %d gap2 %d gap3 %d gap4 %d\n",
+	debug("trk %d, side %d, gap0 %d, gap1 %d, gap2 %d, gap3 %d, gap4 %d\n",
 	      d->phytrack, state.curside,
 	      state.format_gap[0], state.format_gap[1], state.format_gap[2],
 	      state.format_gap[3], state.format_gap[4]);
@@ -1892,7 +1920,7 @@ trs_disk_data_write(Uint8 data)
 	c = fflush(d->file);
 	if (c == EOF) state.status |= TRSDISK_WRITEFLT;
       }
-      trs_disk_drq_interrupt(0);
+      trs_disk_drq_interrupt();
       if (trs_event_scheduled() == trs_disk_lostdata) {
 	trs_cancel_event();
       }
@@ -2144,8 +2172,8 @@ trs_disk_data_write(Uint8 data)
 	  d->u.jv3.id[state.format_sec].flags |= JV3_NONIBM | JV3_ERROR;
 #ifdef ZBX
 	  if (trs_disk_debug_flags & DISKDEBUG_VTOS3) {
-	    debug("non-IBM sector: drv 0x%02x, sid %d,"
-		  " trk 0x%02x, sec 0x%02x\n",
+	    debug("non-IBM sector: drv 0x%02X, sid %d,"
+		  " trk 0x%02X, sec 0x%02X\n",
 		  state.curdrive, state.curside,
 		  d->u.jv3.id[state.format_sec].track,
 		  d->u.jv3.id[state.format_sec].sector);
@@ -2227,7 +2255,7 @@ trs_disk_status_read(void)
 #ifdef ZBX
   if ((trs_disk_debug_flags & DISKDEBUG_FDCREG) &&
       state.status != last_status) {
-    debug("status_read() => 0x%02x [PC=%04x]\n", state.status, Z80_PC);
+    debug("[PC=%04X] status_read() => 0x%02X\n", Z80_PC, state.status);
     last_status = state.status;
   }
 #endif
@@ -2266,7 +2294,7 @@ trs_disk_command_write(Uint8 cmd)
 
 #ifdef ZBX
   if (trs_disk_debug_flags & DISKDEBUG_FDCREG) {
-    debug("command_write(0x%02x) [PC=%04x]\n", cmd, Z80_PC);
+    debug("[PC=%04X] command_write(0x%02X)\n", Z80_PC, cmd);
   }
 #endif
 
@@ -2280,7 +2308,7 @@ trs_disk_command_write(Uint8 cmd)
 
 #ifdef ZBX
     if (trs_disk_debug_flags & DISKDEBUG_DMK) {
-      debug("partial track format dens %d tk %d side %d\n",
+      debug("partial track format: dens %d, tk %d, side %d\n",
 	    state.density, d->phytrack, state.curside);
     }
 #endif
@@ -2356,10 +2384,10 @@ trs_disk_command_write(Uint8 cmd)
   state.currcommand = cmd;
 
   /* Select Disk Density for some clones */
-  if (trs_clones.model & (EG3200 | GENIE3S | LNW80 | SPEEDMASTER)) {
+  if (trs_clones.model & (CT80 | EG3200 | GENIE3S | LNW80 | SPEEDMASTER)) {
     if ((cmd & 0xF8) == 0xF8) {
       state.density = cmd & 1;
-      state.controller = state.density ? TRSDISK_P1791 : TRSDISK_P1771;
+      trs_disk_set_controller(state.density ? TRSDISK_P1791 : TRSDISK_P1771);
       return;
     }
   }
@@ -2369,14 +2397,16 @@ trs_disk_command_write(Uint8 cmd)
   case TRSDISK_RESTORE:
 #ifdef ZBX
     if (trs_disk_debug_flags & DISKDEBUG_FDCCMD) {
-      debug("restore 0x%02x drv %d\n", cmd, state.curdrive);
+      debug("restore 0x%02X, drv %d\n", cmd, state.curdrive);
     }
 #endif
     state.last_readadr = -1;
     d->phytrack = 0;
     state.track = 0;
     state.status = TRSDISK_TRKZERO|TRSDISK_BUSY;
+#if __linux
     if (d->emutype == REAL) real_restore(state.curdrive);
+#endif
     /* Should this set lastdirection? */
     if (cmd & TRSDISK_VBIT) verify();
     trs_schedule_event(trs_disk_done, 0, 2000);
@@ -2385,7 +2415,7 @@ trs_disk_command_write(Uint8 cmd)
   case TRSDISK_SEEK:
 #ifdef ZBX
     if (trs_disk_debug_flags & DISKDEBUG_FDCCMD) {
-      debug("seek 0x%02x drv %d ptk %d otk %d ntk %d\n",
+      debug("seek 0x%02X, drv %d, ptk %d, otk %d, ntk %d\n",
 	    cmd, state.curdrive, d->phytrack, state.track, state.data);
     }
 #endif
@@ -2409,7 +2439,7 @@ trs_disk_command_write(Uint8 cmd)
   step:
 #ifdef ZBX
     if (trs_disk_debug_flags & DISKDEBUG_FDCCMD) {
-      debug("step%s %s 0x%02x drv %d ptk %d otk %d\n",
+      debug("step%s %s 0x%02X, drv %d, ptk %d, otk %d\n",
 	    (cmd & TRSDISK_UBIT) ? "u" : "",
 	    (state.lastdirection < 0) ? "out" : "in", cmd,
 	    state.curdrive, d->phytrack, state.track);
@@ -2444,7 +2474,7 @@ trs_disk_command_write(Uint8 cmd)
   case TRSDISK_READ:
 #ifdef ZBX
     if (trs_disk_debug_flags & DISKDEBUG_FDCCMD) {
-      debug("read 0x%02x drv %d sid %d ptk %d tk %d sec %d %sden\n", cmd,
+      debug("read 0x%02X, drv %d, sid %d, ptk %d, tk %d, sec %d, %sden\n", cmd,
 	    state.curdrive, state.curside, d->phytrack,
 	    state.track, state.sector, state.density ? "d" : "s");
     }
@@ -2458,7 +2488,7 @@ trs_disk_command_write(Uint8 cmd)
       if (!(cmd & TRSDISK_BBIT)) {
 #ifdef ZBX
 	if (trs_disk_debug_flags & DISKDEBUG_VTOS3) {
-	  debug("non-IBM read: drv 0x%02x, sid %d, trk 0x%02x, sec 0x%02x\n",
+	  debug("non-IBM read: drv 0x%02X, sid %d, trk 0x%02X, sec 0x%02X\n",
 		state.curdrive, state.curside, state.track, state.sector);
 	}
 #endif
@@ -2470,7 +2500,7 @@ trs_disk_command_write(Uint8 cmd)
 #ifdef ZBX
 	if (trs_disk_debug_flags & DISKDEBUG_VTOS3) {
 	  if (state.sector >= 0x7c) {
-	    debug("IBM read: drv 0x%02x, sid %d, trk 0x%02x, sec 0x%02x\n",
+	    debug("IBM read: drv 0x%02X, sid %d, trk 0x%02X, sec 0x%02X\n",
 		  state.curdrive, state.curside, state.track, state.sector);
 	  }
 	}
@@ -2653,7 +2683,7 @@ trs_disk_command_write(Uint8 cmd)
   case TRSDISK_WRITE:
 #ifdef ZBX
     if (trs_disk_debug_flags & DISKDEBUG_FDCCMD) {
-      debug("write 0x%02x drv %d sid %d ptk %d tk %d sec %d %sden\n",
+      debug("write 0x%02X, drv %d, sid %d, ptk %d, tk %d, sec %d, %sden\n",
 	    cmd, state.curdrive, state.curside, d->phytrack,
 	    state.track, state.sector, state.density ? "d" : "s");
     }
@@ -2666,7 +2696,7 @@ trs_disk_command_write(Uint8 cmd)
       if (!(cmd & TRSDISK_BBIT)) {
 #ifdef ZBX
 	if (trs_disk_debug_flags & DISKDEBUG_VTOS3) {
-	  debug("non-IBM write drv 0x%02x, sid %d, trk 0x%02x, sec 0x%02x\n",
+	  debug("non-IBM write: drv 0x%02X, sid %d, trk 0x%02X, sec 0x%02X\n",
 		state.curdrive, state.curside, state.track, state.sector);
 	}
 #endif
@@ -2678,7 +2708,7 @@ trs_disk_command_write(Uint8 cmd)
 #ifdef ZBX
 	if (trs_disk_debug_flags & DISKDEBUG_VTOS3) {
 	  if (state.sector >= 0x7c) {
-	    debug("IBM write: drv 0x%02x, sid %d, trk 0x%02x, sec 0x%02x\n",
+	    debug("IBM write: drv 0x%02X, sid %d, trk 0x%02X, sec 0x%02X\n",
 		  state.curdrive, state.curside, state.track, state.sector);
 	  }
 	}
@@ -2691,7 +2721,7 @@ trs_disk_command_write(Uint8 cmd)
     }
     if (d->emutype == REAL) {
       state.status = TRSDISK_BUSY|TRSDISK_DRQ;
-      trs_disk_drq_interrupt(1);
+      trs_disk_drq_interrupt();
       trs_schedule_event(trs_disk_lostdata, state.currcommand,
 			 500000 * z80_state.clockMHz);
       state.bytecount = size_code_to_size(d->u.real.size_code);
@@ -2803,7 +2833,7 @@ trs_disk_command_write(Uint8 cmd)
 	    if (j != -1) {
 #ifdef ZBX
 	      if (trs_disk_debug_flags & DISKDEBUG_VTOS3) {
-		debug("smashing tk %d sector 0x%02x id_index %d\n",
+		debug("smashing tk %d, sector 0x%02X, id_index %d\n",
 		      state.track, i, j);
 	      }
 #endif
@@ -2874,7 +2904,7 @@ trs_disk_command_write(Uint8 cmd)
       } /* end if (d->emutype == ...) */
 
       state.status |= TRSDISK_BUSY|TRSDISK_DRQ;
-      trs_disk_drq_interrupt(1);
+      trs_disk_drq_interrupt();
       trs_schedule_event(trs_disk_lostdata, state.currcommand,
 			 500000 * z80_state.clockMHz);
     }
@@ -2892,7 +2922,7 @@ trs_disk_command_write(Uint8 cmd)
   case TRSDISK_READADR:
 #ifdef ZBX
     if (trs_disk_debug_flags & DISKDEBUG_FDCCMD) {
-      debug("readadr 0x%02x drv %d sid %d ptk %d tk %d last %d %sden\n",
+      debug("readadr 0x%02X, drv %d, sid %d, ptk %d, tk %d, last %d, %sden\n",
 	    cmd, state.curdrive, state.curside, d->phytrack, state.track,
 	    state.last_readadr, state.density ? "d" : "s");
     }
@@ -2950,8 +2980,8 @@ trs_disk_command_write(Uint8 cmd)
 	totbyt = 0;
 	denok = 0;
 	for (;;) {
-	  SectorId *sid = &d->u.jv3.id[d->u.jv3.sorted_id[i]];
-	  int dden = (sid->flags & JV3_DENSITY) != 0;
+	  const SectorId *sid = &d->u.jv3.id[d->u.jv3.sorted_id[i]];
+	  int const dden = (sid->flags & JV3_DENSITY) != 0;
 
 	  if (sid->track != d->phytrack ||
 	      (sid->flags & JV3_SIDE ? 1 : 0) != state.curside) break;
@@ -2978,7 +3008,7 @@ trs_disk_command_write(Uint8 cmd)
 	bytlen = (1.0 - GAP1ANGLE - GAP4ANGLE) / ((float)totbyt);
 	i = id_index;
 	for (;;) {
-	  SectorId *sid = &d->u.jv3.id[d->u.jv3.sorted_id[i]];
+	  const SectorId *sid = &d->u.jv3.id[d->u.jv3.sorted_id[i]];
 	  if (sid->track != d->phytrack ||
 	      (sid->flags & JV3_SIDE ? 1 : 0) != state.curside) {
 	    /* Wrap around to start of track */
@@ -3003,14 +3033,14 @@ trs_disk_command_write(Uint8 cmd)
       trs_schedule_event(trs_disk_firstdrq, 0, ts);
 #ifdef ZBX
       if (trs_disk_debug_flags & DISKDEBUG_READADR) {
-	debug("readadr phytrack %d angle %f i %d ts %d\n",
+	debug("readadr phytrack %d, angle %f, i %d, ts %d\n",
 	      d->phytrack, a, i, ts);
       }
 #endif
     } else /* d->emutype == DMK */ {
       /* Compute how far it will be to the next ID in the correct density */
-      float a = angle();
-      int ia = a * (d->inches ? TRKSIZE_DD : TRKSIZE_8DD);
+      float const a = angle();
+      int const ia = a * (d->inches ? TRKSIZE_DD : TRKSIZE_8DD);
       int ib = 0;
       int i, j, idamp, dden, prev_idamp, prev_dden, ts;
 
@@ -3059,7 +3089,7 @@ trs_disk_command_write(Uint8 cmd)
       trs_schedule_event(trs_disk_firstdrq, 0, ts);
 #ifdef ZBX
       if (trs_disk_debug_flags & DISKDEBUG_READADR) {
-	debug("readadr phytrack %d angle %f i %d ts %d\n",
+	debug("readadr phytrack %d, angle %f, i %d, ts %d\n",
 	      d->phytrack, a, i, ts);
       }
 #endif
@@ -3069,7 +3099,7 @@ trs_disk_command_write(Uint8 cmd)
   case TRSDISK_READTRK:
 #ifdef ZBX
     if (trs_disk_debug_flags & DISKDEBUG_FDCCMD) {
-      debug("readtrk 0x%02x drv %d sid %d ptk %d tk %d %sden\n",
+      debug("readtrk 0x%02X, drv %d, sid %d, ptk %d, tk %d, %sden\n",
 	    cmd, state.curdrive, state.curside, d->phytrack, state.track,
 	    state.density ? "d" : "s");
     }
@@ -3097,7 +3127,7 @@ trs_disk_command_write(Uint8 cmd)
       state.bytecount = TRKSIZE_8DD; /* decrement by 2's if SD */
     }
     state.status = TRSDISK_BUSY|TRSDISK_DRQ;
-    trs_disk_drq_interrupt(1);
+    trs_disk_drq_interrupt();
     trs_schedule_event(trs_disk_lostdata, state.currcommand,
 		       500000 * z80_state.clockMHz);
     break;
@@ -3116,7 +3146,7 @@ trs_disk_command_write(Uint8 cmd)
     } else {
 #ifdef ZBX
       if (trs_disk_debug_flags & DISKDEBUG_FDCCMD) {
-	debug("writetrk 0x%02x drv %d sid %d ptk %d tk %d %sden\n",
+	debug("writetrk 0x%02X, drv %d, sid %d, ptk %d, tk %d, %sden\n",
 	      cmd, state.curdrive, state.curside, d->phytrack, state.track,
 	      state.density ? "d" : "s");
       }
@@ -3162,7 +3192,7 @@ trs_disk_command_write(Uint8 cmd)
 	d->u.dmk.nextidam = 0;
       }
       state.status |= TRSDISK_BUSY|TRSDISK_DRQ;
-      trs_disk_drq_interrupt(1);
+      trs_disk_drq_interrupt();
       trs_schedule_event(trs_disk_lostdata, state.currcommand,
 			 500000 * z80_state.clockMHz);
       state.format = FMT_GAP0;
@@ -3178,7 +3208,7 @@ trs_disk_command_write(Uint8 cmd)
   case TRSDISK_FORCEINT:
 #ifdef ZBX
     if (trs_disk_debug_flags & DISKDEBUG_FDCCMD) {
-      debug("forceint 0x%02x\n", cmd);
+      debug("forceint 0x%02X\n", cmd);
     }
 #endif
     /* Stop whatever is going on and forget it */
@@ -3198,10 +3228,23 @@ trs_disk_command_write(Uint8 cmd)
   }
 }
 
-#ifdef __linux
+Uint8 genie3s_latch_read(Uint8 byte)
+{
+#if 0
+  byte = state.density ? byte | (1 << 4) : byte & ~(1 << 4);
+  byte = state.inches  ? byte | (1 << 5) : byte & ~(1 << 5);
+#else
+  byte ^= (Uint8)(-(state.density & 1) ^ byte) & (1 << 4);
+  byte ^= (Uint8)(-(state.inches  & 4) ^ byte) & (1 << 5);
+#endif
+
+  return byte | (1 << 7); /* Bit 7 always high */
+}
+
+#ifdef __linux__
 /* Interface to real floppy drive */
 int
-real_rate(DiskState *d)
+real_rate(const DiskState *d)
 {
   if (d->inches == 5) {
     if (d->u.real.rps == 5) {
@@ -3219,7 +3262,7 @@ real_rate(DiskState *d)
 void
 real_error(DiskState *d, unsigned int flags, const char *msg)
 {
-  time_t now = time(NULL);
+  const time_t now = time(NULL);
 
   if (now > d->u.real.empty_timeout) {
     d->u.real.empty_timeout = time(NULL) + EMPTY_TIMEOUT;
@@ -3227,7 +3270,7 @@ real_error(DiskState *d, unsigned int flags, const char *msg)
   }
 #ifdef ZBX
   if (trs_disk_debug_flags & DISKDEBUG_REALERR) {
-    file_error("real_%s", msg);
+    file_error("real_%s (flags 0x%02X)", flags, msg);
   }
 #endif
 }
@@ -3243,7 +3286,7 @@ real_ok(DiskState *d)
 int
 real_check_empty(DiskState *d)
 {
-#if __linux
+#if __linux__
   int reset_now = 0;
   struct floppy_raw_cmd raw_cmd;
   int i = 0;
@@ -3285,10 +3328,10 @@ real_verify(void)
   /*!! ignore for now*/
 }
 
+#if __linux__
 void
 real_restore(int curdrive)
 {
-#if __linux
   DiskState *d = &disk[curdrive];
   struct floppy_raw_cmd raw_cmd;
   int i = 0;
@@ -3302,15 +3345,13 @@ real_restore(int curdrive)
     state.status |= TRSDISK_SEEKERR;
     return;
   }
-#else
-  trs_disk_unimpl(state.currcommand, "restore real floppy");
-#endif
 }
+#endif
 
 void
 real_seek(void)
 {
-#if __linux
+#if __linux__
   DiskState *d = &disk[state.curdrive];
   struct floppy_raw_cmd raw_cmd;
   int i = 0;
@@ -3346,7 +3387,7 @@ real_seek(void)
 void
 real_read(void)
 {
-#if __linux
+#if __linux__
   DiskState *d = &disk[state.curdrive];
   struct floppy_raw_cmd raw_cmd;
   int i, retry, new_status;
@@ -3382,7 +3423,7 @@ real_read(void)
 	   internally in each other size before returning an error. */
 #ifdef ZBX
 	if (trs_disk_debug_flags & DISKDEBUG_REALSIZE) {
-	  debug("real_read not fnd: side %d tk %d sec %d size 0%d phytk %d\n",
+	  debug("real_read not found: side %d, tk %d, sec %d, size 0%d, phytk %d\n",
 		state.curside, state.track, state.sector, d->u.real.size_code,
 		d->phytrack*d->real_step);
 	}
@@ -3435,7 +3476,7 @@ real_read(void)
 void
 real_write(void)
 {
-#if __linux
+#if __linux__
   DiskState *d = &disk[state.curdrive];
   struct floppy_raw_cmd raw_cmd;
   int i = 0;
@@ -3484,7 +3525,7 @@ real_write(void)
          it to try the next sector size next time. */
 #ifdef ZBX
       if (trs_disk_debug_flags & DISKDEBUG_REALSIZE) {
-	debug("real_write not found: side %d tk %d sec %d size 0%d phytk %d\n",
+	debug("real_write not found: side %d, tk %d, sec %d, size 0%d, phytk %d\n",
 	      state.curside, state.track, state.sector, d->u.real.size_code,
 	      d->phytrack*d->real_step);
       }
@@ -3509,7 +3550,7 @@ real_write(void)
     if (raw_cmd.reply[2] & 0x13) state.status |= TRSDISK_NOTFOUND;
   }
   state.bytecount = 0;
-  trs_disk_drq_interrupt(0);
+  trs_disk_drq_interrupt();
   state.status |= TRSDISK_BUSY;
   if (trs_event_scheduled() == trs_disk_lostdata) {
     trs_cancel_event();
@@ -3523,7 +3564,7 @@ real_write(void)
 void
 real_readadr(void)
 {
-#if __linux
+#if __linux__
   DiskState *d = &disk[state.curdrive];
   struct floppy_raw_cmd raw_cmd;
   int i, new_status;
@@ -3585,7 +3626,7 @@ real_readtrk(void)
 void
 real_writetrk(void)
 {
-#if __linux
+#if __linux__
   DiskState *d = &disk[state.curdrive];
   struct floppy_raw_cmd raw_cmd;
   int gap3;
@@ -3644,11 +3685,11 @@ real_writetrk(void)
 
 #ifdef ZBX
   if (trs_disk_debug_flags & DISKDEBUG_GAPS) {
-    debug("real_writetrk size 0%d secs %d gap3 %d fill 0x%02x hex data ",
+    debug("real_writetrk: size 0%d, secs %d, gap3 %d, fill 0x%02X, hex data ",
 	  d->u.real.size_code, d->u.real.fmt_nbytes/4, gap3,
 	  d->u.real.fmt_fill);
     for (i = 0; i < d->u.real.fmt_nbytes; i += 4) {
-      debug("%02x%02x%02x%02x ", d->u.real.buf[i], d->u.real.buf[i + 1],
+      debug("%02X%02X%02X%02X ", d->u.real.buf[i], d->u.real.buf[i + 1],
 	    d->u.real.buf[i + 2], d->u.real.buf[i + 3]);
     }
     debug("\n");
@@ -3673,7 +3714,7 @@ real_writetrk(void)
     if (raw_cmd.reply[2] & 0x13) state.status |= TRSDISK_NOTFOUND;
   }
   state.bytecount = 0;
-  trs_disk_drq_interrupt(0);
+  trs_disk_drq_interrupt();
   state.status |= TRSDISK_BUSY;
   if (trs_event_scheduled() == trs_disk_lostdata) {
     trs_cancel_event();
@@ -3690,7 +3731,7 @@ int trs_diskset_save(const char *filename)
   FILE *f = fopen(filename, "w");
 
   if (f == NULL) {
-    file_error("save Disk Set '%s'", filename);
+    file_error("save Disk Set: '%s'", filename);
     return -1;
   }
 
@@ -3714,35 +3755,29 @@ int trs_diskset_load(const char *filename)
   FILE *f = fopen(filename, "r");
 
   if (f == NULL) {
-    file_error("load Disk Set '%s'", filename);
+    file_error("load Disk Set: '%s'", filename);
     return -1;
   }
 
   for (i = 0; i < NDRIVES; i++) {
-    if (fgets(diskname, FILENAME_MAX, f) == NULL)
-      continue;
-    if (strlen(diskname) != 0) {
-      diskname[strlen(diskname) - 1] = 0;
+    if (fgets(diskname, FILENAME_MAX, f) != NULL) {
+      diskname[strcspn(diskname, "\r\n")] = 0;
       if (diskname[0])
         trs_disk_insert(i, diskname);
     }
   }
 
   for (i = 0; i < TRS_HARD_MAXDRIVES; i++) {
-    if (fgets(diskname, FILENAME_MAX, f) == NULL)
-      continue;
-    if (strlen(diskname) != 0) {
-      diskname[strlen(diskname) - 1] = 0;
+    if (fgets(diskname, FILENAME_MAX, f) != NULL) {
+      diskname[strcspn(diskname, "\r\n")] = 0;
       if (diskname[0])
         trs_hard_attach(i, diskname);
     }
   }
 
   for (i = 0; i < NDRIVES; i++) {
-    if (fgets(diskname, FILENAME_MAX, f) == NULL)
-      continue;
-    if (strlen(diskname) != 0) {
-      diskname[strlen(diskname) - 1] = 0;
+    if (fgets(diskname, FILENAME_MAX, f) != NULL) {
+      diskname[strcspn(diskname, "\r\n")] = 0;
       if (diskname[0])
         stringy_insert(i, diskname);
     }
@@ -3770,6 +3805,7 @@ static void trs_fdc_save(FILE *file, FDCState *fdc)
   trs_save_int(file, &fdc->curdrive, 1);
   trs_save_int(file, &fdc->curside, 1);
   trs_save_int(file, &fdc->density, 1);
+  trs_save_uint8(file, &fdc->inches, 1);
   trs_save_uint8(file, &fdc->controller, 1);
   trs_save_int(file, &fdc->last_readadr, 1);
   trs_save_uint64(file, &fdc->motor_timeout, 1);
@@ -3793,6 +3829,7 @@ static void trs_fdc_load(FILE *file, FDCState *fdc)
   trs_load_int(file, &fdc->curdrive, 1);
   trs_load_int(file, &fdc->curside, 1);
   trs_load_int(file, &fdc->density, 1);
+  trs_load_uint8(file, &fdc->inches, 1);
   trs_load_uint8(file, &fdc->controller, 1);
   trs_load_int(file, &fdc->last_readadr, 1);
   trs_load_uint64(file, &fdc->motor_timeout, 1);

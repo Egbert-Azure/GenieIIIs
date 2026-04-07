@@ -42,6 +42,7 @@
 #include "trs_disk.h"
 #include "trs_hard.h"
 #include "trs_imp_exp.h"
+#include "trs_memory.h"
 #include "trs_state_save.h"
 
 /*
@@ -89,7 +90,7 @@ void do_emt_system(void)
   if (emt_block("system"))
     return;
 
-  res = system((char *)mem_pointer(Z80_HL, 0));
+  res = system((const char *)mem_pointer(Z80_HL, 0));
   if (res == -1) {
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
@@ -153,8 +154,10 @@ void do_emt_mouse(void)
 
 void do_emt_getddir(void)
 {
+  int const size = strlen(trs_disk_dir);
+
   if (Z80_HL + Z80_BC > 0x10000 ||
-      Z80_HL + strlen(trs_disk_dir) + 1 > Z80_HL + Z80_BC) {
+      Z80_HL + size + 1 > Z80_HL + Z80_BC) {
     Z80_A = EFAULT;
     Z80_F &= ~ZERO_MASK;
     Z80_BC = 0xFFFF;
@@ -164,7 +167,7 @@ void do_emt_getddir(void)
   strcpy((char *)mem_pointer(Z80_HL, 1), trs_disk_dir);
   Z80_A = 0;
   Z80_F |= ZERO_MASK;
-  Z80_BC = strlen(trs_disk_dir);
+  Z80_BC = size;
 }
 
 void do_emt_setddir(void)
@@ -172,7 +175,7 @@ void do_emt_setddir(void)
   if (emt_block("setddir"))
     return;
 
-  snprintf(trs_disk_dir, FILENAME_MAX, "%s", (char *)mem_pointer(Z80_HL, 0));
+  snprintf(trs_disk_dir, FILENAME_MAX, "%s", (const char *)mem_pointer(Z80_HL, 0));
   if (trs_disk_dir[0] == '~' &&
       (trs_disk_dir[1] == DIR_SLASH || trs_disk_dir[1] == '\0')) {
     const char *home = getenv("HOME");
@@ -191,9 +194,9 @@ void do_emt_setddir(void)
 
 void do_emt_open(void)
 {
-  int fd, oflag, eoflag;
+  int fd, oflag;
+  int const eoflag = Z80_BC;
 
-  eoflag = Z80_BC;
   switch (eoflag & EO_ACCMODE) {
   case EO_RDONLY:
   default:
@@ -216,7 +219,7 @@ void do_emt_open(void)
       return;
   }
 
-  fd = open((char *)mem_pointer(Z80_HL, 0), oflag, Z80_DE);
+  fd = open((const char *)mem_pointer(Z80_HL, 0), oflag, Z80_DE);
   if (fd >= 0) {
     Z80_A = 0;
     Z80_F |= ZERO_MASK;
@@ -242,7 +245,6 @@ void do_emt_close(void)
 void do_emt_read(void)
 {
   int size;
-  int i;
 
   if (Z80_HL + Z80_BC > 0x10000) {
     Z80_A = EFAULT;
@@ -252,7 +254,9 @@ void do_emt_read(void)
   }
 
   if (trs_show_led) {
-    for (i = 0; i < 3; i++) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
       if (Z80_DE == xtrshard_fd[i])
         trs_hard_led(i, 1);
     }
@@ -274,7 +278,6 @@ void do_emt_read(void)
 void do_emt_write(void)
 {
   int size;
-  int i;
 
   if (Z80_HL + Z80_BC > 0x10000) {
     Z80_A = EFAULT;
@@ -284,7 +287,9 @@ void do_emt_write(void)
   }
 
   if (trs_show_led) {
-    for (i = 0; i < 3; i++) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
       if (Z80_DE == xtrshard_fd[i])
         trs_hard_led(i, 1);
     }
@@ -337,7 +342,7 @@ void do_emt_lseek(void)
 
 void do_emt_strerror(void)
 {
-  char *msg;
+  const char *msg;
   int size;
 
   if (Z80_HL + Z80_BC > 0x10000) {
@@ -381,12 +386,12 @@ void do_emt_time(void)
 
   if (Z80_A == 1) {
 #if __alpha
-    struct tm *loctm = localtime(&now);
+    const struct tm *loctm = localtime(&now);
     now += loctm->tm_gmtoff;
 #else
-    struct tm loctm = *(localtime(&now));
-    struct tm gmtm = *(gmtime(&now));
-    int daydiff = loctm.tm_mday - gmtm.tm_mday;
+    const struct tm loctm = *(localtime(&now));
+    const struct tm gmtm = *(gmtime(&now));
+    const int daydiff = loctm.tm_mday - gmtm.tm_mday;
     now += (loctm.tm_sec - gmtm.tm_sec)
       + (loctm.tm_min - gmtm.tm_min) * 60
       + (loctm.tm_hour - gmtm.tm_hour) * 3600;
@@ -423,7 +428,7 @@ void do_emt_time(void)
 void do_emt_opendir(void)
 {
   int i;
-  char *dirname;
+  const char *dirname;
 
   for (i = 0; i < MAX_OPENDIR; i++) {
     if (dir[i].dir == NULL) break;
@@ -435,7 +440,7 @@ void do_emt_opendir(void)
     return;
   }
 
-  dirname = (char *)mem_pointer(Z80_HL, 0);
+  dirname = (const char *)mem_pointer(Z80_HL, 0);
   dir[i].dir = opendir(dirname);
 
   if (dir[i].dir == NULL) {
@@ -477,7 +482,7 @@ void do_emt_readdir(void)
 {
   int const i = Z80_DE;
   int size;
-  struct dirent *result;
+  const struct dirent *result;
 
   if (i < 0 || i >= MAX_OPENDIR || dir[i].dir == NULL) {
     Z80_A = EBADF;
@@ -523,7 +528,7 @@ void do_emt_chdir(void)
   if (emt_block("chdir"))
     return;
 
-  if (chdir((char *)mem_pointer(Z80_HL, 0)) < 0) {
+  if (chdir((const char *)mem_pointer(Z80_HL, 0)) < 0) {
     Z80_A = errno;
     Z80_F &= ~ZERO_MASK;
   } else {
@@ -589,7 +594,7 @@ void do_emt_misc(void)
   case 7:
     trs_disk_setsize(Z80_BC, Z80_HL);
     break;
-#ifdef __linux
+#ifdef __linux__
   case 8:
     Z80_HL = trs_disk_getstep(Z80_BC);
     break;
@@ -605,11 +610,11 @@ void do_emt_misc(void)
     break;
   case 12:
     Z80_HL = 0;
-    Z80_BC = !timer_overclock;
+    Z80_BC = !turbo_mode;
     break;
   case 13:
-    timer_overclock = !Z80_BC;
-    trs_timer_mode(timer_overclock);
+    turbo_mode = !Z80_BC;
+    trs_timer_mode(turbo_mode);
     break;
   case 14:
     Z80_HL = stretch_amount;
@@ -733,9 +738,9 @@ void do_emt_opendisk(void)
 static
 int do_emt_closefd(int odindex)
 {
-  int i;
-
   if (od[odindex].xtrshard) {
+    int i;
+
     for (i = 0; i < 4; i++) {
       if (xtrshard_fd[i] == od[odindex].fd)
         xtrshard_fd[i] = -1;

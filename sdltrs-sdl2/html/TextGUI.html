@@ -414,9 +414,11 @@ should seldom if ever be necessary to change it.</p>
 <h3>Printer Type:</h3>
 
 <p>Controls the type of printer emulation that is used for outputting to the
-TRS-80 printer: <b>None</b> and <b>Text</b>.
-<b>Text</b> simply sends the printer output to a text file (automatically
-created from <code>trsprn0000.txt</code> to <code>trsprn9999.txt</code>).</p>
+TRS-80 printer: <b>None</b>, <b>File</b> and <b>Text</b>.
+<b>File</b> simply sends the printer output to a file (automatically created
+from <code>trsprn0000.txt</code> to <code>trsprn9999.txt</code>). <b>Text</b>
+replaces the control codes (<code>0</code>-<code>31</code>) with a single dot
+(<code>.</code>) and strips the high bit from the characters in the file.</p>
 
 <h3>Serial Port Name:</h3>
 

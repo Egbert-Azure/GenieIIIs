@@ -46,6 +46,18 @@
 #include <time.h>
 #include "z80.h"
 
+/* currentmode values */
+#ifdef _WIN32
+#undef  ALTERNATE
+#endif
+#define NORMAL    0
+#define EXPANDED  1
+#define INVERSE   2
+#define ALTERNATE 4
+#define REVERSE   8
+
+#define TOUPPER(a)   ((a >= 'a' && a <= 'z') ? a - ' ' : a)
+#define TOLOWER(a)   ((a >= 'A' && a <= 'Z') ? a + ' ' : a)
 
 #if defined(__OS2__) || defined(_WIN32)
 #define DIR_SLASH '\\'
@@ -66,9 +78,7 @@ extern char trs_cmd_file[];
 extern char trs_config_file[];
 extern char trs_state_file[];
 
-extern int trs_model; /* 1, 3, 4, 5(=4p) */
-extern int eg3200;    /* EACA EG 3200: Genie III */
-extern int genie3s;   /* TCS Genie IIIs */
+extern int trs_model; /* 1, 3, 4, 5(=4P) */
 extern int foreground;
 extern int background;
 extern int gui_foreground;
@@ -93,14 +103,13 @@ extern int  trs_load_config_file(void);
 extern void trs_screen_init(int resize);
 extern void trs_screen_reset(void);
 extern void trs_rom_init(void);
-extern void trs_screen_write_char(unsigned int position, Uint8 char_index);
+extern void trs_screen_write_char(unsigned int position, Uint8 character);
 extern void trs_screen_update(void);
-extern void trs_screen_expanded(int flag);
-extern void trs_screen_alternate(int flag);
+extern void trs_screen_mode(int mode, int flag);
 extern void trs_screen_80x24(int flag);
-extern void trs_screen_inverse(int flag);
 extern void trs_screen_refresh(void);
 extern void trs_screen_caption(void);
+extern void trs_sdl_init(void);
 
 extern void trs_disk_led(int drive, int on_off);
 extern void trs_hard_led(int drive, int on_off);
@@ -118,12 +127,14 @@ extern void clear_key_queue(void);
 extern int  stretch_amount;
 extern int  trs_kb_bracket_state;
 
+extern int border_width;
+extern int lowercase;
 extern int scale;
 extern int resize3;
 extern int resize4;
+extern int text80x24;
 extern int trs_uart_switches;
 extern int trs_show_led;
-extern int window_border_width;
 extern int trs_hd_boot;
 extern int trs_joystick;
 extern int trs_keypad_joystick;
@@ -146,6 +157,7 @@ extern int  trs_cassette_in(void);
 extern void trs_sound_out(int value);
 extern int  trs_joystick_in(void);
 
+extern int  trs_mem_size;
 extern int  trs_rom_size;
 
 extern void  trs_interrupt_latch_clear(void);
@@ -155,7 +167,7 @@ extern void  trs_interrupt_mask_write(Uint8);
 extern void  trs_nmi_mask_write(Uint8);
 extern void  trs_reset_button_interrupt(int state);
 extern void  trs_disk_intrq_interrupt(int state);
-extern void  trs_disk_drq_interrupt(int state);
+extern void  trs_disk_drq_interrupt(void);
 extern void  trs_disk_motoroff_interrupt(int state);
 /* extern void trs_uart_err_interrupt(int state); */
 extern void trs_uart_rcv_interrupt(int state);
@@ -177,12 +189,12 @@ extern void trs_cassette_clear_interrupts(void);
 extern int  trs_cassette_interrupts_enabled(void);
 extern void trs_cassette_update(int dummy);
 extern int  cassette_default_sample_rate;
+extern void trs_orch90_flush(int dummy);
 extern void trs_orch90_out(int chan, int value);
-extern void trs_cassette_reset(void);
+extern void trs_cassette_reset(int poweron);
 extern void assert_state_void(int dummy);
 extern void transition_out(int dummy);
 extern void trs_cassette_kickoff(int dummy);
-extern void orch90_flush(int dummy);
 extern void trs_disk_lostdata(int dummy);
 extern void trs_disk_done(int dummy);
 extern void trs_disk_firstdrq(int dummy);
@@ -192,30 +204,26 @@ extern void trs_uart_set_empty(int dummy);
 #ifdef ZBX
 extern void trs_debug(void);
 extern void trs_disk_debug(void);
+extern void trs_hard_debug(void);
 #endif
 extern int  trs_disk_motoroff(void);
 
-extern int huffman;
-extern int hypermem;
-extern int megamem;
-extern int supermem;
-extern int selector;
-
-extern int lowercase;
-extern int lubomir;
-extern int stringy;
-
 extern void  eg3200_init_out(int value);
+extern void  eg3210_char(int character, int scanline, int byte);
+
 extern void  genie3s_bank_out(int value);
 extern void  genie3s_init_out(int value);
 extern void  genie3s_sys_out(int value);
-extern void  genie3s_char(int char_index, int scanline, int byte);
+extern void  genie3s_char(int character, int scanline, int byte);
 extern void  genie3s_hrg(int value);
 extern void  genie3s_hrg_write(unsigned int position, int byte);
 extern Uint8 genie3s_hrg_read(unsigned int position);
+extern Uint8 genie3s_latch_read(Uint8 byte);
+
 extern void  m6845_crtc_reset(void);
 extern void  m6845_cursor(int unsigned position, int start, int end, int visible);
 extern void  m6845_screen(int chars, int lines, int raster, int factor);
+extern void  m6845_text(int onoff);
 
 typedef void (*trs_event_func)(int arg);
 extern void trs_schedule_event(trs_event_func f, int arg, int tstates);
@@ -240,13 +248,10 @@ extern Uint8 grafyx_m3_read_byte(unsigned int position);
 extern int   grafyx_m3_write_byte(unsigned int position, int value);
 
 extern void  hrg_onoff(int enable);
-extern void  hrg_write_addr(int addr, int mask);
-extern void  hrg_write_data(int data);
-extern int   hrg_read_data(void);
+extern void  hrg_write_data(int address, int data);
+extern int   hrg_read_data(int address);
 
 extern int   lowe_le18;
-extern void  lowe_le18_write_x(int);
-extern void  lowe_le18_write_y(int);
 extern int   lowe_le18_read(void);
 extern void  lowe_le18_write_data(int);
 extern void  lowe_le18_write_control(int);
@@ -257,8 +262,8 @@ extern void trs_get_mouse_max(int *x, int *y, unsigned int *sens);
 extern void trs_set_mouse_max(int x, int y, unsigned int sens);
 
 extern int timer_hz;
-extern int timer_overclock_rate;
-extern int timer_overclock;
+extern int turbo_rate;
+extern int turbo_mode;
 extern int speedup;
 extern float clock_mhz_1;
 extern float clock_mhz_3;

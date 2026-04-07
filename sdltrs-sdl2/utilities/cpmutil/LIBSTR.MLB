@@ -1,4 +1,4 @@
-; LIBSTR.MLB auto generated from LIBSTR.MAC
+; LIBSTR.MLB auto generated from LIBSTR.Z80
 ; ~~~~~~~~~~
 ;
 ; Contents:
@@ -86,7 +86,7 @@ EXTRN skipword
 EXTRN skipspaces
 ;==============================================================================
 ; Skip space characters
-;	entry:	hl -> buffer of spaces to examin
+;	entry:	hl -> buffer of spaces to examine
 ;	exit:	a  =  last character examined, z set if nul encountered
 ;		hl -> buffer - first non-space character
 ;==============================================================================

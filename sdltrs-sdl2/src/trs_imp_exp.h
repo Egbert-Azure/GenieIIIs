@@ -97,7 +97,11 @@
  *         Before, HL => path, null terminated
  *         After,  AF =  0 if OK, error number if not (Z flag affected)
  *
- * ED2C-ED2E reserved
+ * ED2C-ED2D reserved
+ *
+ * ED2E turbo mode (SSPD A Keil emulator)
+ *         Before, A  =  bit 2 : 0 = disable or 1 = enable turbo mode
+                         All other bits are ignored
  *
  * ED2F emt_debug
  *   Enter zbx, the xtrs debugger.
@@ -182,13 +186,13 @@
  *         After, other registers as listed
  *
  *   Function codes:
- *     0 = disk change
- *         After, HL = disk change count (F7 presses + emt_misc 0 calls)
+ *     0 = REMOVED in sdltrs: disk change
+ *         After, HL = 0
  *     1 = exit emulator
  *     2 = enter debugger (if active)
  *     3 = press reset button
- *     4 = query disk change count
- *         After, HL = disk change count (F7 presses + emt_misc 0 calls)
+ *     4 = REMOVED in sdltrs: query disk change count
+ *         After, HL = 0
  *     5 = query model
  *         After, HL = model: 1, 3, 4, or 5 (=4P)
  *     6 = query disk size
@@ -207,12 +211,10 @@
  *         Before, HL = 0 Radio Shack, 1 Micro-Labs
  *    11 = set graphics type
  *         Before, HL = 0 Radio Shack, 1 Micro-Labs
- *    12 = query delay
- *         After,  HL = delay
- *                 BC = autodelay flag (0 or 1)
- *    13 = set delay
- *         Before, HL = new delay
- *                 BC = autodelay flag (0 or 1)
+ *    12 = query turbo mode flag
+ *         After,  BC = 0 or 1
+ *    13 = set turbo mode flag
+ *         Before, BC = 0 or 1
  *    14 = query keystretch
  *         After,  HL = amount (in T-states)
  *    15 = set keystretch
@@ -254,6 +256,7 @@
  *         Before, DE =  fd, or -1 to close all fds opened with emt_opendisk
  *         After,  AF =  0 if OK, error number if not (Z flag affected)
  *
+ * EDF6 exit (Keil emulator)
  */
 
 /* Minimal subset of standard O_ flags.  We have to define our own for

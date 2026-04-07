@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006-2011, Mark Grebe
- * Copyright (C) 2018-2024, Jens Guenther
+ * Copyright (C) 2018-2026, Jens Guenther
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,7 +33,7 @@
 
 static const char stateFileBanner[] = "SDLTRS State Save File";
 static int const stateFileBannerLen = sizeof(stateFileBanner) - 1;
-static unsigned stateVersionNumber = 8;
+static unsigned const stateVersionNumber = 13;
 
 int trs_state_save(const char *filename)
 {
@@ -61,7 +61,7 @@ int trs_state_save(const char *filename)
     return 0;
   }
 
-  file_error("save State '%s'", filename);
+  file_error("save State: '%s'", filename);
   return -1;
 }
 
@@ -84,7 +84,7 @@ int trs_state_load(const char *filename)
     trs_load_uint32(file, &version, 1);
 
     if (version != stateVersionNumber) {
-      error("unsupported version %d of State file", version);
+      error("unsupported version %d of State file '%s'", version, filename);
       fclose(file);
       return -1;
     }
@@ -108,7 +108,7 @@ int trs_state_load(const char *filename)
     return 0;
   }
 
-  file_error("load State '%s'", filename);
+  file_error("load State: '%s'", filename);
   return -1;
 }
 
@@ -178,7 +178,7 @@ void trs_save_uint32(FILE *file, const Uint32 *buffer, int count)
 void trs_load_uint32(FILE *file, Uint32 *buffer, int count)
 {
   int i;
-  Uint8 byte0, byte1, byte2, byte3;
+  Uint8 byte0 = 0, byte1 = 0, byte2 = 0, byte3 = 0;
 
   for (i = 0; i < count; i++) {
     fread(&byte0, 1, 1, file);
@@ -307,7 +307,7 @@ void trs_load_float(FILE *file, float *buffer, int count)
   }
 }
 
-void trs_save_filename(FILE *file, char *filename)
+void trs_save_filename(FILE *file, const char *filename)
 {
   Uint16 length = strlen(filename);
 

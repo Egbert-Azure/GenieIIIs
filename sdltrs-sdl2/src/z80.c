@@ -61,9 +61,8 @@
 #include "error.h"
 #include "trs.h"
 #include "trs_imp_exp.h"
+#include "trs_memory.h"
 #include "trs_state_save.h"
-
-unsigned int z80_halt;
 
 /*
  * The state of our Z80 registers is kept in this structure:
@@ -160,7 +159,7 @@ static void do_add_flags(int a, int b, int result)
      * Undocumented flags in bit 3, 5 of F come from the result.
      */
 
-    int index = ((a & 0x88) >> 1) | ((b & 0x88) >> 2) |
+    int const index = ((a & 0x88) >> 1) | ((b & 0x88) >> 2) |
       ((result & 0x88) >> 3);
 
     int f = half_carry_table[index & 7] |
@@ -182,7 +181,7 @@ static void do_sub_flags(int a, int b, int result)
      * Undocumented flags in bit 3, 5 of F come from the result.
      */
 
-    int index = ((a & 0x88) >> 1) | ((b & 0x88) >> 2) |
+    int const index = ((a & 0x88) >> 1) | ((b & 0x88) >> 2) |
       ((result & 0x88) >> 3);
 
     int f = SUBTRACT_MASK | subtract_half_carry_table[index & 7] |
@@ -205,7 +204,7 @@ static void do_adc_word_flags(int a, int b, int result)
      * Undocumented flags in bit 3, 5 of F come from the result high byte.
      */
 
-    int index = ((a & 0x8800) >> 9) | ((b & 0x8800) >> 10) |
+    int const index = ((a & 0x8800) >> 9) | ((b & 0x8800) >> 10) |
       ((result & 0x8800) >> 11);
 
     int f = half_carry_table[index & 7] |
@@ -227,7 +226,7 @@ static void do_add_word_flags(int a, int b, int result)
      * Undocumented flags in bit 3, 5 of F come from the result high byte.
      */
 
-    int index = ((a & 0x8800) >> 9) | ((b & 0x8800) >> 10) |
+    int const index = ((a & 0x8800) >> 9) | ((b & 0x8800) >> 10) |
       ((result & 0x8800) >> 11);
 
     int f = half_carry_table[index & 7] |
@@ -248,7 +247,7 @@ static void do_sbc_word_flags(int a, int b, int result)
      * Undocumented flags in bit 3, 5 of F come from the result high byte.
      */
 
-    int index = ((a & 0x8800) >> 9) | ((b & 0x8800) >> 10) |
+    int const index = ((a & 0x8800) >> 9) | ((b & 0x8800) >> 10) |
       ((result & 0x8800) >> 11);
 
     int f = SUBTRACT_MASK | subtract_half_carry_table[index & 7] |
@@ -300,7 +299,7 @@ static void do_flags_inc_byte(int value)
  */
 static void do_and_byte(int value)
 {
-    int result = (Z80_A &= value);
+    int const result = (Z80_A &= value);
     Uint8 set  = HALF_CARRY_MASK;
 
     if(parity(result))
@@ -315,7 +314,7 @@ static void do_and_byte(int value)
 
 static void do_or_byte(int value)
 {
-    int result = (Z80_A |= value);  /* the result of the or operation */
+    int const result = (Z80_A |= value);  /* the result of the or operation */
     Uint8 set  = 0;
 
     if(parity(result))
@@ -330,7 +329,7 @@ static void do_or_byte(int value)
 
 static void do_xor_byte(int value)
 {
-    int result = (Z80_A ^= value);  /* the result of the xor operation */
+    int const result = (Z80_A ^= value);  /* the result of the xor operation */
     Uint8 set  = 0;
 
     if(parity(result))
@@ -345,7 +344,7 @@ static void do_xor_byte(int value)
 
 static void do_add_byte(int value)
 {
-    int a = Z80_A;
+    int const a = Z80_A;
 
     Z80_A = Z80_A + value;
     do_add_flags(a, value, Z80_A);
@@ -353,7 +352,7 @@ static void do_add_byte(int value)
 
 static void do_adc_byte(int value)
 {
-    int a = Z80_A;
+    int const a = Z80_A;
 
     Z80_A = Z80_A + value + CARRY_FLAG;
     do_add_flags(a, value, Z80_A);
@@ -361,7 +360,7 @@ static void do_adc_byte(int value)
 
 static void do_sub_byte(int value)
 {
-    int a = Z80_A;
+    int const a = Z80_A;
 
     Z80_A = Z80_A - value;
     do_sub_flags(a, value, Z80_A);
@@ -369,7 +368,7 @@ static void do_sub_byte(int value)
 
 static void do_negate(void)
 {
-    int a = Z80_A;
+    int const a = Z80_A;
 
     Z80_A = - Z80_A;
     do_sub_flags(0, a, Z80_A);
@@ -377,7 +376,7 @@ static void do_negate(void)
 
 static void do_sbc_byte(int value)
 {
-    int a = Z80_A;
+    int const a = Z80_A;
 
     Z80_A = Z80_A - (value + CARRY_FLAG);
     do_sub_flags(a, value, Z80_A);
@@ -385,7 +384,7 @@ static void do_sbc_byte(int value)
 
 static void do_add_word(int value)
 {
-    int a = Z80_HL;
+    int const a = Z80_HL;
 
     Z80_HL = Z80_HL + value;
 
@@ -394,7 +393,7 @@ static void do_add_word(int value)
 
 static void do_adc_word(int value)
 {
-    int a = Z80_HL;
+    int const a = Z80_HL;
 
     Z80_HL = Z80_HL + value + CARRY_FLAG;
 
@@ -403,7 +402,7 @@ static void do_adc_word(int value)
 
 static void do_sbc_word(int value)
 {
-    int a = Z80_HL;
+    int const a = Z80_HL;
 
     Z80_HL = Z80_HL - (value + CARRY_FLAG);
 
@@ -412,8 +411,8 @@ static void do_sbc_word(int value)
 
 static void do_add_word_index(Uint16 *regp, int value)
 {
-    int a = *regp;
-    int result = a + value;
+    int const a = *regp;
+    int const result = a + value;
 
     *regp = result;
 
@@ -431,9 +430,9 @@ static void do_cp(int value)
      * Undocumented flags in bit 3, 5 of F come from the second operand.
      */
 
-    int a = Z80_A;
-    int result = a - value;
-    int index = ((a & 0x88) >> 1) | ((value & 0x88) >> 2) |
+    int const a = Z80_A;
+    int const result = a - value;
+    int const index = ((a & 0x88) >> 1) | ((value & 0x88) >> 2) |
       ((result & 0x88) >> 3);
     int f = SUBTRACT_MASK | subtract_half_carry_table[index & 7] |
       subtract_sign_carry_overflow_table[index >> 4] |
@@ -446,10 +445,10 @@ static void do_cp(int value)
 
 static void do_cpd(void)
 {
-    int oldcarry = Z80_F & CARRY_MASK;
-    int a = Z80_A;
-    int value = mem_read(Z80_HL);
-    int result = a - value;
+    int const oldcarry = Z80_F & CARRY_MASK;
+    int const a = Z80_A;
+    int const value = mem_read(Z80_HL);
+    int const result = a - value;
 
     Z80_HL--;
     Z80_BC--;
@@ -467,10 +466,10 @@ static void do_cpd(void)
 
 static void do_cpi(void)
 {
-    int oldcarry = Z80_F & CARRY_MASK;
-    int a = Z80_A;
-    int value = mem_read(Z80_HL);
-    int result = a - value;
+    int const oldcarry = Z80_F & CARRY_MASK;
+    int const a = Z80_A;
+    int const value = mem_read(Z80_HL);
+    int const result = a - value;
 
     Z80_HL++;
     Z80_BC--;
@@ -489,8 +488,10 @@ static void do_cpi(void)
 #ifdef FAST_MOVE
 static void do_cpdr(void)
 {
-    int oldcarry = Z80_F & CARRY_MASK;
-    int a = Z80_A, value, result;
+    int const oldcarry = Z80_F & CARRY_MASK;
+    int const a = Z80_A;
+    int value, result;
+
     do
     {
         result = a - (value = mem_read(Z80_HL));
@@ -514,8 +515,10 @@ static void do_cpdr(void)
 
 static void do_cpir(void)
 {
-    int oldcarry = Z80_F & CARRY_MASK;
-    int a = Z80_A, value, result;
+    int const oldcarry = Z80_F & CARRY_MASK;
+    int const a = Z80_A;
+    int value, result;
+
     do
     {
         result = a - (value = mem_read(Z80_HL));
@@ -562,7 +565,8 @@ static void do_cpir(void)
    It remains to be seen which (if either) is really right. */
 static void do_test_bit(int op, int value, int bit)
 {
-    int result = value & (1 << bit);
+    int const result = value & (1 << bit);
+
     Z80_F = (Z80_F & CARRY_MASK) | HALF_CARRY_MASK | (result & SIGN_MASK)
       | (result ? 0 : (OVERFLOW_MASK | ZERO_MASK))
       | (((op & 7) == 6) ? 0 : (value & (UNDOC3_MASK | UNDOC5_MASK)));
@@ -577,7 +581,8 @@ static void do_test_bit(int op, int value, int bit)
    against a real Z80, I suppose.  Ugh. */
 static void do_test_bit(int op, int value, int bit)
 {
-    int result = value & (1 << bit);
+    int const result = value & (1 << bit);
+
     Z80_F = (Z80_F & CARRY_MASK) | HALF_CARRY_MASK
       | (result & (UNDOC3_MASK | UNDOC5_MASK | SIGN_MASK))
       | (result ? 0 : (OVERFLOW_MASK | ZERO_MASK));
@@ -592,7 +597,7 @@ static int rl_byte(int value)
      */
 
     Uint8 set = 0;
-    int result = ((value << 1) & 0xFF) | CARRY_FLAG;
+    int const result = ((value << 1) & 0xFF) | CARRY_FLAG;
 
     if(result & 0x80)
       set |= SIGN_MASK;
@@ -616,7 +621,7 @@ static int rr_byte(int value)
      */
 
     Uint8 set = 0;
-    int result = (value >> 1) | (CARRY_FLAG ? 0x80 : 0);
+    int const result = (value >> 1) | (CARRY_FLAG ? 0x80 : 0);
 
     if(result & 0x80)
       set |= SIGN_MASK;
@@ -758,7 +763,7 @@ static void do_rrca(void)
 static int sla_byte(int value)
 {
     Uint8 set = 0;
-    int result = (value << 1) & 0xFF;
+    int const result = (value << 1) & 0xFF;
 
     if(result & 0x80)
       set |= SIGN_MASK;
@@ -805,7 +810,7 @@ static int sra_byte(int value)
 static int slia_byte(int value)
 {
     Uint8 set = 0;
-    int result = ((value << 1) & 0xFF) | 1;
+    int const result = ((value << 1) & 0xFF) | 1;
 
     if(result & 0x80)
       set |= SIGN_MASK;
@@ -824,7 +829,7 @@ static int slia_byte(int value)
 static int srl_byte(int value)
 {
     Uint8 set = 0;
-    int result = value >> 1;
+    int const result = value >> 1;
 
     if(result & 0x80)
       set |= SIGN_MASK;
@@ -970,12 +975,15 @@ static void do_ld_a_r(void)
    The old one was very wrong. */
 static void do_daa(void)
 {
-  int a = Z80_A, f = Z80_F;
-  int alow = a & 0xf;
+  int a = Z80_A;
+  int const f = Z80_F;
+  int const alow = a & 0xf;
   int carry = f & CARRY_MASK;
   int hcarry = f & HALF_CARRY_MASK;
+
   if (f & SUBTRACT_MASK) {
-    int hd = carry || a > 0x99;
+    int const hd = carry || a > 0x99;
+
     if (hcarry || alow > 9) {
        if (alow > 5) hcarry = 0;
        a = (a - 6) & 0xff;
@@ -1006,10 +1014,10 @@ static void do_rld(void)
      * Rotate-left-decimal.
      */
     Uint8 set = 0;
-    int old_value = mem_read(Z80_HL);
+    int const old_value = mem_read(Z80_HL);
 
     /* left-shift old value, add lower bits of a */
-    int new_value = ((old_value << 4) | (Z80_A & 0x0f)) & 0xff;
+    int const new_value = ((old_value << 4) | (Z80_A & 0x0f)) & 0xff;
 
     /* rotate high bits of old value into low bits of a */
     Z80_A = (Z80_A & 0xf0) | (old_value >> 4);
@@ -1031,10 +1039,10 @@ static void do_rrd(void)
      * Rotate-right-decimal.
      */
     Uint8 set = 0;
-    int old_value = mem_read(Z80_HL);
+    int const old_value = mem_read(Z80_HL);
 
     /* right-shift old value, add lower bits of a */
-    int new_value = (old_value >> 4) | ((Z80_A & 0x0f) << 4);
+    int const new_value = (old_value >> 4) | ((Z80_A & 0x0f) << 4);
 
     /* rotate low bits of old value into low bits of a */
     Z80_A = (Z80_A & 0xf0) | (old_value & 0x0f);
@@ -1144,7 +1152,7 @@ static int in_with_flags(int port)
      * which compute the flags.  Return the input value.
      */
 
-    int value = z80_in(port);
+    int const value = z80_in(port);
     Uint8 clear = (Uint8) ~(SIGN_MASK | ZERO_MASK | HALF_CARRY_MASK |
 			    PARITY_MASK | SUBTRACT_MASK);
     Uint8 set = 0;
@@ -1259,18 +1267,17 @@ static void do_int(void)
     Z80_R++;
     switch (z80_state.interrupt_mode) {
     case 0:
-      /* Z80_PC = get_irq_vector() & 0x38; */
-      T_COUNT(13);
-      error("interrupt in im0 not supported");
-      break;
+      /* Should take a one-byte instruction from the data bus (usually some RST).
+         We don't have a data bus, so always pick RST 38h. */
     case 1:
       Z80_PC = 0x38;
       T_COUNT(13);
       break;
     case 2:
-      /* Z80_PC = Z80_I << 8 + get_irq_vector(); */
+      /* The LSB here is taken from the data bus, so it's unpredictable.
+         We use 0xFF but any value would do. */
+      Z80_PC = mem_read_word((Z80_I << 8) + 0xFF);
       T_COUNT(19);
-      error("interrupt in im2 not supported");
       break;
     }
 }
@@ -1291,7 +1298,7 @@ static void do_nmi(void)
  */
 static void do_CB_instruction(void)
 {
-    Uint8 instruction = mem_read(Z80_PC++);
+    Uint8 const instruction = mem_read(Z80_PC++);
 
     switch(instruction)
     {
@@ -2085,7 +2092,7 @@ static void do_CB_instruction(void)
  */
 static void do_indexed_instruction(Uint16 *ixp)
 {
-    Uint8 instruction = mem_read(Z80_PC++);
+    Uint8 const instruction = mem_read(Z80_PC++);
 
     switch(instruction)
     {
@@ -2126,8 +2133,8 @@ static void do_indexed_instruction(Uint16 *ixp)
 
       case 0x35:	/* dec (ix + offset) */
         {
-	  Uint16 address = *ixp + (signed char) mem_read(Z80_PC++);
-	  Uint8 value = mem_read(address) - 1;
+	  Uint16 const address = *ixp + (signed char) mem_read(Z80_PC++);
+	  Uint8 const value = mem_read(address) - 1;
 	  mem_write(address, value);
 	  do_flags_dec_byte(value);
         }
@@ -2141,7 +2148,7 @@ static void do_indexed_instruction(Uint16 *ixp)
 
       case 0xE3:	/* ex (sp), ix */
         {
-	  Uint16 temp = mem_read_word(Z80_SP);
+	  Uint16 const temp = mem_read_word(Z80_SP);
 	  mem_write_word(Z80_SP, *ixp);
 	  *ixp = temp;
         }
@@ -2150,8 +2157,8 @@ static void do_indexed_instruction(Uint16 *ixp)
 
       case 0x34:	/* inc (ix + offset) */
         {
-	  Uint16 address = *ixp + (signed char) mem_read(Z80_PC++);
-	  Uint8 value = mem_read(address) + 1;
+	  Uint16 const address = *ixp + (signed char) mem_read(Z80_PC++);
+	  Uint8 const value = mem_read(address) + 1;
 	  mem_write(address, value);
 	  do_flags_inc_byte(value);
         }
@@ -2289,9 +2296,9 @@ static void do_indexed_instruction(Uint16 *ixp)
 
       case 0xCB:
         {
-	  signed char offset = (signed char) mem_read(Z80_PC++);
+	  signed char const offset = (signed char) mem_read(Z80_PC++);
 	  signed char result = 0;
-	  Uint8 sub_instruction = mem_read(Z80_PC++);
+	  Uint8 const sub_instruction = mem_read(Z80_PC++);
 
 	  /* Instructions with (sub_instruction & 7) != 6 are undocumented;
 	     their extra effect is handled after this switch */
@@ -2345,14 +2352,14 @@ static void do_indexed_instruction(Uint16 *ixp)
 	      T_COUNT(23);
 	      break;
 
-	    case 0x40:  /* bit 0, (ix + offset) */
-	    case 0x48:  /* bit 1, (ix + offset) */
-	    case 0x50:  /* bit 2, (ix + offset) */
-	    case 0x58:  /* bit 3, (ix + offset) */
-	    case 0x60:  /* bit 4, (ix + offset) */
-	    case 0x68:  /* bit 5, (ix + offset) */
-	    case 0x70:  /* bit 6, (ix + offset) */
-	    case 0x78:  /* bit 7, (ix + offset) */
+	    case 0x40:	/* bit 0, (ix + offset) */
+	    case 0x48:	/* bit 1, (ix + offset) */
+	    case 0x50:	/* bit 2, (ix + offset) */
+	    case 0x58:	/* bit 3, (ix + offset) */
+	    case 0x60:	/* bit 4, (ix + offset) */
+	    case 0x68:	/* bit 5, (ix + offset) */
+	    case 0x70:	/* bit 6, (ix + offset) */
+	    case 0x78:	/* bit 7, (ix + offset) */
 	      do_test_bit(sub_instruction, mem_read(*ixp + offset),
 			  (sub_instruction >> 3) & 7);
 	      T_COUNT(20);
@@ -2392,13 +2399,13 @@ static void do_indexed_instruction(Uint16 *ixp)
 	    switch (sub_instruction & 7)
 	    {
 	      /* Undocumented cases */
-	      case 0:  Z80_B = result; break;
-	      case 1:  Z80_C = result; break;
-	      case 2:  Z80_D = result; break;
-	      case 3:  Z80_E = result; break;
-	      case 4:  Z80_H = result; break;
-	      case 5:  Z80_L = result; break;
-	      case 7:  Z80_A = result; break;
+	      case 0:	Z80_B = result; break;
+	      case 1:	Z80_C = result; break;
+	      case 2:	Z80_D = result; break;
+	      case 3:	Z80_E = result; break;
+	      case 4:	Z80_H = result; break;
+	      case 5:	Z80_L = result; break;
+	      case 7:	Z80_A = result; break;
 	    }
 	  }
         }
@@ -2563,8 +2570,8 @@ static void do_indexed_instruction(Uint16 *ixp)
  */
 static int do_ED_instruction(void)
 {
-    Uint8 instruction = mem_read(Z80_PC++);
     int debug = 0;
+    Uint8 const instruction = mem_read(Z80_PC++);
 
     switch(instruction)
     {
@@ -2832,27 +2839,27 @@ static int do_ED_instruction(void)
 	break;
 
       /* Emulator traps -- not real Z80 instructions */
-      case 0x28:        /* emt_system */
+      case 0x28:	/* emt_system */
 	do_emt_system();
 	break;
-      case 0x29:        /* emt_mouse */
+      case 0x29:	/* emt_mouse */
 	do_emt_mouse();
 	break;
-      case 0x2a:        /* emt_getddir */
+      case 0x2a:	/* emt_getddir */
 	do_emt_getddir();
 	break;
-      case 0x2b:        /* emt_setddir */
+      case 0x2b:	/* emt_setddir */
 	do_emt_setddir();
 	break;
-      case 0x2e:        /* SSPD A (David Keil) */
-	timer_overclock = ((Z80_A & (1 << 2)) != 0);
-	trs_timer_mode(timer_overclock);
+      case 0x2e:	/* SSPD A (David Keil) */
+	turbo_mode = ((Z80_A & (1 << 2)) != 0);
+	trs_timer_mode(turbo_mode);
 	break;
-      case 0x2f:        /* emt_debug */
+      case 0x2f:	/* emt_debug */
 	if (trs_continuous > 0) trs_continuous = 0;
 	debug = 1;
 	break;
-      case 0x30:        /* emt_open */
+      case 0x30:	/* emt_open */
 	do_emt_open();
 	break;
       case 0x31:	/* emt_close */
@@ -2873,7 +2880,7 @@ static int do_ED_instruction(void)
       case 0x36:	/* emt_time */
 	do_emt_time();
 	break;
-      case 0x37:        /* emt_opendir */
+      case 0x37:	/* emt_opendir */
 	do_emt_opendir();
 	break;
       case 0x38:	/* emt_closedir */
@@ -2894,7 +2901,7 @@ static int do_ED_instruction(void)
       case 0x3d:	/* emt_ftruncate */
 	do_emt_ftruncate();
 	break;
-      case 0x3e:        /* emt_opendisk */
+      case 0x3e:	/* emt_opendisk */
 	do_emt_opendisk();
 	break;
       case 0x3f:	/* emt_closedisk */
@@ -2910,7 +2917,7 @@ static int do_ED_instruction(void)
 #ifdef ZBX
 	disassemble(Z80_PC - 2);
 #endif
-	error("unsupported ED instruction: 0x%x", instruction);
+	error("unsupported ED instruction: 0x%X", instruction);
     }
 
     return debug;
@@ -2925,13 +2932,14 @@ int z80_run(int continuous)
       *  1 = continuous
       */
 {
-    Uint8 instruction;
-    Uint16 address; /* generic temps */
     int ret = 0;
     trs_continuous = continuous;
 
     /* loop to do a z80 instruction */
     do {
+	Uint8  instruction;
+	Uint16 address; /* generic temps */
+
 	/* Speed control */
 	tstate_t t_delta;
 
@@ -3272,7 +3280,7 @@ int z80_run(int continuous)
 
 	  case 0x35:	/* dec (hl) */
 	    {
-	      Uint8 value = mem_read(Z80_HL) - 1;
+	      Uint8 const value = mem_read(Z80_HL) - 1;
 	      mem_write(Z80_HL, value);
 	      do_flags_dec_byte(value);
 	    }
@@ -3322,7 +3330,7 @@ int z80_run(int continuous)
 
 	  case 0x08:	/* ex af, af' */
 	  {
-	      Uint16 temp = Z80_AF;
+	      Uint16 const temp = Z80_AF;
 	      Z80_AF = Z80_AF_PRIME;
 	      Z80_AF_PRIME = temp;
 	  }
@@ -3331,7 +3339,7 @@ int z80_run(int continuous)
 
 	  case 0xEB:	/* ex de, hl */
 	  {
-	      Uint16 temp = Z80_DE;
+	      Uint16 const temp = Z80_DE;
 	      Z80_DE = Z80_HL;
 	      Z80_HL = temp;
 	  }
@@ -3340,7 +3348,7 @@ int z80_run(int continuous)
 
 	  case 0xE3:	/* ex (sp), hl */
 	  {
-	      Uint16 temp = mem_read_word(Z80_SP);
+	      Uint16 const temp = mem_read_word(Z80_SP);
 	      mem_write_word(Z80_SP, Z80_HL);
 	      Z80_HL = temp;
 	  }
@@ -3364,14 +3372,15 @@ int z80_run(int continuous)
 
 	  case 0x76:	/* halt */
 #ifdef ZBX
-	    if (z80_halt == 'd') {
+	    if (Z80_HALT == 'd') {
 		trs_debug();
 	    }
+	    else
 #endif
-	    if (z80_halt == 'r') {
+	    if (Z80_HALT == 'r') {
 		trs_reset(0);
 	    } else {
-	      if (trs_model == 1 && z80_halt != 'h') {
+	      if (trs_model == 1 && Z80_HALT != 'h') {
 		/* Z80 HALT output is tied to reset button circuit */
 		trs_reset(0);
 	      } else {
@@ -3384,14 +3393,6 @@ int z80_run(int continuous)
 		   (see below) we undo this decrement to get out of
 		   the halt state. */
 	        Z80_PC--;
-#if 0 /* Removed for new sdltrs timing scheme */
-		if (continuous > 0 &&
-		    !(z80_state.nmi && !z80_state.nmi_seen) &&
-		    !(z80_state.irq && z80_state.iff1) &&
-		    !trs_event_scheduled()) {
-		    pause();
-		}
-#endif
 	      }
 	    }
 	    T_COUNT(4);
@@ -3433,7 +3434,7 @@ int z80_run(int continuous)
 
 	  case 0x34:	/* inc (hl) */
 	  {
-	      Uint8 value = mem_read(Z80_HL) + 1;
+	      Uint8 const value = mem_read(Z80_HL) + 1;
 	      mem_write(Z80_HL, value);
 	      do_flags_inc_byte(value);
 	  }
@@ -4269,9 +4270,9 @@ int z80_run(int continuous)
 
 void z80_reset(void)
 {
-    Z80_PC = 0;
     Z80_A = 0xFF;
     Z80_F = 0xFF;
+    Z80_PC = 0;
     Z80_SP = 0xFFFF;
     z80_state.i = 0;
     z80_state.r = 0;
@@ -4306,6 +4307,7 @@ void trs_z80_save(FILE *file)
   trs_save_int(file, &z80_state.irq, 1);
   trs_save_int(file, &z80_state.nmi, 1);
   trs_save_int(file, &z80_state.nmi_seen, 1);
+  trs_save_int(file, &z80_state.keypress, 1);
   trs_save_uint64(file, &z80_state.t_count, 1);
   trs_save_float(file, &z80_state.clockMHz, 1);
   trs_save_uint64(file, &z80_state.sched, 1);
@@ -4335,6 +4337,7 @@ void trs_z80_load(FILE *file)
   trs_load_int(file, &z80_state.irq, 1);
   trs_load_int(file, &z80_state.nmi, 1);
   trs_load_int(file, &z80_state.nmi_seen, 1);
+  trs_load_int(file, &z80_state.keypress, 1);
   trs_load_uint64(file, &z80_state.t_count, 1);
   trs_load_float(file, &z80_state.clockMHz, 1);
   trs_load_uint64(file, &z80_state.sched, 1);

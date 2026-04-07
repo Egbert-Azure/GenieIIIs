@@ -31,16 +31,17 @@
 #define _TRS_SDL_KEYBOARD_H
 
 #define JOY_BOUNCE      (20000)
+#define JOY_BUTTONS     (20)
 #define KEY_QUEUE_SIZE  (32)
 #define STRETCH_AMOUNT  (4000)
 
-void trs_joy_button_down(void);
-void trs_joy_button_up(void);
-void trs_joy_hat(Uint8 value);
-void trs_set_keypad_joystick(void);
-void trs_open_joystick(void);
-void trs_joy_axis(Uint8 axis, short value, int bounce);
-void trs_keyboard_save(FILE *file);
-void trs_keyboard_load(FILE *file);
+extern void trs_joy_button_down(void);
+extern void trs_joy_button_up(void);
+extern void trs_joy_hat(Uint8 value);
+extern void trs_set_keypad_joystick(void);
+extern void trs_open_joystick(void);
+extern void trs_joy_axis(Uint8 axis, short value, int bounce);
+extern void trs_keyboard_save(FILE *file);
+extern void trs_keyboard_load(FILE *file);
 
 #endif /* _TRS_SDL_KEYBOARD_H */

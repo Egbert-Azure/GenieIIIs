@@ -1,4 +1,4 @@
-PROG	 = sdl2trs
+PROG	 = sdltrs
 
 SRCS	+= debug.c
 SRCS	+= dis.c
@@ -28,10 +28,10 @@ SRCS	+= PasteManager.c
 
 OBJS	 = ${SRCS:.c=.o}
 
-.PHONY: all bsd clean depend os2 sdl2 win32 win64
+.PHONY: all bsd clean depend nox os2 sdl sdl2 win32 win64 wsdl2
 
 all:
-	@echo "make (bsd | clean | depend | os2 | sdl2 | win32 | win64)"
+	@echo "make (bsd | clean | depend | nox | os2 | sdl | sdl2 | win32 | win64 | wsdl2)"
 
 bsd:
 	make -f BSDmakefile
@@ -43,35 +43,61 @@ depend:
 	makedepend -Y -- ${CFLAGS} -- ${SRCS} 2>&1 | \
 		(egrep -v 'cannot find|not in' || true)
 
-os2:	SDL_INC	?= $(shell sdl2-config --cflags)
-os2:	SDL_LIB	?= $(shell sdl2-config --libs)
+nox:	ENDIAN	 = $(shell echo "ab" | od -x | grep "6261" > /dev/null || echo "-Dbig_endian")
+nox:	SDL_INC	?= $(shell sdl-config --cflags)
+nox:	SDL_LIB	?= $(shell sdl-config --libs)
+nox:	MACROS	+= -DNOX
+nox:	READLINE?= -DREADLINE
+nox:	${PROG}
+
+os2:	SDL_INC	?= $(shell sdl-config --cflags)
+os2:	SDL_LIB	?= $(shell sdl-config --libs)
+os2:	MACROS	+= -DNOX
 os2:	LDFLAGS	+= -Zomf
 os2:	${PROG}
+
+sdl:	ENDIAN	 = $(shell echo "ab" | od -x | grep "6261" > /dev/null || echo "-Dbig_endian")
+sdl:	SDL_INC	?= $(shell sdl-config --cflags)
+sdl:	SDL_LIB	?= $(shell sdl-config --libs)
+sdl:	READLINE?= -DREADLINE
+sdl:	X11INC	?= -I/usr/include/X11
+sdl:	X11LIB	?= -L/usr/lib/X11 -lX11
+sdl:	${PROG}
 
 sdl2:	ENDIAN	 = $(shell echo "ab" | od -x | grep "6261" > /dev/null || echo "-Dbig_endian")
 sdl2:	SDL_INC	?= $(shell sdl2-config --cflags)
 sdl2:	SDL_LIB	?= $(shell sdl2-config --libs)
+sdl2:	MACROS	+= -DSDL2
 sdl2:	READLINE?= -DREADLINE
 sdl2:	${PROG}
 
 win32:	MINGW	?= \MinGW
 win32:	CC	 = ${MINGW}\bin\gcc.exe
-win32:	SDL_INC	?= -I${MINGW}\include\SDL2
-win32:	SDL_LIB	?= -L${MINGW}\lib -lmingw32 -lSDL2main -lSDL2
+win32:	SDL_INC	?= -I${MINGW}\include\SDL
+win32:	SDL_LIB	?= -L${MINGW}\lib -lmingw32 -lSDLmain -lSDL
 win32:	${PROG}
 
 win64:	MINGW64	?= \MinGW64
 win64:	CC	 = ${MINGW64}\bin\gcc.exe
 win64:	SDL_INC	?= -I${MINGW64}\include\SDL2
 win64:	SDL_LIB	?= -L${MINGW64}\lib -lmingw32 -lSDL2main -lSDL2
+win64:	MACROS	+= -DSDL2
 win64:	${PROG}
+
+wsdl2:	MINGW	?= \MinGW
+wsdl2:	CC	 = ${MINGW}\bin\gcc.exe
+wsdl2:	SDL_INC	?= -I${MINGW}\include\SDL2
+wsdl2:	SDL_LIB	?= -L${MINGW}\lib -lmingw32 -lSDL2main -lSDL2
+wsdl2:	MACROS	+= -DSDL2
+wsdl2:	${PROG}
 
 MSYS		:=$(if $(findstring Msys, $(shell uname -a)), Msys)
 SSPLIB		:=$(if ${MSYS},-lssp,)
 READLINELIBS	 =$(if ${READLINE},-lreadline,)
+MACROS		+= -DROM_PATH='"${ROM_PATH}"'
 ZBX		?= -DZBX
 CFLAGS		?= -g -O2 -Wall
-CFLAGS		+= ${SDL_INC} ${ENDIAN} ${MACROS} ${READLINE} ${ZBX}
+CFLAGS		+= ${SDL_INC} ${X11INC} ${ENDIAN} ${MACROS} ${READLINE} ${ZBX}
 
 ${PROG}: ${OBJS}
-	${CC} -o ${PROG} ${OBJS} ${SDL_LIB} ${LDFLAGS} ${READLINELIBS} ${SSPLIB}
+	${CC} -o ${PROG} ${OBJS} ${SDL_LIB} ${X11LIB} ${LDFLAGS} ${READLINELIBS} ${SSPLIB}

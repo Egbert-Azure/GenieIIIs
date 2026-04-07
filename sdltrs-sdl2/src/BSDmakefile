@@ -1,4 +1,4 @@
-PROG	 = sdl2trs
+PROG	 = sdltrs
 
 SRCS	+= debug.c
 SRCS	+= dis.c
@@ -14,8 +14,8 @@ SRCS	+= trs_imp_exp.c
 SRCS	+= trs_interrupt.c
 SRCS	+= trs_io.c
 SRCS	+= trs_memory.c
-SRCS	+= trs_options.c
 SRCS	+= trs_mkdisk.c
+SRCS	+= trs_options.c
 SRCS	+= trs_printer.c
 SRCS	+= trs_sdl_gui.c
 SRCS	+= trs_sdl_interface.c
@@ -29,15 +29,17 @@ SRCS	+= PasteManager.c
 OBJS	 = ${SRCS:.c=.o}
 
 ENDIAN	!= echo; echo "ab" | od -x | grep "6261" > /dev/null || echo "-Dbig_endian"
-LIBS	+= -lcurses -lreadline
-SDL_INC	!= sdl2-config --cflags
-SDL_LIB	!= sdl2-config --libs
-MACROS	+= -DREADLINE -DZBX
+LIBS	?= -lcurses -lreadline
+MACROS	+= -DREADLINE -DZBX -DROM_PATH='"${ROM_PATH}"'
+SDL_INC	!= sdl-config --cflags
+SDL_LIB	!= sdl-config --libs
+X11INC	?= -I/usr/X11R7/include
+X11LIB	?= -L/usr/X11R7/lib -lX11 -Wl,-R/usr/X11R7/lib
 CFLAGS	?= -g -Wall
-CFLAGS	+= ${SDL_INC} ${ENDIAN} ${MACROS}
+CFLAGS	+= ${SDL_INC} ${X11INC} ${ENDIAN} ${MACROS}
 
 ${PROG}: ${OBJS}
-	${CC} -o ${PROG} ${OBJS} ${LIBS} ${SDL_LIB} ${LDFLAGS}
+	${CC} -o ${PROG} ${OBJS} ${LIBS} ${SDL_LIB} ${X11LIB} ${LDFLAGS}
 
 .PHONY: clean
 clean:

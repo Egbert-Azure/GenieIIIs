@@ -1,1 +1,0 @@
-src/dis.o: src/dis.c

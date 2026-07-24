@@ -1,5 +1,12 @@
 # TCS Trommeschläger Genie IIIs: A Legacy Computer System
 
+> ⚠️ **Archived — this material has moved.** This repository was the original master archive for the TCS Trommeschläger Genie IIIs. Its content has been reorganized into two focused, actively-maintained repositories:
+>
+> - **[TCS-Trommeschlaeger-Genie-IIIs](https://github.com/Egbert-Azure/TCS-Trommeschlaeger-Genie-IIIs)** — CP/M, Holte, and general Genie IIIs material (disks, EPROMs, source, utilities, articles)
+> - **[TCS-Trommeschlaeger-Genie-IIIs-GDos-2.4](https://github.com/Egbert-Azure/TCS-Trommeschlaeger-Genie-IIIs-GDos-2.4)** — GDOS 2.4 disks, boot ROMs, and reverse-engineering notes
+>
+> This repository is kept read-only as the historical record. Please use the repositories above for current material.
+
 The TCS Trommeschläger Genie IIIs is a legacy computer system manufactured in Germany that was largely compatible with Tandy's TRS-80 systems. The Genie IIIs worked seamlessly with G-DOS, NEW-DOS or CP/M operating systems and was renowned for its high-resolution graphics. One of the key features of the Genie IIIs was its fast-paced Z80 processor, making it one of the fastest CP/M computers ever produced.
 
 The Genie III's circuit board production was taken over by Siemens, making it even more widely available. Today, this legacy computer system continues to inspire modern-day emulation projects, such as the one we are undertaking to create versions for the popular `SDLTRS emulator` from `Jens Guenther`.
